@@ -4,7 +4,7 @@ import google.generativeai as genai
 # --- 1. CONFIGURAZIONE PAGINA E INTERFACCIA ---
 st.set_page_config(page_title="Athena - Assistente Didattico", page_icon="🏛️", layout="centered")
 
-st.title("🏛️ Athena - Guida Socrata")
+st.title("🏛️ Athena - Guida Socratica")
 st.caption("Esplora i paradossi e le meraviglie dell'infinito con il metodo socratico.")
 
 # --- 2. GESTIONE PARAMETRO URL PER LA COLONNA ---
@@ -44,7 +44,7 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel(
-    model_name="gemini-2.5-flash",
+    model_name="gemini-pro",
     system_instruction=system_instruction_corrente
 )
 
