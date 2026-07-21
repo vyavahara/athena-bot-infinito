@@ -1,4 +1,5 @@
 import os
+import re
 import asyncio
 from io import BytesIO
 import streamlit as st
@@ -55,12 +56,22 @@ st.markdown(
 )
 
 # ------------------------------------------------------------------------------
-# Funzione Asincrona per la Sintesi Vocale Femminile (Edge TTS)
+# Funzioni per la Sintesi Vocale e Pulizia del Testo Markdown
 # ------------------------------------------------------------------------------
+def pulisci_testo_per_audio(testo: str) -> str:
+    """Rimuove asterischi, cancelletti e formattazioni Markdown per l'ascolto."""
+    # Rimuove asterischi (es. *corsivo* o **grassetto**)
+    testo_pulito = re.sub(r'\*+', '', testo)
+    # Rimuove cancelletti dei titoli
+    testo_pulito = re.sub(r'#+', '', testo_pulito)
+    # Rimuove trattini isolati d'elenco
+    testo_pulito = re.sub(r'^\s*-\s+', '', testo_pulito, flags=re.MULTILINE)
+    return testo_pulito.strip()
+
 async def genera_audio_femminile(testo: str) -> bytes:
-    # Voice neurale femminile italiana: it-IT-ElsaNeural (o it-IT-IsabellaNeural)
     VOICE = "it-IT-ElsaNeural"
-    communicate = edge_tts.Communicate(testo, VOICE)
+    testo_vocale = pulisci_testo_per_audio(testo)
+    communicate = edge_tts.Communicate(testo_vocale, VOICE)
     fp = BytesIO()
     async for chunk in communicate.stream():
         if chunk["type"] == "audio":
@@ -131,17 +142,24 @@ else:
     prompt_colonna = prompt_base + " Ti trovi nella Sezione 4: Arte (Escher) e Creatività Digitale."
 
 # ------------------------------------------------------------------------------
-# 7. Gestione Cronologia Chat e Interazione Vocale Femminile
+# 7. Gestione Cronologia Chat con Generazione Vocale Pulita
 # ------------------------------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Ripristino dei messaggi della sessione corrente
-for msg in st.session_state.messages:
+# Ripristino messaggi
+for idx, msg in enumerate(st.session_state.messages):
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
-        if "audio" in msg:
-            st.audio(msg["audio"], format="audio/mp3")
+        if msg["role"] == "assistant":
+            if "audio" in msg:
+                st.audio(msg["audio"], format="audio/mp3")
+            else:
+                if st.button("🔊 Ascolta la risposta", key=f"btn_{idx}"):
+                    with st.spinner("🔊 Generazione voce in corso..."):
+                        audio_b = asyncio.run(genera_audio_femminile(msg["content"]))
+                        msg["audio"] = audio_b
+                        st.rerun()
 
 # Prompt Input Utente
 if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
@@ -159,8 +177,8 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
             )
         )
 
-    # Messaggio di attesa dinamico
-    with st.spinner("⏳ Athena sta riflettendo... Attendi la mia risposta."):
+    # Messaggio di attesa istantaneo per il solo testo
+    with st.spinner("⏳ Athena sta riflettendo..."):
         try:
             response = client.models.generate_content(
                 model="gemini-3.5-flash",
@@ -173,20 +191,16 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
             
             testo_risposta = response.text
 
-            # Generazione sintesi vocale neurale femminile
-            audio_bytes = asyncio.run(genera_audio_femminile(testo_risposta))
-
-            # Render della risposta e del player audio
+            # Render immediato del testo visivo
             with st.chat_message("assistant"):
                 st.markdown(testo_risposta)
-                st.audio(audio_bytes, format="audio/mp3")
 
-            # Salvataggio in sessione
+            # Salvataggio in sessione del testo
             st.session_state.messages.append({
                 "role": "assistant",
-                "content": testo_risposta,
-                "audio": audio_bytes
+                "content": testo_risposta
             })
+            st.rerun()
 
         except Exception as e:
             st.error(f"Errore nella risposta: {e}")
