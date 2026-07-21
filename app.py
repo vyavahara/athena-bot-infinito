@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # ------------------------------------------------------------------------------
-# Funzione Helper Caching: Converte in Base64 UNA SOLA VOLTA (Aumenta la stabilità)
+# Funzione Helper Caching: Converte in Base64 UNA SOLA VOLTA
 # ------------------------------------------------------------------------------
 @st.cache_data
 def get_image_base64(path_immagine: str) -> str:
@@ -287,9 +287,9 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
 
     with st.spinner("⏳ Athena sta riflettendo..."):
         try:
-            # Uso di gemini-1.5-flash: Il modello più stabile con 1.500 richieste/giorno gratuite
+            # Modello ripristinato su gemini-3.5-flash
             response = client.models.generate_content(
-                model="gemini-1.5-flash",
+                model="gemini-3.5-flash",
                 contents=contents_history,
                 config=types.GenerateContentConfig(
                     system_instruction=prompt_colonna,
