@@ -1,5 +1,6 @@
 import os
 import re
+import time
 import base64
 import asyncio
 from io import BytesIO
@@ -250,7 +251,6 @@ for idx, msg in enumerate(st.session_state.messages):
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
         if msg["role"] == "assistant" and "audio" in msg:
-            # L'autoplay si attiva solo una volta all'arrivo dell'ultimo messaggio generato
             should_autoplay = st.session_state.is_speaking and (idx == len(st.session_state.messages) - 1)
             st.audio(msg["audio"], format="audio/mp3", autoplay=should_autoplay)
 
@@ -274,19 +274,29 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
         )
 
     with st.spinner("⏳ Athena sta riflettendo e preparando la risposta..."):
-        try:
-            # Generazione del testo con Gemini 3.5 Flash
-            response = client.models.generate_content(
-                model="gemini-3.5-flash",
-                contents=contents_history,
-                config=types.GenerateContentConfig(
-                    system_instruction=prompt_colonna,
-                    temperature=0.7,
+        testo_risposta = None
+        
+        # Meccanismo di riprova automatica fino a 3 tentativi se il server Google è saturo (503)
+        for tentativo in range(3):
+            try:
+                response = client.models.generate_content(
+                    model="gemini-3.5-flash",
+                    contents=contents_history,
+                    config=types.GenerateContentConfig(
+                        system_instruction=prompt_colonna,
+                        temperature=0.7,
+                    )
                 )
-            )
-            
-            testo_risposta = response.text
+                testo_risposta = response.text
+                break
+            except Exception as e:
+                if "503" in str(e) and tentativo < 2:
+                    time.sleep(2)
+                else:
+                    st.error(f"Errore nella risposta: {e}")
+                    break
 
+        if testo_risposta:
             # Generazione dell'audio vocale MP3
             audio_bytes = asyncio.run(genera_audio_femminile(testo_risposta))
 
@@ -300,6 +310,3 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
             # Attiva la GIF animata e forza il refresh di Streamlit
             st.session_state.is_speaking = True
             st.rerun()
-
-        except Exception as e:
-            st.error(f"Errore nella risposta: {e}")
