@@ -30,7 +30,7 @@ def get_image_base64(path_immagine: str) -> str:
     return ""
 
 # ------------------------------------------------------------------------------
-# 2. Stile Visivo: Sfondo Nativo Luminoso e Brillante (Senza Velatura Scura)
+# 2. Stile Visivo: Sfondo Chiaro + Box Opachi ad Alto Contrasto
 # ------------------------------------------------------------------------------
 NOME_FILE_SFONDO = "Athena_sfondo.jpg"
 bg_base64 = get_image_base64(NOME_FILE_SFONDO)
@@ -40,7 +40,6 @@ if bg_base64:
         f"""
         <style>
         .stApp {{
-            /* Sfondo 100% originale, caldo e luminoso */
             background-image: url("{bg_base64}");
             background-size: cover;
             background-position: center;
@@ -65,42 +64,61 @@ else:
 st.markdown(
     """
     <style>
-    /* Titoli e sottotitoli scuri ben visibili sulla parte alta luminosa */
-    h1, h2, h3, p, span, div, caption {
-        color: #1a2e40 !important;
-        text-shadow: none !important;
+    /* Titoli con sfondo protettivo chiaro per staccare dallo sfondo */
+    h1 {
+        color: #0f172a !important;
+        background: rgba(255, 255, 255, 0.88);
+        padding: 6px 16px;
+        border-radius: 8px;
+        display: inline-block;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    caption, [data-testid="stCaptionContainer"] {
+        color: #1e293b !important;
+        background: rgba(255, 255, 255, 0.88);
+        padding: 4px 10px;
+        border-radius: 6px;
+        display: inline-block;
+        font-weight: 600;
+        margin-top: 4px;
     }
 
-    /* Box di Benvenuto in stile card chiara ad alto contrasto */
+    /* Box di Benvenuto opaco ad altissima leggibilità */
     div[data-testid="stNotification"] {
-        background-color: rgba(255, 255, 255, 0.92) !important;
-        color: #1a2e40 !important;
-        border: 1px solid #00adb5 !important;
-        border-radius: 12px;
-        backdrop-filter: blur(8px);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        background-color: #ffffff !important;
+        border: 2px solid #00adb5 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+        padding: 16px !important;
+    }
+    
+    div[data-testid="stNotification"] p, div[data-testid="stNotification"] span {
+        color: #0f172a !important;
+        font-size: 1.05rem !important;
+        line-height: 1.5 !important;
     }
 
-    /* Riquadri dei messaggi della chat bianchi semitrasparenti con effetto vetro */
+    /* Riquadri Messaggi Chat bianchi e nitidi */
     div[data-testid="stChatMessage"] {
-        background-color: rgba(255, 255, 255, 0.92) !important;
-        border-radius: 12px;
-        padding: 14px;
-        margin-bottom: 10px;
-        border: 1px solid #d0d7de !important;
-        backdrop-filter: blur(8px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+        background-color: #ffffff !important;
+        border-radius: 12px !important;
+        padding: 16px !important;
+        margin-bottom: 12px !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
     }
 
-    /* Forza il testo all'interno delle chat ad essere scuro e leggibile */
     div[data-testid="stChatMessage"] p, div[data-testid="stChatMessage"] span {
-        color: #1a2e40 !important;
+        color: #0f172a !important;
+        font-weight: 450 !important;
     }
 
-    /* Campo di input del testo in basso */
+    /* Campo di Input in basso */
     div[data-testid="stChatInput"] {
-        background-color: rgba(255, 255, 255, 0.95) !important;
-        border-radius: 10px;
+        background-color: #ffffff !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
     }
     </style>
     """,
