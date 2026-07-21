@@ -30,7 +30,7 @@ def get_image_base64(path_immagine: str) -> str:
     return ""
 
 # ------------------------------------------------------------------------------
-# 2. Stile Visivo: Sfondo Chiaro + Box Opachi ad Alto Contrasto
+# 2. Stile Visivo: Sfondo Chiaro + Box Neri Opachi per Tutti i Testi
 # ------------------------------------------------------------------------------
 NOME_FILE_SFONDO = "Athena_sfondo.jpg"
 bg_base64 = get_image_base64(NOME_FILE_SFONDO)
@@ -64,61 +64,74 @@ else:
 st.markdown(
     """
     <style>
-    /* Titoli con sfondo protettivo chiaro per staccare dallo sfondo */
+    /* Titolo Principale in Box Nero */
     h1 {
-        color: #0f172a !important;
-        background: rgba(255, 255, 255, 0.88);
-        padding: 6px 16px;
-        border-radius: 8px;
-        display: inline-block;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        color: #ffffff !important;
+        background: #0f172a !important;
+        padding: 8px 18px !important;
+        border-radius: 10px !important;
+        display: inline-block !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+        border: 1px solid #1e293b !important;
     }
     
-    caption, [data-testid="stCaptionContainer"] {
-        color: #1e293b !important;
-        background: rgba(255, 255, 255, 0.88);
-        padding: 4px 10px;
-        border-radius: 6px;
-        display: inline-block;
-        font-weight: 600;
-        margin-top: 4px;
+    /* Sottotitolo (Sezione) in Box Nero */
+    caption, [data-testid="stCaptionContainer"] p, [data-testid="stCaptionContainer"] span {
+        color: #00adb5 !important;
+        background: #0f172a !important;
+        padding: 6px 14px !important;
+        border-radius: 8px !important;
+        display: inline-block !important;
+        font-weight: 600 !important;
+        margin-top: 6px !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.25) !important;
+        border: 1px solid #1e293b !important;
     }
 
-    /* Box di Benvenuto opaco ad altissima leggibilità */
+    /* Box di Benvenuto Info Nero ad Alta Leggibilità */
     div[data-testid="stNotification"] {
-        background-color: #ffffff !important;
+        background-color: #0b192c !important;
         border: 2px solid #00adb5 !important;
         border-radius: 12px !important;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
-        padding: 16px !important;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+        padding: 18px !important;
     }
     
-    div[data-testid="stNotification"] p, div[data-testid="stNotification"] span {
-        color: #0f172a !important;
+    div[data-testid="stNotification"] p, 
+    div[data-testid="stNotification"] span, 
+    div[data-testid="stNotification"] div {
+        color: #f8fafc !important;
         font-size: 1.05rem !important;
-        line-height: 1.5 !important;
+        line-height: 1.6 !important;
     }
 
-    /* Riquadri Messaggi Chat bianchi e nitidi */
+    /* Riquadri Messaggi Chat Neri e Nitidi */
     div[data-testid="stChatMessage"] {
-        background-color: #ffffff !important;
+        background-color: #0b192c !important;
         border-radius: 12px !important;
         padding: 16px !important;
         margin-bottom: 12px !important;
-        border: 1px solid #cbd5e1 !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+        border: 1px solid #1e293b !important;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35) !important;
     }
 
-    div[data-testid="stChatMessage"] p, div[data-testid="stChatMessage"] span {
-        color: #0f172a !important;
-        font-weight: 450 !important;
+    div[data-testid="stChatMessage"] p, 
+    div[data-testid="stChatMessage"] span, 
+    div[data-testid="stChatMessage"] div {
+        color: #f8fafc !important;
+        font-size: 1rem !important;
     }
 
-    /* Campo di Input in basso */
+    /* Campo di Input del Testo in Basso Nero */
     div[data-testid="stChatInput"] {
-        background-color: #ffffff !important;
+        background-color: #0b192c !important;
         border-radius: 12px !important;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+        border: 1px solid #00adb5 !important;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    div[data-testid="stChatInput"] textarea {
+        color: #ffffff !important;
     }
     </style>
     """,
