@@ -1,5 +1,6 @@
 import os
 import re
+import base64
 import asyncio
 from io import BytesIO
 import streamlit as st
@@ -18,14 +19,17 @@ st.set_page_config(
 )
 
 # ------------------------------------------------------------------------------
-# Funzione Helper: Converte Immagine Locale in Base64 per CSS
+# Funzione Helper: Converte Immagine Locale in Base64 per CSS (SICURA)
 # ------------------------------------------------------------------------------
 def get_image_base64(path_immagine: str) -> str:
-    """Legge un file immagine e lo converte in una stringa base64."""
-    if os.path.exists(path_immagine):
-        with open(path_immagine, "rb") as image_file:
-            encoded_string = base64.b64encode(image_file.read()).decode()
-        return f"data:image/jpeg;base64,{encoded_string}"
+    """Legge un file immagine e lo converte in base64 senza far andare in crash l'app."""
+    try:
+        if os.path.exists(path_immagine):
+            with open(path_immagine, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+            return f"data:image/jpeg;base64,{encoded_string}"
+    except Exception:
+        pass
     return ""
 
 # ------------------------------------------------------------------------------
@@ -53,7 +57,7 @@ else:
         """
         <style>
         .stApp {
-            background-color: #f4f6f8;
+            background-color: #0b192c;
         }
         </style>
         """,
