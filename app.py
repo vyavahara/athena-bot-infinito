@@ -47,7 +47,7 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
 
     try:
         response = client.models.generate_content(
-            model="gemini-1.5-flash-latest",
+            model="gemini-1.5-flash-002",
             contents=contents_history,
             config=types.GenerateContentConfig(
                 system_instruction=prompt_colonna,
