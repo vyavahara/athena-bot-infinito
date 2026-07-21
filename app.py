@@ -88,28 +88,6 @@ st.markdown(
         border: 1px solid #1e293b !important;
     }
 
-    /* Sovrascrittura totale per st.info / st.warning / st.error per sfondo nero opaco */
-    div[data-testid="stNotification"], 
-    div[data-testid="stAlert"], 
-    .stAlert, 
-    div[class*="stAlert"] {
-        background-color: #0b192c !important;
-        border: 2px solid #00adb5 !important;
-        border-radius: 12px !important;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
-        padding: 18px !important;
-        opacity: 1 !important;
-    }
-
-    div[data-testid="stNotification"] p, 
-    div[data-testid="stNotification"] span, 
-    div[data-testid="stAlert"] p, 
-    div[data-testid="stAlert"] span {
-        color: #f8fafc !important;
-        font-size: 1.05rem !important;
-        line-height: 1.6 !important;
-    }
-
     /* Riquadri Messaggi Chat Neri Opachi Solidi */
     div[data-testid="stChatMessage"] {
         background-color: #0b192c !important;
@@ -198,22 +176,26 @@ sezioni_titoli = {
 sezione_attuale = sezioni_titoli.get(colonna, sezioni_titoli["1"])
 
 # ------------------------------------------------------------------------------
-# 4. Intestazione: Avatar, Titolo e Messaggio di Benvenuto
+# 4. Intestazione: Avatar Dinamico (GIF/JPG), Titolo e Benvenuto
 # ------------------------------------------------------------------------------
 NOME_FILE_AVATAR = "AV_Athena.jpg"
+NOME_FILE_GIF = "AV_Athena_parla.gif"
+
+if "is_speaking" not in st.session_state:
+    st.session_state.is_speaking = False
 
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
-    if os.path.exists(NOME_FILE_AVATAR):
-        image = Image.open(NOME_FILE_AVATAR)
-        st.image(image, use_container_width=True)
+    if st.session_state.is_speaking and os.path.exists(NOME_FILE_GIF):
+        st.image(NOME_FILE_GIF, use_container_width=True)
+    elif os.path.exists(NOME_FILE_AVATAR):
+        st.image(NOME_FILE_AVATAR, use_container_width=True)
     else:
         st.warning(f"⚠️ Immagine '{NOME_FILE_AVATAR}' non trovata nel repository GitHub.")
 
 st.title("🏛️ Athena")
 st.caption(f"📍 **{sezione_attuale}**")
 
-# Card di Benvenuto in HTML/CSS ad alta leggibilità e 100% Nero Opaco
 st.markdown(
     """
     <div class="custom-welcome-box">
@@ -250,7 +232,7 @@ else:
     prompt_colonna = prompt_base + " Ti trovi nella Sezione 4: Arte (Escher) e Creatività Digitale."
 
 # ------------------------------------------------------------------------------
-# 7. Gestione Cronologia Chat con Generazione Vocale On-Demand
+# 7. Gestione Cronologia Chat con Animazione del Volto
 # ------------------------------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -261,16 +243,19 @@ for idx, msg in enumerate(st.session_state.messages):
         st.markdown(msg["content"])
         if msg["role"] == "assistant":
             if "audio" in msg:
-                st.audio(msg["audio"], format="audio/mp3")
+                st.audio(msg["audio"], format="audio/mp3", autoplay=st.session_state.is_speaking)
+                st.session_state.is_speaking = False
             else:
                 if st.button("🔊 Ascolta la risposta", key=f"btn_{idx}"):
-                    with st.spinner("🔊 Generazione voce in corso..."):
+                    with st.spinner("🔊 Athena si sta preparando a parlare..."):
                         audio_b = asyncio.run(genera_audio_femminile(msg["content"]))
                         msg["audio"] = audio_b
+                        st.session_state.is_speaking = True
                         st.rerun()
 
 # Prompt Input Utente
 if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
+    st.session_state.is_speaking = False
     st.chat_message("user").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
