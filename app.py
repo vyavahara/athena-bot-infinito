@@ -1,8 +1,9 @@
 import os
+import asyncio
 from io import BytesIO
 import streamlit as st
 from PIL import Image
-from gtts import gTTS
+import edge_tts
 from google import genai
 from google.genai import types
 
@@ -52,6 +53,20 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+# ------------------------------------------------------------------------------
+# Funzione Asincrona per la Sintesi Vocale Femminile (Edge TTS)
+# ------------------------------------------------------------------------------
+async def genera_audio_femminile(testo: str) -> bytes:
+    # Voice neurale femminile italiana: it-IT-ElsaNeural (o it-IT-IsabellaNeural)
+    VOICE = "it-IT-ElsaNeural"
+    communicate = edge_tts.Communicate(testo, VOICE)
+    fp = BytesIO()
+    async for chunk in communicate.stream():
+        if chunk["type"] == "audio":
+            fp.write(chunk["data"])
+    fp.seek(0)
+    return fp.read()
 
 # ------------------------------------------------------------------------------
 # 3. Lettura Parametro Colonna da Padlet (?colonna=1, ?colonna=2, etc.)
@@ -116,7 +131,7 @@ else:
     prompt_colonna = prompt_base + " Ti trovi nella Sezione 4: Arte (Escher) e Creatività Digitale."
 
 # ------------------------------------------------------------------------------
-# 7. Gestione Cronologia Chat e Interazione Vocale
+# 7. Gestione Cronologia Chat e Interazione Vocale Femminile
 # ------------------------------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -158,12 +173,8 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
             
             testo_risposta = response.text
 
-            # Generazione sintesi vocale
-            tts = gTTS(text=testo_risposta, lang="it")
-            fp = BytesIO()
-            tts.write_to_fp(fp)
-            fp.seek(0)
-            audio_bytes = fp.read()
+            # Generazione sintesi vocale neurale femminile
+            audio_bytes = asyncio.run(genera_audio_femminile(testo_risposta))
 
             # Render della risposta e del player audio
             with st.chat_message("assistant"):
