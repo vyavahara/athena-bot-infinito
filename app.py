@@ -240,7 +240,7 @@ else:
     prompt_colonna = prompt_base + " Ti trovi nella Sezione 4: Arte (Escher) e Creatività Digitale."
 
 # ------------------------------------------------------------------------------
-# 7. Gestione Cronologia Chat con Pronuncia Automatica Risposta
+# 7. Gestione Cronologia Chat e Riproduzione Audio
 # ------------------------------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -250,7 +250,13 @@ for idx, msg in enumerate(st.session_state.messages):
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
         if msg["role"] == "assistant" and "audio" in msg:
-            st.audio(msg["audio"], format="audio/mp3", autoplay=st.session_state.is_speaking)
+            # L'autoplay si attiva solo una volta all'arrivo dell'ultimo messaggio generato
+            should_autoplay = st.session_state.is_speaking and (idx == len(st.session_state.messages) - 1)
+            st.audio(msg["audio"], format="audio/mp3", autoplay=should_autoplay)
+
+# Resetta lo stato parlante dopo il rendering della risposta
+if st.session_state.is_speaking:
+    st.session_state.is_speaking = False
 
 # Input Utente
 if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
@@ -269,7 +275,7 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
 
     with st.spinner("⏳ Athena sta riflettendo e preparando la risposta..."):
         try:
-            # Generazione del testo con Gemini
+            # Generazione del testo con Gemini 3.5 Flash
             response = client.models.generate_content(
                 model="gemini-3.5-flash",
                 contents=contents_history,
@@ -281,17 +287,17 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
             
             testo_risposta = response.text
 
-            # Generazione immediata dell'audio vocale
+            # Generazione dell'audio vocale MP3
             audio_bytes = asyncio.run(genera_audio_femminile(testo_risposta))
 
-            # Salvataggio del messaggio con il file audio generato
+            # Salvataggio risposta
             st.session_state.messages.append({
                 "role": "assistant",
                 "content": testo_risposta,
                 "audio": audio_bytes
             })
             
-            # Attiva la GIF animata e l'autoplay dell'audio
+            # Attiva la GIF animata e forza il refresh di Streamlit
             st.session_state.is_speaking = True
             st.rerun()
 
