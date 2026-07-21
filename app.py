@@ -228,10 +228,27 @@ st.markdown(
 st.divider()
 
 # ------------------------------------------------------------------------------
-# 5. Inizializzazione Client Google GenAI
+# 5. Gestione Multi-Key (Pool di API Key) per evitare blocchi
 # ------------------------------------------------------------------------------
-api_key = st.secrets["GEMINI_API_KEY"]
-client = genai.Client(api_key=api_key)
+if "api_key_index" not in st.session_state:
+    st.session_state.api_key_index = 0
+
+# Raccoglie le chiavi configurate nei Secrets (supporta sia GEMINI_API_KEY_1/2 che la singola GEMINI_API_KEY)
+lista_chiavi = []
+for k_name in ["GEMINI_API_KEY_1", "GEMINI_API_KEY_2", "GEMINI_API_KEY"]:
+    if k_name in st.secrets and st.secrets[k_name]:
+        lista_chiavi.append(st.secrets[k_name])
+
+# Rimuove eventuali duplicati preservando l'ordine
+lista_chiavi = list(dict.fromkeys(lista_chiavi))
+
+if not lista_chiavi:
+    st.error("⚠️ Nessuna API Key di Gemini trovata nei Secrets di Streamlit!")
+    st.stop()
+
+# Seleziona la chiave attiva corrente
+chiave_attiva = lista_chiavi[st.session_state.api_key_index % len(lista_chiavi)]
+client = genai.Client(api_key=chiave_attiva)
 
 # ------------------------------------------------------------------------------
 # 6. System Instruction Maieutica (Metodo Socratico)
@@ -251,7 +268,7 @@ else:
     prompt_colonna = prompt_base + " Ti trovi nella Sezione 4: Arte (Escher) e Creatività Digitale."
 
 # ------------------------------------------------------------------------------
-# 7. Gestione Cronologia Chat con Generazione Vocale On-Demand
+# 7. Gestione Cronologia Chat con Rotazione Automatica in caso di Quota Esaurita
 # ------------------------------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -286,19 +303,35 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
         )
 
     with st.spinner("⏳ Athena sta riflettendo..."):
-        try:
-            # Modello ripristinato su gemini-3.5-flash
-            response = client.models.generate_content(
-                model="gemini-3.5-flash",
-                contents=contents_history,
-                config=types.GenerateContentConfig(
-                    system_instruction=prompt_colonna,
-                    temperature=0.7,
+        testo_risposta = None
+        
+        # Tenta la generazione ruotando le chiavi disponibili se riceve un errore di quota (429)
+        for tentativo in range(len(lista_chiavi)):
+            try:
+                response = client.models.generate_content(
+                    model="gemini-3.5-flash",
+                    contents=contents_history,
+                    config=types.GenerateContentConfig(
+                        system_instruction=prompt_colonna,
+                        temperature=0.7,
+                    )
                 )
-            )
-            
-            testo_risposta = response.text
+                testo_risposta = response.text
+                break  # Successo: esce dal ciclo dei tentativi
+                
+            except Exception as e:
+                errore_str = str(e)
+                if "429" in errore_str or "RESOURCE_EXHAUSTED" in errore_str:
+                    # Passa alla chiave successiva
+                    st.session_state.api_key_index += 1
+                    chiave_attiva = lista_chiavi[st.session_state.api_key_index % len(lista_chiavi)]
+                    client = genai.Client(api_key=chiave_attiva)
+                    continue
+                else:
+                    st.error(f"Errore nella risposta: {e}")
+                    break
 
+        if testo_risposta:
             with st.chat_message("assistant"):
                 st.markdown(testo_risposta)
 
@@ -307,6 +340,3 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
                 "content": testo_risposta
             })
             st.rerun()
-
-        except Exception as e:
-            st.error(f"Errore nella risposta: {e}")
