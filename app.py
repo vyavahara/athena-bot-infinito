@@ -68,7 +68,7 @@ sezione_attuale = sezioni_titoli.get(colonna, sezioni_titoli["1"])
 # ------------------------------------------------------------------------------
 # 4. Intestazione: Avatar, Titolo e Messaggio di Benvenuto
 # ------------------------------------------------------------------------------
-NOME_FILE_AVATAR = "AV_Athena.png"
+NOME_FILE_AVATAR = "AV_Athena.jpg"
 
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
