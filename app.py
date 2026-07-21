@@ -148,7 +148,7 @@ st.markdown(
 )
 
 # ------------------------------------------------------------------------------
-# Funzioni per la Sintesi Vocale e Pulizia del Testo Markdown
+# Funzioni per la Sintesi Vocale e Pulizia del Testo
 # ------------------------------------------------------------------------------
 def pulisci_testo_per_audio(testo: str) -> str:
     """Rimuove asterischi, cancelletti e formattazioni Markdown per l'ascolto."""
@@ -240,30 +240,20 @@ else:
     prompt_colonna = prompt_base + " Ti trovi nella Sezione 4: Arte (Escher) e Creatività Digitale."
 
 # ------------------------------------------------------------------------------
-# 7. Gestione Cronologia Chat con Animazione del Volto
+# 7. Gestione Cronologia Chat con Pronuncia Automatica Risposta
 # ------------------------------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Ripristino messaggi
+# Mostra lo storico dei messaggi
 for idx, msg in enumerate(st.session_state.messages):
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
-        if msg["role"] == "assistant":
-            if "audio" in msg:
-                st.audio(msg["audio"], format="audio/mp3", autoplay=st.session_state.is_speaking)
-                st.session_state.is_speaking = False
-            else:
-                if st.button("🔊 Ascolta la risposta", key=f"btn_{idx}"):
-                    with st.spinner("🔊 Athena si sta preparando a parlare..."):
-                        audio_b = asyncio.run(genera_audio_femminile(msg["content"]))
-                        msg["audio"] = audio_b
-                        st.session_state.is_speaking = True
-                        st.rerun()
+        if msg["role"] == "assistant" and "audio" in msg:
+            st.audio(msg["audio"], format="audio/mp3", autoplay=st.session_state.is_speaking)
 
-# Prompt Input Utente
+# Input Utente
 if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
-    st.session_state.is_speaking = False
     st.chat_message("user").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
@@ -277,8 +267,9 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
             )
         )
 
-    with st.spinner("⏳ Athena sta riflettendo..."):
+    with st.spinner("⏳ Athena sta riflettendo e preparando la risposta..."):
         try:
+            # Generazione del testo con Gemini
             response = client.models.generate_content(
                 model="gemini-3.5-flash",
                 contents=contents_history,
@@ -290,13 +281,18 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
             
             testo_risposta = response.text
 
-            with st.chat_message("assistant"):
-                st.markdown(testo_risposta)
+            # Generazione immediata dell'audio vocale
+            audio_bytes = asyncio.run(genera_audio_femminile(testo_risposta))
 
+            # Salvataggio del messaggio con il file audio generato
             st.session_state.messages.append({
                 "role": "assistant",
-                "content": testo_risposta
+                "content": testo_risposta,
+                "audio": audio_bytes
             })
+            
+            # Attiva la GIF animata e l'autoplay dell'audio
+            st.session_state.is_speaking = True
             st.rerun()
 
         except Exception as e:
