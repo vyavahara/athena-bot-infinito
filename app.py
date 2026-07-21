@@ -134,6 +134,14 @@ st.markdown(
         line-height: 1.6 !important;
         margin-bottom: 8px !important;
     }
+
+    /* Stile leggibile per eventuali messaggi di Errore */
+    div[data-testid="stNotification"] {
+        background-color: #0b192c !important;
+        color: #ff6b6b !important;
+        border: 1px solid #ff6b6b !important;
+        border-radius: 10px !important;
+    }
     </style>
     """,
     unsafe_allow_html=True
