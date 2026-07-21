@@ -2,34 +2,39 @@ import streamlit as st
 from google import genai
 from google.genai import types
 
-# 1. Recupera la chiave dai Secrets
-api_key = st.secrets["GEMINI_API_KEY"]
+# 1. Lettura Parametro Colonna da Padlet (?colonna=1, ?colonna=2, etc.)
+query_params = st.query_params
+colonna = query_params.get("colonna", "1")
 
-# 2. Crea il client in modo pulito
+# 2. Inizializzazione Client
+api_key = st.secrets["GEMINI_API_KEY"]
 client = genai.Client(api_key=api_key)
 
-# 3. Definizione Istruzioni di Sistema (Athena Maieutica)
-system_instruction_corrente = """
-Sei Athena, un'assistente didattica socratica per il laboratorio sull'infinito.
-Non dare mai risposte dirette. Rispondi ponendo domande guidate che facciano riflettere lo studente.
-"""
+# 3. Prompt Maieutico di Athena adattato alla colonna
+prompt_base = "Sei Athena, un'assistente didattica socratica per un laboratorio sull'infinito. Rispondi ponendo domande guidate, senza mai dare soluzioni dirette."
 
-# 4. Inizializza lo storico dei messaggi in session_state se non esiste
+if colonna == "1":
+    prompt_colonna = prompt_base + " Ti trovi nella Sezione 1: Filosofia e Paradossi (Zenone, Hilbert)."
+elif colonna == "2":
+    prompt_colonna = prompt_base + " Ti trovi nella Sezione 2: Il Rigore del Limite e del Continuo."
+elif colonna == "3":
+    prompt_colonna = prompt_base + " Ti trovi nella Sezione 3: Le Serie Matematiche e i Frattali."
+else:
+    prompt_colonna = prompt_base + " Ti trovi nella Sezione 4: Arte (Escher) e Creatività Digitale."
+
+# 4. Gestione Cronologia Chat
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 5. Visualizza i messaggi precedenti nella chat
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# 6. Input dell'utente
-if prompt := st.chat_input("Fai una domanda ad Athena..."):
-    # Mostra il messaggio utente
+if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
     st.chat_message("user").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # Prepara la cronologia per il nuovo client
+    # Ricostruzione cronologia messaggi
     contents_history = []
     for m in st.session_state.messages:
         role = "user" if m["role"] == "user" else "model"
@@ -40,21 +45,19 @@ if prompt := st.chat_input("Fai una domanda ad Athena..."):
             )
         )
 
-    # Invia la richiesta con il modello gemini-2.5-flash o gemini-1.5-flash
     try:
         response = client.models.generate_content(
-            model="gemini-1.5-flash",  # Oppure "gemini-1.5-flash"
+            model="gemini-2.0-flash",
             contents=contents_history,
             config=types.GenerateContentConfig(
-                system_instruction=system_instruction_corrente,
+                system_instruction=prompt_colonna,
                 temperature=0.7,
             )
         )
         
-        # Mostra e salva la risposta
         with st.chat_message("assistant"):
             st.markdown(response.text)
         st.session_state.messages.append({"role": "assistant", "content": response.text})
 
     except Exception as e:
-        st.error(f"Errore nella generazione della risposta: {e}")
+        st.error(f"Errore nella risposta: {e}")
