@@ -1,7 +1,5 @@
 import os
 import re
-import time
-import base64
 import asyncio
 from io import BytesIO
 import streamlit as st
@@ -185,19 +183,13 @@ sezioni_titoli = {
 sezione_attuale = sezioni_titoli.get(colonna, sezioni_titoli["1"])
 
 # ------------------------------------------------------------------------------
-# 4. Intestazione: Avatar Dinamico (GIF/JPG), Titolo e Benvenuto
+# 4. Intestazione: Avatar Statico, Titolo e Benvenuto
 # ------------------------------------------------------------------------------
 NOME_FILE_AVATAR = "AV_Athena.jpg"
-NOME_FILE_GIF = "AV_Athena_parla.gif"
-
-if "is_speaking" not in st.session_state:
-    st.session_state.is_speaking = False
 
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
-    if st.session_state.is_speaking and os.path.exists(NOME_FILE_GIF):
-        st.image(NOME_FILE_GIF, use_container_width=True)
-    elif os.path.exists(NOME_FILE_AVATAR):
+    if os.path.exists(NOME_FILE_AVATAR):
         st.image(NOME_FILE_AVATAR, use_container_width=True)
     else:
         st.warning(f"⚠️ Immagine '{NOME_FILE_AVATAR}' non trovata nel repository GitHub.")
@@ -241,7 +233,7 @@ else:
     prompt_colonna = prompt_base + " Ti trovi nella Sezione 4: Arte (Escher) e Creatività Digitale."
 
 # ------------------------------------------------------------------------------
-# 7. Gestione Cronologia Chat e Riproduzione Audio
+# 7. Gestione Cronologia Chat con Audio Attivabile dall'Utente
 # ------------------------------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -250,13 +242,17 @@ if "messages" not in st.session_state:
 for idx, msg in enumerate(st.session_state.messages):
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
-        if msg["role"] == "assistant" and "audio" in msg:
-            should_autoplay = st.session_state.is_speaking and (idx == len(st.session_state.messages) - 1)
-            st.audio(msg["audio"], format="audio/mp3", autoplay=should_autoplay)
-
-# Resetta lo stato parlante dopo il rendering della risposta
-if st.session_state.is_speaking:
-    st.session_state.is_speaking = False
+        
+        # Per le risposte di Athena: se l'audio è generato lo mostra, altrimenti mostra il pulsante
+        if msg["role"] == "assistant":
+            if "audio" in msg:
+                st.audio(msg["audio"], format="audio/mp3", autoplay=True)
+            else:
+                if st.button("🔊 Ascolta la risposta", key=f"btn_{idx}"):
+                    with st.spinner("🔊 Athena si sta preparando a parlare..."):
+                        audio_b = asyncio.run(genera_audio_femminile(msg["content"]))
+                        msg["audio"] = audio_b
+                        st.rerun()
 
 # Input Utente
 if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
@@ -273,42 +269,26 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
             )
         )
 
-    with st.spinner("⏳ Athena sta riflettendo e preparando la risposta..."):
-        testo_risposta = None
-        
-        # Tenta prima con gemini-3.5-flash; se la quota giornaliera è piena (429), passa a gemini-2.5-flash
-        modelli_in_ordine = ["gemini-3.5-flash", "gemini-2.5-flash"]
-        
-        for mod in modelli_in_ordine:
-            try:
-                response = client.models.generate_content(
-                    model=mod,
-                    contents=contents_history,
-                    config=types.GenerateContentConfig(
-                        system_instruction=prompt_colonna,
-                        temperature=0.7,
-                    )
+    with st.spinner("⏳ Athena sta riflettendo..."):
+        try:
+            # Generazione della risposta testuale tramite il modello selezionato
+            response = client.models.generate_content(
+                model="gemini-3.5-flash",
+                contents=contents_history,
+                config=types.GenerateContentConfig(
+                    system_instruction=prompt_colonna,
+                    temperature=0.7,
                 )
-                testo_risposta = response.text
-                break
-            except Exception as e:
-                if "429" in str(e) or "503" in str(e):
-                    continue  # passa al modello successivo se il limite è raggiunto
-                else:
-                    st.error(f"Errore nella risposta: {e}")
-                    break
+            )
+            
+            testo_risposta = response.text
 
-        if testo_risposta:
-            # Generazione dell'audio vocale MP3
-            audio_bytes = asyncio.run(genera_audio_femminile(testo_risposta))
-
-            # Salvataggio risposta
+            # Salva la risposta del modello
             st.session_state.messages.append({
                 "role": "assistant",
-                "content": testo_risposta,
-                "audio": audio_bytes
+                "content": testo_risposta
             })
-            
-            # Attiva la GIF animata e forza il refresh di Streamlit
-            st.session_state.is_speaking = True
             st.rerun()
+
+        except Exception as e:
+            st.error(f"Errore nella risposta: {e}")
