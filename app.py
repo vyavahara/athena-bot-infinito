@@ -1,5 +1,6 @@
 import os
 import re
+import base64
 import asyncio
 from io import BytesIO
 import streamlit as st
@@ -18,17 +19,30 @@ st.set_page_config(
 )
 
 # ------------------------------------------------------------------------------
-# 2. Stile Visivo: Sfondo Personalizzato (Athena_sfondo.jpg) con Overlay
+# Funzione Helper: Converte Immagine Locale in Base64 per CSS
+# ------------------------------------------------------------------------------
+def get_image_base64(path_immagine: str) -> str:
+    """Legge un file immagine e lo converte in una stringa base64."""
+    if os.path.exists(path_immagine):
+        with open(path_immagine, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode()
+        return f"data:image/jpeg;base64,{encoded_string}"
+    return ""
+
+# ------------------------------------------------------------------------------
+# 2. Stile Visivo: Sfondo Personalizzato in Base64 ed Elementi UI
 # ------------------------------------------------------------------------------
 NOME_FILE_SFONDO = "Athena_sfondo.jpg"
+bg_base64 = get_image_base64(NOME_FILE_SFONDO)
 
-if os.path.exists(NOME_FILE_SFONDO):
+if bg_base64:
+    # Sfondo personalizzato con immagine e overlay blu al 75% per la massima leggibilità
     st.markdown(
         f"""
         <style>
         .stApp {{
-            background: linear-gradient(rgba(11, 25, 44, 0.82), rgba(11, 25, 44, 0.82)), 
-                        url("{NOME_FILE_SFONDO}");
+            background: linear-gradient(rgba(11, 25, 44, 0.75), rgba(11, 25, 44, 0.75)), 
+                        url("{bg_base64}");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -39,7 +53,7 @@ if os.path.exists(NOME_FILE_SFONDO):
         unsafe_allow_html=True
     )
 else:
-    # Sfondo fallback se l'immagine non è ancora stata caricata su GitHub
+    # Sfondo fallback blu scuro se l'immagine non è presente nel repo
     st.markdown(
         """
         <style>
@@ -94,6 +108,7 @@ def pulisci_testo_per_audio(testo: str) -> str:
     return testo_pulito.strip()
 
 async def genera_audio_femminile(testo: str) -> bytes:
+    """Genera file audio MP3 con voce neurale femminile italiana (Elsa)."""
     VOICE = "it-IT-ElsaNeural"
     testo_vocale = pulisci_testo_per_audio(testo)
     communicate = edge_tts.Communicate(testo_vocale, VOICE)
@@ -172,7 +187,7 @@ else:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Ripristino messaggi
+# Ripristino messaggi con opzione vocale
 for idx, msg in enumerate(st.session_state.messages):
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
