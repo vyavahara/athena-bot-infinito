@@ -276,11 +276,13 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
     with st.spinner("⏳ Athena sta riflettendo e preparando la risposta..."):
         testo_risposta = None
         
-        # Meccanismo di riprova automatica fino a 3 tentativi se il server Google è saturo (503)
-        for tentativo in range(3):
+        # Tenta prima con gemini-3.5-flash; se la quota giornaliera è piena (429), passa a gemini-2.5-flash
+        modelli_in_ordine = ["gemini-3.5-flash", "gemini-2.5-flash"]
+        
+        for mod in modelli_in_ordine:
             try:
                 response = client.models.generate_content(
-                    model="gemini-3.5-flash",
+                    model=mod,
                     contents=contents_history,
                     config=types.GenerateContentConfig(
                         system_instruction=prompt_colonna,
@@ -290,8 +292,8 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
                 testo_risposta = response.text
                 break
             except Exception as e:
-                if "503" in str(e) and tentativo < 2:
-                    time.sleep(2)
+                if "429" in str(e) or "503" in str(e):
+                    continue  # passa al modello successivo se il limite è raggiunto
                 else:
                     st.error(f"Errore nella risposta: {e}")
                     break
