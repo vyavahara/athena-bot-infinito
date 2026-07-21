@@ -1,6 +1,8 @@
 import os
+from io import BytesIO
 import streamlit as st
 from PIL import Image
+from gtts import gTTS
 from google import genai
 from google.genai import types
 
@@ -114,7 +116,7 @@ else:
     prompt_colonna = prompt_base + " Ti trovi nella Sezione 4: Arte (Escher) e Creatività Digitale."
 
 # ------------------------------------------------------------------------------
-# 7. Gestione Cronologia Chat e Interazione
+# 7. Gestione Cronologia Chat e Interazione Vocale
 # ------------------------------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -123,10 +125,11 @@ if "messages" not in st.session_state:
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
+        if "audio" in msg:
+            st.audio(msg["audio"], format="audio/mp3")
 
 # Prompt Input Utente
 if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
-    # Mostra e salva il messaggio utente
     st.chat_message("user").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
@@ -141,7 +144,7 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
             )
         )
 
-    # Messaggio di attesa dinamico durante l'elaborazione dell'API
+    # Messaggio di attesa dinamico
     with st.spinner("⏳ Athena sta riflettendo... Attendi la mia risposta."):
         try:
             response = client.models.generate_content(
@@ -153,9 +156,26 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
                 )
             )
             
+            testo_risposta = response.text
+
+            # Generazione sintesi vocale
+            tts = gTTS(text=testo_risposta, lang="it")
+            fp = BytesIO()
+            tts.write_to_fp(fp)
+            fp.seek(0)
+            audio_bytes = fp.read()
+
+            # Render della risposta e del player audio
             with st.chat_message("assistant"):
-                st.markdown(response.text)
-            st.session_state.messages.append({"role": "assistant", "content": response.text})
+                st.markdown(testo_risposta)
+                st.audio(audio_bytes, format="audio/mp3")
+
+            # Salvataggio in sessione
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": testo_risposta,
+                "audio": audio_bytes
+            })
 
         except Exception as e:
             st.error(f"Errore nella risposta: {e}")
