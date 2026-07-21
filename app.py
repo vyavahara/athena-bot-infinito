@@ -216,7 +216,6 @@ with col2:
 st.title("🏛️ Athena")
 st.caption(f"📍 **{sezione_attuale}**")
 
-# Card di Benvenuto in HTML/CSS ad alta leggibilità e 100% Nero Opaco
 st.markdown(
     """
     <div class="custom-welcome-box">
@@ -289,8 +288,9 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
 
     with st.spinner("⏳ Athena sta riflettendo..."):
         try:
+            # Uso di gemini-2.0-flash per la quota da 1.500 richieste al giorno
             response = client.models.generate_content(
-                model="gemini-3.5-flash",
+                model="gemini-2.0-flash",
                 contents=contents_history,
                 config=types.GenerateContentConfig(
                     system_instruction=prompt_colonna,
