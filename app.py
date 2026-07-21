@@ -87,7 +87,7 @@ URL_AVATAR = "https://raw.githubusercontent.com/athena-bot-infinito/main/AV_Athe
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     # Mostriamo l'immagine dell'Avatar Athena
-    st.image("AV_Athena.png", use_container_width=True)
+    st.image("AV_Athena.jpg", use_container_width=True)
 
 st.title("🏛️ Athena")
 st.caption(f"📍 **{sezione_attuale}**")
