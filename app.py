@@ -1,14 +1,13 @@
 import streamlit as st
-from google import genai
-from google.genai import types
+import google.generativeai as genai
 
 # 1. Lettura Parametro Colonna da Padlet (?colonna=1, ?colonna=2, etc.)
 query_params = st.query_params
 colonna = query_params.get("colonna", "1")
 
-# 2. Inizializzazione Client
+# 2. Inizializzazione Client con SDK Classica
 api_key = st.secrets["GEMINI_API_KEY"]
-client = genai.Client(api_key=api_key)
+genai.configure(api_key=api_key)
 
 # 3. Prompt Maieutico di Athena adattato alla colonna
 prompt_base = "Sei Athena, un'assistente didattica socratica per un laboratorio sull'infinito. Rispondi ponendo domande guidate, senza mai dare soluzioni dirette."
@@ -22,6 +21,12 @@ elif colonna == "3":
 else:
     prompt_colonna = prompt_base + " Ti trovi nella Sezione 4: Arte (Escher) e Creatività Digitale."
 
+# Inizializzazione del Modello Stabile con System Instruction
+model = genai.GenerativeModel(
+    model_name="gemini-1.5-flash",
+    system_instruction=prompt_colonna
+)
+
 # 4. Gestione Cronologia Chat
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -34,26 +39,16 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
     st.chat_message("user").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # Ricostruzione cronologia messaggi
-    contents_history = []
-    for m in st.session_state.messages:
+    # Ricostruzione cronologia nel formato per google-generativeai
+    history_formatted = []
+    for m in st.session_state.messages[:-1]: # Tutti tranne l'ultimo appena inserito
         role = "user" if m["role"] == "user" else "model"
-        contents_history.append(
-            types.Content(
-                role=role,
-                parts=[types.Part.from_text(text=m["content"])]
-            )
-        )
+        history_formatted.append({"role": role, "parts": [m["content"]]})
 
     try:
-        response = client.models.generate_content(
-            model="gemini-1.5-flash-002",
-            contents=contents_history,
-            config=types.GenerateContentConfig(
-                system_instruction=prompt_colonna,
-                temperature=0.7,
-            )
-        )
+        # Avvio sessione di chat con lo storico
+        chat = model.start_chat(history=history_formatted)
+        response = chat.send_message(prompt)
         
         with st.chat_message("assistant"):
             st.markdown(response.text)
