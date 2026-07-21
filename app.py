@@ -18,23 +18,50 @@ st.set_page_config(
 )
 
 # ------------------------------------------------------------------------------
-# 2. Stile Visivo: Sfondo Blu Elegante e Testi ad Alto Contrasto
+# 2. Stile Visivo: Sfondo Personalizzato (Athena_sfondo.jpg) con Overlay
 # ------------------------------------------------------------------------------
+NOME_FILE_SFONDO = "Athena_sfondo.jpg"
+
+if os.path.exists(NOME_FILE_SFONDO):
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background: linear-gradient(rgba(11, 25, 44, 0.82), rgba(11, 25, 44, 0.82)), 
+                        url("{NOME_FILE_SFONDO}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #ffffff;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+else:
+    # Sfondo fallback se l'immagine non è ancora stata caricata su GitHub
+    st.markdown(
+        """
+        <style>
+        .stApp {
+            background-color: #0b192c;
+            color: #ffffff;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
 st.markdown(
     """
     <style>
-    /* Sfondo principale dell'applicazione */
-    .stApp {
-        background-color: #0b192c;
-        color: #ffffff;
-    }
-
     /* Box di Benvenuto Info */
     div[data-testid="stNotification"] {
-        background-color: #1e3e62;
+        background-color: rgba(30, 62, 98, 0.9);
         color: #ffffff;
         border: 1px solid #00adb5;
         border-radius: 10px;
+        backdrop-filter: blur(5px);
     }
 
     /* Formattazione Testi e Titoli */
@@ -42,13 +69,14 @@ st.markdown(
         color: #f0f6fc !important;
     }
 
-    /* Stile Riquadri Messaggi Chat */
+    /* Stile Riquadri Messaggi Chat Sfumati */
     div[data-testid="stChatMessage"] {
-        background-color: #1a2e40;
+        background-color: rgba(26, 46, 64, 0.9);
         border-radius: 12px;
         padding: 12px;
         margin-bottom: 10px;
         border: 1px solid #2a4560;
+        backdrop-filter: blur(5px);
     }
     </style>
     """,
@@ -56,15 +84,12 @@ st.markdown(
 )
 
 # ------------------------------------------------------------------------------
-# Funzioni per la Sintesi Vocale e Pulizia del Testo Markdown
+# Funzioni per la Sintesi Vocale e Pulizia del Testo
 # ------------------------------------------------------------------------------
 def pulisci_testo_per_audio(testo: str) -> str:
     """Rimuove asterischi, cancelletti e formattazioni Markdown per l'ascolto."""
-    # Rimuove asterischi (es. *corsivo* o **grassetto**)
     testo_pulito = re.sub(r'\*+', '', testo)
-    # Rimuove cancelletti dei titoli
     testo_pulito = re.sub(r'#+', '', testo_pulito)
-    # Rimuove trattini isolati d'elenco
     testo_pulito = re.sub(r'^\s*-\s+', '', testo_pulito, flags=re.MULTILINE)
     return testo_pulito.strip()
 
@@ -142,7 +167,7 @@ else:
     prompt_colonna = prompt_base + " Ti trovi nella Sezione 4: Arte (Escher) e Creatività Digitale."
 
 # ------------------------------------------------------------------------------
-# 7. Gestione Cronologia Chat con Generazione Vocale Pulita
+# 7. Gestione Cronologia Chat con Generazione Vocale On-Demand
 # ------------------------------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -166,7 +191,6 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
     st.chat_message("user").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # Ricostruzione cronologia per l'API
     contents_history = []
     for m in st.session_state.messages:
         role = "user" if m["role"] == "user" else "model"
@@ -177,7 +201,6 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
             )
         )
 
-    # Messaggio di attesa istantaneo per il solo testo
     with st.spinner("⏳ Athena sta riflettendo..."):
         try:
             response = client.models.generate_content(
@@ -191,11 +214,9 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
             
             testo_risposta = response.text
 
-            # Render immediato del testo visivo
             with st.chat_message("assistant"):
                 st.markdown(testo_risposta)
 
-            # Salvataggio in sessione del testo
             st.session_state.messages.append({
                 "role": "assistant",
                 "content": testo_risposta
