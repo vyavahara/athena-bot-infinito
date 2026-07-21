@@ -30,7 +30,7 @@ def get_image_base64(path_immagine: str) -> str:
     return ""
 
 # ------------------------------------------------------------------------------
-# 2. Stile Visivo: Sfondo Chiaro + Box Neri Opachi per Tutti i Testi
+# 2. Stile Visivo: Sfondo Chiaro + Box Neri Opachi Solidi
 # ------------------------------------------------------------------------------
 NOME_FILE_SFONDO = "Athena_sfondo.jpg"
 bg_base64 = get_image_base64(NOME_FILE_SFONDO)
@@ -64,55 +64,61 @@ else:
 st.markdown(
     """
     <style>
-    /* Titolo Principale in Box Nero */
+    /* Titolo Principale in Box Nero Solido */
     h1 {
         color: #ffffff !important;
-        background: #0f172a !important;
+        background-color: #0b192c !important;
         padding: 8px 18px !important;
         border-radius: 10px !important;
         display: inline-block !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
-        border: 1px solid #1e293b !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+        border: 1px solid #00adb5 !important;
     }
     
-    /* Sottotitolo (Sezione) in Box Nero */
+    /* Sottotitolo (Sezione) in Box Nero Solido */
     caption, [data-testid="stCaptionContainer"] p, [data-testid="stCaptionContainer"] span {
         color: #00adb5 !important;
-        background: #0f172a !important;
+        background-color: #0b192c !important;
         padding: 6px 14px !important;
         border-radius: 8px !important;
         display: inline-block !important;
         font-weight: 600 !important;
         margin-top: 6px !important;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.25) !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3) !important;
         border: 1px solid #1e293b !important;
     }
 
-    /* Box di Benvenuto Info Nero ad Alta Leggibilità */
-    div[data-testid="stNotification"] {
+    /* Sovrascrittura totale per st.info / st.warning / st.error per sfondo nero opaco */
+    div[data-testid="stNotification"], 
+    div[data-testid="stAlert"], 
+    .stAlert, 
+    div[class*="stAlert"] {
         background-color: #0b192c !important;
         border: 2px solid #00adb5 !important;
         border-radius: 12px !important;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
         padding: 18px !important;
+        opacity: 1 !important;
     }
-    
+
     div[data-testid="stNotification"] p, 
     div[data-testid="stNotification"] span, 
-    div[data-testid="stNotification"] div {
+    div[data-testid="stAlert"] p, 
+    div[data-testid="stAlert"] span {
         color: #f8fafc !important;
         font-size: 1.05rem !important;
         line-height: 1.6 !important;
     }
 
-    /* Riquadri Messaggi Chat Neri e Nitidi */
+    /* Riquadri Messaggi Chat Neri Opachi Solidi */
     div[data-testid="stChatMessage"] {
         background-color: #0b192c !important;
         border-radius: 12px !important;
         padding: 16px !important;
         margin-bottom: 12px !important;
-        border: 1px solid #1e293b !important;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35) !important;
+        border: 1px solid #00adb5 !important;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45) !important;
+        opacity: 1 !important;
     }
 
     div[data-testid="stChatMessage"] p, 
@@ -122,16 +128,33 @@ st.markdown(
         font-size: 1rem !important;
     }
 
-    /* Campo di Input del Testo in Basso Nero */
+    /* Campo di Input del Testo in Basso Nero Solido */
     div[data-testid="stChatInput"] {
         background-color: #0b192c !important;
         border-radius: 12px !important;
-        border: 1px solid #00adb5 !important;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+        border: 1.5px solid #00adb5 !important;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
     }
 
     div[data-testid="stChatInput"] textarea {
         color: #ffffff !important;
+    }
+
+    /* Box Personalizzato per il Benvenuto */
+    .custom-welcome-box {
+        background-color: #0b192c !important;
+        border: 2px solid #00adb5 !important;
+        border-radius: 12px !important;
+        padding: 18px !important;
+        margin-bottom: 20px !important;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
+        color: #ffffff !important;
+    }
+    .custom-welcome-box p {
+        color: #ffffff !important;
+        font-size: 1.05rem !important;
+        line-height: 1.6 !important;
+        margin-bottom: 8px !important;
     }
     </style>
     """,
@@ -190,11 +213,15 @@ with col2:
 st.title("🏛️ Athena")
 st.caption(f"📍 **{sezione_attuale}**")
 
-st.info(
-    "👋 **Benvenuto/a nel Laboratorio sull'Infinito!**\n\n"
-    "Sono **Athena**, la tua guida didattica. Il mio compito non è fornirti risposte pronte o soluzioni dirette, "
-    "ma aiutarti a ragionare ponendoti le giuste domande socratiche. "
-    "Esploriamo insieme i concetti matematici e filosofici: dimmi, da cosa vuoi partire?"
+# Card di Benvenuto in HTML/CSS ad alta leggibilità e 100% Nero Opaco
+st.markdown(
+    """
+    <div class="custom-welcome-box">
+        <p>👋 <strong>Benvenuto/a nel Laboratorio sull'Infinito!</strong></p>
+        <p>Sono <strong>Athena</strong>, la tua guida didattica. Il mio compito non è fornirti risposte pronte o soluzioni dirette, ma aiutarti a ragionare ponendoti le giuste domande socratiche. Esploriamo insieme i concetti matematici e filosofici: dimmi, da cosa vuoi partire?</p>
+    </div>
+    """,
+    unsafe_allow_html=True
 )
 
 st.divider()
