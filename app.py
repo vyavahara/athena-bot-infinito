@@ -43,7 +43,7 @@ if prompt := st.chat_input("Fai una domanda ad Athena..."):
     # Invia la richiesta con il modello gemini-2.5-flash o gemini-1.5-flash
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",  # Oppure "gemini-1.5-flash"
+            model="gemini-1.5-flash",  # Oppure "gemini-1.5-flash"
             contents=contents_history,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction_corrente,
