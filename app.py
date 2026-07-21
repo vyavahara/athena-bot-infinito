@@ -4,7 +4,6 @@ import base64
 import asyncio
 from io import BytesIO
 import streamlit as st
-from PIL import Image
 import edge_tts
 from google import genai
 from google.genai import types
@@ -19,10 +18,11 @@ st.set_page_config(
 )
 
 # ------------------------------------------------------------------------------
-# Funzione Helper: Converte Immagine Locale in Base64 per CSS (SICURA)
+# Funzione Helper Caching: Converte in Base64 UNA SOLA VOLTA (Aumenta la stabilità)
 # ------------------------------------------------------------------------------
+@st.cache_data
 def get_image_base64(path_immagine: str) -> str:
-    """Legge un file immagine e lo converte in base64 senza far andare in crash l'app."""
+    """Legge un file immagine e lo memorizza nella cache di Streamlit."""
     try:
         if os.path.exists(path_immagine):
             with open(path_immagine, "rb") as image_file:
@@ -91,7 +91,7 @@ st.markdown(
         border: 1px solid #1e293b !important;
     }
 
-    /* Sovrascrittura totale per st.info / st.warning / st.error per sfondo nero opaco */
+    /* Sovrascrittura notifiche st.info / st.warning / st.error */
     div[data-testid="stNotification"], 
     div[data-testid="stAlert"], 
     .stAlert, 
@@ -165,7 +165,7 @@ st.markdown(
 )
 
 # ------------------------------------------------------------------------------
-# Funzioni per la Sintesi Vocale e Pulizia del Testo Markdown
+# Funzioni per la Sintesi Vocale e Pulizia del Testo
 # ------------------------------------------------------------------------------
 def pulisci_testo_per_audio(testo: str) -> str:
     """Rimuove asterischi, cancelletti e formattazioni Markdown per l'ascolto."""
@@ -208,8 +208,7 @@ NOME_FILE_AVATAR = "AV_Athena.jpg"
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     if os.path.exists(NOME_FILE_AVATAR):
-        image = Image.open(NOME_FILE_AVATAR)
-        st.image(image, use_container_width=True)
+        st.image(NOME_FILE_AVATAR, use_container_width=True)
     else:
         st.warning(f"⚠️ Immagine '{NOME_FILE_AVATAR}' non trovata nel repository GitHub.")
 
@@ -288,9 +287,9 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
 
     with st.spinner("⏳ Athena sta riflettendo..."):
         try:
-            # Uso di gemini-2.0-flash per la quota da 1.500 richieste al giorno
+            # Uso di gemini-1.5-flash: Il modello più stabile con 1.500 richieste/giorno gratuite
             response = client.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-1.5-flash",
                 contents=contents_history,
                 config=types.GenerateContentConfig(
                     system_instruction=prompt_colonna,
