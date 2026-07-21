@@ -1,6 +1,5 @@
 import os
 import re
-import base64
 import asyncio
 from io import BytesIO
 import streamlit as st
@@ -19,17 +18,14 @@ st.set_page_config(
 )
 
 # ------------------------------------------------------------------------------
-# Funzione Helper: Converte Immagine Locale in Base64 per CSS (Sicura)
+# Funzione Helper: Converte Immagine Locale in Base64 per CSS
 # ------------------------------------------------------------------------------
 def get_image_base64(path_immagine: str) -> str:
-    """Legge un file immagine e lo converte in una stringa base64 in modo sicuro."""
-    try:
-        if os.path.exists(path_immagine):
-            with open(path_immagine, "rb") as image_file:
-                encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
-            return f"data:image/jpeg;base64,{encoded_string}"
-    except Exception:
-        pass
+    """Legge un file immagine e lo converte in una stringa base64."""
+    if os.path.exists(path_immagine):
+        with open(path_immagine, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode()
+        return f"data:image/jpeg;base64,{encoded_string}"
     return ""
 
 # ------------------------------------------------------------------------------
@@ -57,7 +53,7 @@ else:
         """
         <style>
         .stApp {
-            background-color: #0b192c;
+            background-color: #f4f6f8;
         }
         </style>
         """,
@@ -89,6 +85,28 @@ st.markdown(
         margin-top: 6px !important;
         box-shadow: 0 4px 10px rgba(0,0,0,0.3) !important;
         border: 1px solid #1e293b !important;
+    }
+
+    /* Sovrascrittura totale per st.info / st.warning / st.error per sfondo nero opaco */
+    div[data-testid="stNotification"], 
+    div[data-testid="stAlert"], 
+    .stAlert, 
+    div[class*="stAlert"] {
+        background-color: #0b192c !important;
+        border: 2px solid #00adb5 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
+        padding: 18px !important;
+        opacity: 1 !important;
+    }
+
+    div[data-testid="stNotification"] p, 
+    div[data-testid="stNotification"] span, 
+    div[data-testid="stAlert"] p, 
+    div[data-testid="stAlert"] span {
+        color: #f8fafc !important;
+        font-size: 1.05rem !important;
+        line-height: 1.6 !important;
     }
 
     /* Riquadri Messaggi Chat Neri Opachi Solidi */
@@ -137,21 +155,13 @@ st.markdown(
         line-height: 1.6 !important;
         margin-bottom: 8px !important;
     }
-
-    /* Stile leggibile per eventuali messaggi di Errore */
-    div[data-testid="stNotification"] {
-        background-color: #0b192c !important;
-        color: #ff6b6b !important;
-        border: 1px solid #ff6b6b !important;
-        border-radius: 10px !important;
-    }
     </style>
     """,
     unsafe_allow_html=True
 )
 
 # ------------------------------------------------------------------------------
-# Funzioni per la Sintesi Vocale e Pulizia del Testo
+# Funzioni per la Sintesi Vocale e Pulizia del Testo Markdown
 # ------------------------------------------------------------------------------
 def pulisci_testo_per_audio(testo: str) -> str:
     """Rimuove asterischi, cancelletti e formattazioni Markdown per l'ascolto."""
@@ -187,20 +197,22 @@ sezioni_titoli = {
 sezione_attuale = sezioni_titoli.get(colonna, sezioni_titoli["1"])
 
 # ------------------------------------------------------------------------------
-# 4. Intestazione: Avatar Statico, Titolo e Benvenuto
+# 4. Intestazione: Avatar, Titolo e Messaggio di Benvenuto
 # ------------------------------------------------------------------------------
 NOME_FILE_AVATAR = "AV_Athena.jpg"
 
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     if os.path.exists(NOME_FILE_AVATAR):
-        st.image(NOME_FILE_AVATAR, use_container_width=True)
+        image = Image.open(NOME_FILE_AVATAR)
+        st.image(image, use_container_width=True)
     else:
         st.warning(f"⚠️ Immagine '{NOME_FILE_AVATAR}' non trovata nel repository GitHub.")
 
 st.title("🏛️ Athena")
 st.caption(f"📍 **{sezione_attuale}**")
 
+# Card di Benvenuto in HTML/CSS ad alta leggibilità e 100% Nero Opaco
 st.markdown(
     """
     <div class="custom-welcome-box">
@@ -237,28 +249,26 @@ else:
     prompt_colonna = prompt_base + " Ti trovi nella Sezione 4: Arte (Escher) e Creatività Digitale."
 
 # ------------------------------------------------------------------------------
-# 7. Gestione Cronologia Chat con Audio Attivabile dall'Utente
+# 7. Gestione Cronologia Chat con Generazione Vocale On-Demand
 # ------------------------------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Mostra lo storico dei messaggi
+# Ripristino messaggi
 for idx, msg in enumerate(st.session_state.messages):
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
-        
-        # Per le risposte di Athena: se l'audio è generato lo mostra, altrimenti mostra il pulsante
         if msg["role"] == "assistant":
             if "audio" in msg:
-                st.audio(msg["audio"], format="audio/mp3", autoplay=True)
+                st.audio(msg["audio"], format="audio/mp3")
             else:
                 if st.button("🔊 Ascolta la risposta", key=f"btn_{idx}"):
-                    with st.spinner("🔊 Athena si sta preparando a parlare..."):
+                    with st.spinner("🔊 Generazione voce in corso..."):
                         audio_b = asyncio.run(genera_audio_femminile(msg["content"]))
                         msg["audio"] = audio_b
                         st.rerun()
 
-# Input Utente
+# Prompt Input Utente
 if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
     st.chat_message("user").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -275,7 +285,6 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
 
     with st.spinner("⏳ Athena sta riflettendo..."):
         try:
-            # Generazione della risposta testuale tramite il modello selezionato
             response = client.models.generate_content(
                 model="gemini-3.5-flash",
                 contents=contents_history,
@@ -287,7 +296,9 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
             
             testo_risposta = response.text
 
-            # Salva la risposta del modello
+            with st.chat_message("assistant"):
+                st.markdown(testo_risposta)
+
             st.session_state.messages.append({
                 "role": "assistant",
                 "content": testo_risposta
