@@ -30,36 +30,32 @@ def get_image_base64(path_immagine: str) -> str:
     return ""
 
 # ------------------------------------------------------------------------------
-# 2. Stile Visivo: Sfondo Personalizzato in Base64 ed Elementi UI
+# 2. Stile Visivo: Sfondo Nativo Luminoso e Brillante (Senza Velatura Scura)
 # ------------------------------------------------------------------------------
 NOME_FILE_SFONDO = "Athena_sfondo.jpg"
 bg_base64 = get_image_base64(NOME_FILE_SFONDO)
 
 if bg_base64:
-    # Sfondo personalizzato con immagine e overlay blu al 75% per la massima leggibilità
     st.markdown(
         f"""
         <style>
         .stApp {{
-            background: linear-gradient(rgba(11, 25, 44, 0.75), rgba(11, 25, 44, 0.75)), 
-                        url("{bg_base64}");
+            /* Sfondo 100% originale, caldo e luminoso */
+            background-image: url("{bg_base64}");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            color: #ffffff;
         }}
         </style>
         """,
         unsafe_allow_html=True
     )
 else:
-    # Sfondo fallback blu scuro se l'immagine non è presente nel repo
     st.markdown(
         """
         <style>
         .stApp {
-            background-color: #0b192c;
-            color: #ffffff;
+            background-color: #f4f6f8;
         }
         </style>
         """,
@@ -69,28 +65,42 @@ else:
 st.markdown(
     """
     <style>
-    /* Box di Benvenuto Info */
-    div[data-testid="stNotification"] {
-        background-color: rgba(30, 62, 98, 0.9);
-        color: #ffffff;
-        border: 1px solid #00adb5;
-        border-radius: 10px;
-        backdrop-filter: blur(5px);
-    }
-
-    /* Formattazione Testi e Titoli */
+    /* Titoli e sottotitoli scuri ben visibili sulla parte alta luminosa */
     h1, h2, h3, p, span, div, caption {
-        color: #f0f6fc !important;
+        color: #1a2e40 !important;
+        text-shadow: none !important;
     }
 
-    /* Stile Riquadri Messaggi Chat Sfumati */
-    div[data-testid="stChatMessage"] {
-        background-color: rgba(26, 46, 64, 0.9);
+    /* Box di Benvenuto in stile card chiara ad alto contrasto */
+    div[data-testid="stNotification"] {
+        background-color: rgba(255, 255, 255, 0.92) !important;
+        color: #1a2e40 !important;
+        border: 1px solid #00adb5 !important;
         border-radius: 12px;
-        padding: 12px;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    /* Riquadri dei messaggi della chat bianchi semitrasparenti con effetto vetro */
+    div[data-testid="stChatMessage"] {
+        background-color: rgba(255, 255, 255, 0.92) !important;
+        border-radius: 12px;
+        padding: 14px;
         margin-bottom: 10px;
-        border: 1px solid #2a4560;
-        backdrop-filter: blur(5px);
+        border: 1px solid #d0d7de !important;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+    }
+
+    /* Forza il testo all'interno delle chat ad essere scuro e leggibile */
+    div[data-testid="stChatMessage"] p, div[data-testid="stChatMessage"] span {
+        color: #1a2e40 !important;
+    }
+
+    /* Campo di input del testo in basso */
+    div[data-testid="stChatInput"] {
+        background-color: rgba(255, 255, 255, 0.95) !important;
+        border-radius: 10px;
     }
     </style>
     """,
@@ -98,7 +108,7 @@ st.markdown(
 )
 
 # ------------------------------------------------------------------------------
-# Funzioni per la Sintesi Vocale e Pulizia del Testo
+# Funzioni per la Sintesi Vocale e Pulizia del Testo Markdown
 # ------------------------------------------------------------------------------
 def pulisci_testo_per_audio(testo: str) -> str:
     """Rimuove asterischi, cancelletti e formattazioni Markdown per l'ascolto."""
@@ -187,7 +197,7 @@ else:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Ripristino messaggi con opzione vocale
+# Ripristino messaggi
 for idx, msg in enumerate(st.session_state.messages):
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
