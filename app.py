@@ -320,7 +320,7 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
     with st.spinner("⏳ Athena sta riflettendo..."):
         try:
             response = client.models.generate_content(
-                model="gemini-1.5-flash",
+                model="gemini-3.5-flash",
                 contents=contents_history,
                 config=types.GenerateContentConfig(
                     system_instruction=prompt_colonna,
