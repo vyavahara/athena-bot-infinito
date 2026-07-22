@@ -260,7 +260,7 @@ if colonna == "1":
         "   - Se parlano di spazio/tempo (Senza fine): chiedi se intendono l'azione di viaggiare per sempre (processo potenziale) "
         "o la mappa intera già data (oggetto attuale).\n"
         "   - Se parlano di ripetizioni (Contare/Sommare): chiedi come fa un'azione che non finisce mai a trasformarsi in una quantità o in un risultato finale.\n"
-        "   - Se parlano di traguardi/orizzonti (Non raggiungibile): chiedi se quel confine existe già o prende forma mentre ci avviciniamo.\n"
+        "   - Se parlano di traguardi/orizzonti (Non raggiungibile): chiedi se quel confine esiste già o prende forma mentre ci avviciniamo.\n"
         "4. Concludi la conversazione facendogli notare l'ambiguità e la difficoltà di definire l'infinito solo con l'intuizione spontanea."
     )
 elif colonna == "2":
@@ -284,7 +284,7 @@ else:
     )
 
 # ------------------------------------------------------------------------------
-# 7. Gestione Cronologia Chat e Invocazione API con Retry
+# 7. Gestione Cronologia Chat e Invocazione API con Gestione Sovraccarico
 # ------------------------------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -320,8 +320,9 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
 
     with st.spinner("⏳ Athena sta riflettendo..."):
         testo_risposta = None
-        max_tentativi = 3
+        max_tentativi = 4
         
+        # Ritenta in modo progressivo in caso di sovraccarico del server (503)
         for tentativo in range(max_tentativi):
             try:
                 response = client.models.generate_content(
@@ -333,13 +334,14 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
                     )
                 )
                 testo_risposta = response.text
-                break
-                
+                if testo_risposta:
+                    break
             except Exception as e:
                 errore_str = str(e)
-                if "503" in errore_str or "UNAVAILABLE" in errore_str or "Overloaded" in errore_str:
+                if "503" in errore_str or "UNAVAILABLE" in errore_str or "high demand" in errore_str:
                     if tentativo < max_tentativi - 1:
-                        time.sleep(2)
+                        # Attesa progressiva: 1.5 secondi, 3 secondi, 4.5 secondi
+                        time.sleep(1.5 * (tentativo + 1))
                         continue
                 st.error(f"Errore nella generazione della risposta: {e}")
                 break
