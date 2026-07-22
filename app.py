@@ -284,7 +284,7 @@ else:
     )
 
 # ------------------------------------------------------------------------------
-# 7. Gestione Cronologia Chat e Invocazione API con Retry (Gestione 503)
+# 7. Gestione Cronologia Chat e Invocazione API con Retry
 # ------------------------------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -322,11 +322,10 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
         testo_risposta = None
         max_tentativi = 3
         
-        # Tentativi multipli in caso di server momentaneamente sovraccarico (Errore 503)
         for tentativo in range(max_tentativi):
             try:
                 response = client.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model="gemini-flash",  # Alias dinamico sempre aggiornato
                     contents=contents_history,
                     config=types.GenerateContentConfig(
                         system_instruction=prompt_colonna,
@@ -334,13 +333,13 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
                     )
                 )
                 testo_risposta = response.text
-                break  # Successo: interrompe il ciclo dei tentativi
+                break
                 
             except Exception as e:
                 errore_str = str(e)
                 if "503" in errore_str or "UNAVAILABLE" in errore_str or "Overloaded" in errore_str:
                     if tentativo < max_tentativi - 1:
-                        time.sleep(2)  # Attende 2 secondi prima di riprovare
+                        time.sleep(2)
                         continue
                 st.error(f"Errore nella generazione della risposta: {e}")
                 break
