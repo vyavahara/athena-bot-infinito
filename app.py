@@ -260,7 +260,7 @@ if colonna == "1":
         "   - Se parlano di spazio/tempo (Senza fine): chiedi se intendono l'azione di viaggiare per sempre (processo potenziale) "
         "o la mappa intera già data (oggetto attuale).\n"
         "   - Se parlano di ripetizioni (Contare/Sommare): chiedi come fa un'azione che non finisce mai a trasformarsi in una quantità o in un risultato finale.\n"
-        "   - Se parlano di traguardi/orizzonti (Non raggiungibile): chiedi se quel confine esiste già o prende forma mentre ci avviciniamo.\n"
+        "   - Se parlano di traguardi/orizzonti (Non raggiungibile): chiedi se quel confine existe già o prende forma mentre ci avviciniamo.\n"
         "4. Concludi la conversazione facendogli notare l'ambiguità e la difficoltà di definire l'infinito solo con l'intuizione spontanea."
     )
 elif colonna == "2":
@@ -325,7 +325,7 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
         for tentativo in range(max_tentativi):
             try:
                 response = client.models.generate_content(
-                    model="gemini-flash",  # Alias dinamico sempre aggiornato
+                    model="gemini-3.5-flash",
                     contents=contents_history,
                     config=types.GenerateContentConfig(
                         system_instruction=prompt_colonna,
