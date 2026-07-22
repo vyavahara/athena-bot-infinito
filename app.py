@@ -228,52 +228,67 @@ st.markdown(
 st.divider()
 
 # ------------------------------------------------------------------------------
-# 5. Gestione Multi-Key (Pool di API Key) per evitare blocchi
+# 5. Inizializzazione API Key Singola (GEMINI_API_KEY)
 # ------------------------------------------------------------------------------
-if "api_key_index" not in st.session_state:
-    st.session_state.api_key_index = 0
-
-# Raccoglie le chiavi configurate nei Secrets (supporta sia GEMINI_API_KEY_1/2 che la singola GEMINI_API_KEY)
-lista_chiavi = []
-for k_name in ["GEMINI_API_KEY_1", "GEMINI_API_KEY_2", "GEMINI_API_KEY"]:
-    if k_name in st.secrets and st.secrets[k_name]:
-        lista_chiavi.append(st.secrets[k_name])
-
-# Rimuove eventuali duplicati preservando l'ordine
-lista_chiavi = list(dict.fromkeys(lista_chiavi))
-
-if not lista_chiavi:
-    st.error("⚠️ Nessuna API Key di Gemini trovata nei Secrets di Streamlit!")
+if "GEMINI_API_KEY" not in st.secrets or not st.secrets["GEMINI_API_KEY"]:
+    st.error("⚠️ Nessuna API Key 'GEMINI_API_KEY' trovata nei Secrets di Streamlit!")
     st.stop()
 
-# Seleziona la chiave attiva corrente
-chiave_attiva = lista_chiavi[st.session_state.api_key_index % len(lista_chiavi)]
-client = genai.Client(api_key=chiave_attiva)
+client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
 # ------------------------------------------------------------------------------
-# 6. System Instruction Maieutica (Metodo Socratico)
+# 6. System Instruction Maieutica (Metodo Socratico Dettagliato)
 # ------------------------------------------------------------------------------
 prompt_base = (
     "Sei Athena, un'assistente didattica socratica per un laboratorio sull'infinito. "
-    "Rispondi ponendo domande guidate, senza mai dare soluzioni dirette."
+    "Il tuo scopo è guidare maieuticamente gli studenti attraverso domande e contro-esempi, "
+    "senza MAI dare spiegazioni dirette, soluzioni o definizioni calate dall'alto.\n\n"
 )
 
 if colonna == "1":
-    prompt_colonna = prompt_base + " Ti trovi nella Sezione 1: Filosofia e Paradossi (Zenone, Hilbert)."
+    prompt_colonna = prompt_base + (
+        "Ti trovi nella SEZIONE 1: Filosofia e Paradossi (Zenone, Hilbert, Intuizioni).\n"
+        "REGOLE PEDAGOGICHE RIGIDE PER LA SEZIONE 1:\n"
+        "1. NON NOMINARE MAI concetti formali futuri come 'limite', 'serie', 'successione' o 'convergenza'. "
+        "Gli studenti non devono ancora ricevere la formalizzazione matematica.\n"
+        "2. Quando lo studente esprime un'idea di infinito, evidenzia la tensione concettuale tra "
+        "INFINITO POTENZIALE (un processo o un'azione che continua nel tempo) e INFINITO ATTUALE (un oggetto o insieme già compiuto nella sua totalità).\n"
+        "3. Poni domande chiave per guidarlo al cortocircuito epistemologico:\n"
+        "   - 'L'infinito è un oggetto, un numero o un processo?'\n"
+        "   - 'È possibile pensarlo senza rappresentarlo?'\n"
+        "   - Se parlano di spazio/tempo (Senza fine): chiedi se intendono l'azione di viaggiare per sempre (processo potenziale) "
+        "o la mappa intera già data (oggetto attuale).\n"
+        "   - Se parlano di ripetizioni (Contare/Sommare): chiedi come fa un'azione che non finisce mai a trasformarsi in una quantità o in un risultato finale.\n"
+        "   - Se parlano di traguardi/orizzonti (Non raggiungibile): chiedi se quel confine esiste già o prende forma mentre ci avviciniamo.\n"
+        "4. Concludi la conversazione facendogli notare l'ambiguità e la difficoltà di definire l'infinito solo con l'intuizione spontanea."
+    )
 elif colonna == "2":
-    prompt_colonna = prompt_base + " Ti trovi nella Sezione 2: Il Rigore del Limite e del Continuo."
+    prompt_colonna = prompt_base + (
+        "Ti trovi nella SEZIONE 2: Il Rigore del Limite e del Continuo.\n"
+        "Guida gli studenti a comprendere il limite come strumento formale per descrivere il comportamento "
+        "di un processo potenziale mentre tende ad un valore, affrontando l'avvicinamento indefinito "
+        "e i paradossi del movimento di Zenone."
+    )
 elif colonna == "3":
-    prompt_colonna = prompt_base + " Ti trovi nella Sezione 3: Le Serie Matematiche e i Frattali."
+    prompt_colonna = prompt_base + (
+        "Ti trovi nella SEZIONE 3: Le Serie Matematiche e i Frattali.\n"
+        "Aiuta gli studenti a riflettere su come la somma di infiniti termini decrescenti possa produrre "
+        "un valore finito e sulla contrapposizione tra perimetro infinito ed area finita (es. Fiocco di Koch)."
+    )
 else:
-    prompt_colonna = prompt_base + " Ti trovi nella Sezione 4: Arte (Escher) e Creatività Digitale."
+    prompt_colonna = prompt_base + (
+        "Ti trovi nella SEZIONE 4: Arte (Escher) e Creatività Digitale.\n"
+        "Guida gli studenti a collegare le opere d'arte di Escher (tassellazioni, autosimilarità, Limite del Cerchio) "
+        "ai concetti di iterazione, limite e struttura geometrica esplorati nelle sezioni precedenti."
+    )
 
 # ------------------------------------------------------------------------------
-# 7. Gestione Cronologia Chat con Rotazione Automatica in caso di Quota Esaurita
+# 7. Gestione Cronologia Chat e Invocazione API
 # ------------------------------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Ripristino messaggi
+# Ripristino messaggi nella UI
 for idx, msg in enumerate(st.session_state.messages):
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
@@ -287,7 +302,7 @@ for idx, msg in enumerate(st.session_state.messages):
                         msg["audio"] = audio_b
                         st.rerun()
 
-# Prompt Input Utente
+# Input dell'utente
 if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
     st.chat_message("user").markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -303,40 +318,26 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
         )
 
     with st.spinner("⏳ Athena sta riflettendo..."):
-        testo_risposta = None
-        
-        # Tenta la generazione ruotando le chiavi disponibili se riceve un errore di quota (429)
-        for tentativo in range(len(lista_chiavi)):
-            try:
-                response = client.models.generate_content(
-                    model="gemini-3.5-flash",
-                    contents=contents_history,
-                    config=types.GenerateContentConfig(
-                        system_instruction=prompt_colonna,
-                        temperature=0.7,
-                    )
+        try:
+            response = client.models.generate_content(
+                model="gemini-1.5-flash",
+                contents=contents_history,
+                config=types.GenerateContentConfig(
+                    system_instruction=prompt_colonna,
+                    temperature=0.7,
                 )
-                testo_risposta = response.text
-                break  # Successo: esce dal ciclo dei tentativi
-                
-            except Exception as e:
-                errore_str = str(e)
-                if "429" in errore_str or "RESOURCE_EXHAUSTED" in errore_str:
-                    # Passa alla chiave successiva
-                    st.session_state.api_key_index += 1
-                    chiave_attiva = lista_chiavi[st.session_state.api_key_index % len(lista_chiavi)]
-                    client = genai.Client(api_key=chiave_attiva)
-                    continue
-                else:
-                    st.error(f"Errore nella risposta: {e}")
-                    break
+            )
+            testo_risposta = response.text
 
-        if testo_risposta:
-            with st.chat_message("assistant"):
-                st.markdown(testo_risposta)
+            if testo_risposta:
+                with st.chat_message("assistant"):
+                    st.markdown(testo_risposta)
 
-            st.session_state.messages.append({
-                "role": "assistant",
-                "content": testo_risposta
-            })
-            st.rerun()
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": testo_risposta
+                })
+                st.rerun()
+
+        except Exception as e:
+            st.error(f"Errore nella generazione della risposta: {e}")
