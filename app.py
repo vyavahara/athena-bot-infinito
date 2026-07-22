@@ -2,6 +2,7 @@ import os
 import re
 import base64
 import asyncio
+import time
 from io import BytesIO
 import streamlit as st
 import edge_tts
@@ -283,7 +284,7 @@ else:
     )
 
 # ------------------------------------------------------------------------------
-# 7. Gestione Cronologia Chat e Invocazione API
+# 7. Gestione Cronologia Chat e Invocazione API con Retry (Gestione 503)
 # ------------------------------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -318,26 +319,38 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
         )
 
     with st.spinner("⏳ Athena sta riflettendo..."):
-        try:
-            response = client.models.generate_content(
-                model="gemini-3.5-flash",
-                contents=contents_history,
-                config=types.GenerateContentConfig(
-                    system_instruction=prompt_colonna,
-                    temperature=0.7,
+        testo_risposta = None
+        max_tentativi = 3
+        
+        # Tentativi multipli in caso di server momentaneamente sovraccarico (Errore 503)
+        for tentativo in range(max_tentativi):
+            try:
+                response = client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=contents_history,
+                    config=types.GenerateContentConfig(
+                        system_instruction=prompt_colonna,
+                        temperature=0.7,
+                    )
                 )
-            )
-            testo_risposta = response.text
+                testo_risposta = response.text
+                break  # Successo: interrompe il ciclo dei tentativi
+                
+            except Exception as e:
+                errore_str = str(e)
+                if "503" in errore_str or "UNAVAILABLE" in errore_str or "Overloaded" in errore_str:
+                    if tentativo < max_tentativi - 1:
+                        time.sleep(2)  # Attende 2 secondi prima di riprovare
+                        continue
+                st.error(f"Errore nella generazione della risposta: {e}")
+                break
 
-            if testo_risposta:
-                with st.chat_message("assistant"):
-                    st.markdown(testo_risposta)
+        if testo_risposta:
+            with st.chat_message("assistant"):
+                st.markdown(testo_risposta)
 
-                st.session_state.messages.append({
-                    "role": "assistant",
-                    "content": testo_risposta
-                })
-                st.rerun()
-
-        except Exception as e:
-            st.error(f"Errore nella generazione della risposta: {e}")
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": testo_risposta
+            })
+            st.rerun()
