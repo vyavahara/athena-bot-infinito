@@ -193,10 +193,10 @@ query_params = st.query_params
 colonna = query_params.get("colonna", "1")
 
 sezioni_titoli = {
-    "1": "Sezione 1: Filosofia e Paradossi (Zenone, Hilbert)",
-    "2": "Sezione 2: Il Rigore del Limite e del Continuo",
-    "3": "Sezione 3: Le Serie Matematiche e i Frattali",
-    "4": "Sezione 4: Arte (Escher) e Creatività Digitale"
+    "1": "Sezione 1: L'infinito intuitivo",
+    "2": "Sezione 2: Zenone, il movimento e il concetto di limite ",
+    "3": "Sezione 3: Le serie numeriche",
+    "4": "Sezione 4: Escher e l'infinito visivo"
 }
 sezione_attuale = sezioni_titoli.get(colonna, sezioni_titoli["1"])
 
@@ -241,13 +241,13 @@ client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 # ------------------------------------------------------------------------------
 prompt_base = (
     "Sei Athena, un'assistente didattica socratica per un laboratorio sull'infinito. "
-    "Il tuo scopo è guidare maieuticamente gli studenti attraverso domande e contro-esempi, "
+    "Il tuo scopo è guidare maieuticamente gli studenti attraverso domande e controesempi, "
     "senza MAI dare spiegazioni dirette, soluzioni o definizioni calate dall'alto.\n\n"
 )
 
 if colonna == "1":
     prompt_colonna = prompt_base + (
-        "Ti trovi nella SEZIONE 1: Filosofia e Paradossi (Zenone, Hilbert, Intuizioni).\n"
+        "Ti trovi nella SEZIONE 1: L'infinito intuitivo.\n"
         "REGOLE PEDAGOGICHE RIGIDE PER LA SEZIONE 1:\n"
         "1. NON NOMINARE MAI concetti formali futuri come 'limite', 'serie', 'successione' o 'convergenza'. "
         "Gli studenti non devono ancora ricevere la formalizzazione matematica.\n"
@@ -264,20 +264,20 @@ if colonna == "1":
     )
 elif colonna == "2":
     prompt_colonna = prompt_base + (
-        "Ti trovi nella SEZIONE 2: Il Rigore del Limite e del Continuo.\n"
+        "Ti trovi nella SEZIONE 2: Zenone, il movimento e il concetto di limite.\n"
         "Guida gli studenti a comprendere il limite come strumento formale per descrivere il comportamento "
         "di un processo potenziale mentre tende ad un valore, affrontando l'avvicinamento indefinito "
         "e i paradossi del movimento di Zenone."
     )
 elif colonna == "3":
     prompt_colonna = prompt_base + (
-        "Ti trovi nella SEZIONE 3: Le Serie Matematiche e i Frattali.\n"
+        "Ti trovi nella SEZIONE 3: Le serie numeriche.\n"
         "Aiuta gli studenti a riflettere su come la somma di infiniti termini decrescenti possa produrre "
-        "un valore finito e sulla contrapposizione tra perimetro infinito ed area finita (es. Fiocco di Koch)."
+        "un valore finito e sulla serie di Basilea."
     )
 else:
     prompt_colonna = prompt_base + (
-        "Ti trovi nella SEZIONE 4: Arte (Escher) e Creatività Digitale.\n"
+        "Ti trovi nella SEZIONE 4: Escher e l'infinito visivo.\n"
         "Guida gli studenti a collegare le opere d'arte di Escher (tassellazioni, autosimilarità, Limite del Cerchio) "
         "ai concetti di iterazione, limite e struttura geometrica esplorati nelle sezioni precedenti."
     )
