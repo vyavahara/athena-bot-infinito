@@ -176,7 +176,7 @@ def pulisci_testo_per_audio(testo: str) -> str:
     return testo_pulito.strip()
 
 async def genera_audio_femminile(testo: str) -> bytes:
-    """Genera file audio MP3 con voce neurale brillante e carismatica (Isabella)."""
+    """Genera file audio MP3 con la voce neurale di Chloe Rivers (Isabella)."""
     VOICE = "it-IT-IsabellaNeural"
     testo_vocale = pulisci_testo_per_audio(testo)
     communicate = edge_tts.Communicate(testo_vocale, VOICE)
@@ -195,7 +195,7 @@ colonna = query_params.get("colonna", "1")
 
 sezioni_titoli = {
     "1": "Sezione 1: L'infinito intuitivo",
-    "2": "Sezione 2: Zenone, il movimento e il concetto di limite ",
+    "2": "Sezione 2: Zenone, il movimento e il concetto di limite",
     "3": "Sezione 3: Le serie numeriche",
     "4": "Sezione 4: Escher e l'infinito visivo"
 }
@@ -205,6 +205,7 @@ sezione_attuale = sezioni_titoli.get(colonna, sezioni_titoli["1"])
 # 4. Intestazione: Avatar, Titolo e Messaggio di Benvenuto
 # ------------------------------------------------------------------------------
 NOME_FILE_AVATAR = "AV_Athena.jpg"
+PATH_AVATAR_CHAT = NOME_FILE_AVATAR if os.path.exists(NOME_FILE_AVATAR) else None
 
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
@@ -241,9 +242,9 @@ client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 # 6. System Instruction Maieutica (Metodo Socratico Dettagliato)
 # ------------------------------------------------------------------------------
 prompt_base = (
-    "Sei Athena, un'assistente didattica socratica per un laboratorio sull'infinito. "
+    "Sei Athena, un'assistente didattica socratica per un laboratorio liceale sull'infinito. "
     "Il tuo scopo è guidare maieuticamente gli studenti attraverso domande e controesempi, "
-    "senza MAI dare spiegazioni dirette, soluzioni o definizioni calate dall'alto.\n\n"
+    "senza MAI dare spiegazioni dirette, soluzioni pronte o definizioni calate dall'alto.\n\n"
 )
 
 if colonna == "1":
@@ -265,10 +266,25 @@ if colonna == "1":
     )
 elif colonna == "2":
     prompt_colonna = prompt_base + (
-        "Ti trovi nella SEZIONE 2: Zenone, il movimento e il concetto di limite.\n"
-        "Guida gli studenti a comprendere il limite come strumento formale per descrivere il comportamento "
-        "di un processo potenziale mentre tende ad un valore, affrontando l'avvicinamento indefinito "
-        "e i paradossi del movimento di Zenone."
+        "Ti trovi nella SEZIONE 2: Zenone, il movimento e il concetto di limite.\n\n"
+        "CONOSCENZA TEORICA INTEGRATA DI ATHENA (Dossier e Sintesi Filosofico-Matematica):\n"
+        "1. CONTESTO STORICO E METODO:\n"
+        "   - Zenone di Elea (Scuola di Parmenide) usa la DIMOSTRAZIONE PER ASSURDO (reductio ad absurdum) per mostrare che il movimento e la molteplicità conducono a contraddizioni logiche.\n"
+        "2. PARADOSSI DEL MOVIMENTO E SUPERTASK:\n"
+        "   - Achille e la Tartaruga / La Dicotomia (1/2, 1/4, 1/8...).\n"
+        "   - Il concetto di SUPERTASK: un processo formato da infinite operazioni da completare in un tempo finito.\n"
+        "   - Risposta di Aristotele: lo spazio e il tempo sono infinitamente divisibili solo IN POTENZA (infinito potenziale), non in atto. Inoltre, riducendo lo spazio si riduce proporzionalmente il tempo necessario.\n"
+        "3. SOLUZIONE MATEMATICA E FORMALE:\n"
+        "   - Rigorizzata da Cauchy nel XIX secolo con il concetto di LIMITE e di SERIE CONVERGENTE.\n"
+        "   - La somma degli intervalli di tempo costituisce una serie geometrica: sum_{k=0}^{infinity} q^k = 1 / (1 - q).\n"
+        "   - Errore di Zenone: confondere un numero infinito di suddivisioni descrittive con una durata infinita reale. La somma di infiniti termini può dare un valore FINITO.\n"
+        "4. DOMANDA APERTA SULLA REALTÀ (FISICA):\n"
+        "   - La matematica del continuo (R) descrive davvero il mondo fisico? La gravità quantistica ipotizza un universo DISCRETO a scala di Planck. Zenone potrebbe avere ragione dal punto di vista fisico se il continuo fosse un'illusione estetica.\n\n"
+        "REGOLE MAIEUTICHE PER LA SEZIONE 2:\n"
+        "1. Non dare MAI risposte o formule preconfezionate prima che lo studente ponga il dubbio.\n"
+        "2. Se lo studente dice 'Achille non la raggiunge mai', chiedigli:\n"
+        "   'Stai sommando passi e tempi sempre più piccoli: credi davvero che la somma totale del tempo continui a crescere all'infinito senza controllo o che si stia schiacciando verso un valore limite?'\n"
+        "3. Se lo studente riflette sulla realtà fisica, introduci il dilemma: 'Credi che lo spazio reale sia una linea continua e infinitamente divisibile o un insieme di mattoncini minimi non divisibili?'"
     )
 elif colonna == "3":
     prompt_colonna = prompt_base + (
@@ -291,7 +307,8 @@ if "messages" not in st.session_state:
 
 # Ripristino messaggi nella UI
 for idx, msg in enumerate(st.session_state.messages):
-    with st.chat_message(msg["role"]):
+    avatar_icon = PATH_AVATAR_CHAT if msg["role"] == "assistant" else None
+    with st.chat_message(msg["role"], avatar=avatar_icon):
         st.markdown(msg["content"])
         if msg["role"] == "assistant":
             if "audio" in msg:
@@ -320,38 +337,52 @@ if prompt := st.chat_input("Fai la tua domanda ad Athena..."):
 
     with st.spinner("⏳ Athena sta riflettendo..."):
         testo_risposta = None
-        max_tentativi = 4
+        max_tentativi = 3
+        modelli_da_provare = ["gemini-2.0-flash", "gemini-1.5-flash"]
         
-        # Ritenta in modo progressivo in caso di sovraccarico del server (503)
-        for tentativo in range(max_tentativi):
-            try:
-                response = client.models.generate_content(
-                    model="gemini-3.6-flash",
-                    contents=contents_history,
-                    config=types.GenerateContentConfig(
-                        system_instruction=prompt_colonna,
-                        temperature=0.7,
-                    )
-                )
-                testo_risposta = response.text
-                if testo_risposta:
-                    break
-            except Exception as e:
-                errore_str = str(e)
-                if "503" in errore_str or "UNAVAILABLE" in errore_str or "high demand" in errore_str:
-                    if tentativo < max_tentativi - 1:
-                        # Attesa progressiva: 1.5 secondi, 3 secondi, 4.5 secondi
-                        time.sleep(1.5 * (tentativo + 1))
-                        continue
-                st.error(f"Errore nella generazione della risposta: {e}")
+        for modello_target in modelli_da_provare:
+            if testo_risposta:
                 break
+            for tentativo in range(max_tentativi):
+                try:
+                    response = client.models.generate_content(
+                        model=modello_target,
+                        contents=contents_history,
+                        config=types.GenerateContentConfig(
+                            system_instruction=prompt_colonna,
+                            temperature=0.7,
+                        )
+                    )
+                    testo_risposta = response.text
+                    if testo_risposta:
+                        break
+                except Exception as e:
+                    errore_str = str(e)
+                    if "503" in errore_str or "UNAVAILABLE" in errore_str or "429" in errore_str or "high demand" in errore_str:
+                        if tentativo < max_tentativi - 1:
+                            time.sleep(1.2 * (tentativo + 1))
+                            continue
+                    break
 
-        if testo_risposta:
-            with st.chat_message("assistant"):
-                st.markdown(testo_risposta)
+        if not testo_risposta:
+            if colonna == "2":
+                testo_risposta = (
+                    "Riflessione profonda! Pensa al paradosso di Zenone: se continua a sommare "
+                    "passi sempre più piccoli (la metà, poi la metà della metà...), credi che "
+                    "la somma totale del tempo diventi infinitamente grande o che si stabilizzi attorno a un valore limite?"
+                )
+            else:
+                testo_risposta = (
+                    "Riflessione molto interessante! Pensa a quello che hai appena scritto: "
+                    "stai considerando l'infinito come qualcosa di compiuto (un oggetto) "
+                    "o come un processo che continua senza mai fermarsi?"
+                )
 
-            st.session_state.messages.append({
-                "role": "assistant",
-                "content": testo_risposta
-            })
-            st.rerun()
+        with st.chat_message("assistant", avatar=PATH_AVATAR_CHAT):
+            st.markdown(testo_risposta)
+
+        st.session_state.messages.append({
+            "role": "assistant",
+            "content": testo_risposta
+        })
+        st.rerun()
