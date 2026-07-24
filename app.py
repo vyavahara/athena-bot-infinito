@@ -176,8 +176,8 @@ def pulisci_testo_per_audio(testo: str) -> str:
     return testo_pulito.strip()
 
 async def genera_audio_femminile(testo: str) -> bytes:
-    """Genera file audio MP3 con voce neurale femminile italiana (Elsa)."""
-    VOICE = "it-IT-ElsaNeural"
+    """Genera file audio MP3 con voce neurale brillante e carismatica (Isabella)."""
+    VOICE = "it-IT-IsabellaNeural"
     testo_vocale = pulisci_testo_per_audio(testo)
     communicate = edge_tts.Communicate(testo_vocale, VOICE)
     fp = BytesIO()
