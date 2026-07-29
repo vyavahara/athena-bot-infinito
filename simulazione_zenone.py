@@ -2,350 +2,204 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-# ==========================================================
-# CONFIGURAZIONE
-# ==========================================================
-
+# ------------------------------------------------------------------------------
+# CONFIGURAZIONE PAGINA
+# ------------------------------------------------------------------------------
 st.set_page_config(
     page_title="Athena - Paradosso di Elea",
     page_icon="🏛️",
     layout="wide"
 )
 
-# ==========================================================
-# STILE
-# ==========================================================
-
+# ------------------------------------------------------------------------------
+# CSS PERSONALIZZATO (Intestazione & Layout)
+# ------------------------------------------------------------------------------
 st.markdown("""
-<style>
-
-.header-container {
-    background: linear-gradient(135deg,#1e293b,#0f172a);
-    padding:2rem;
-    border-radius:12px;
-    text-align:center;
-    color:white;
-}
-
-.header-title {
-    font-size:2.2rem;
-    font-weight:700;
-}
-
-.header-subtitle {
-    color:#cbd5e1;
-}
-
-</style>
+    <style>
+    .header-container {
+        background: linear-gradient(135deg, #1e293b, #0f172a);
+        padding: 2.5rem 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+        color: #ffffff;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    .header-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1.3;
+        letter-spacing: -0.01em;
+        color: #ffffff;
+    }
+    .header-subtitle {
+        font-size: 1.05rem;
+        color: #cbd5e1;
+        margin-top: 0.6rem;
+        margin-bottom: 0;
+        font-weight: 400;
+        line-height: 1.5;
+    }
+    </style>
 """, unsafe_allow_html=True)
 
-
+# ------------------------------------------------------------------------------
+# INTESTAZIONE FORMATTATA
+# ------------------------------------------------------------------------------
 st.markdown("""
-<div class="header-container">
-
-<div class="header-title">
-🏛️ Athena: Achille e la Tartaruga
-</div>
-
-<div class="header-subtitle">
-Esploriamo il paradosso di Zenone attraverso la costruzione infinita degli intervalli
-</div>
-
-</div>
+    <div class="header-container">
+        <h1 class="header-title">🏛️ Athena: Guida Socratica al Paradosso di Elea</h1>
+        <p class="header-subtitle">Laboratorio didattico di scomposizione logico-spaziale della corsa di Achille e la Tartaruga</p>
+    </div>
 """, unsafe_allow_html=True)
 
-
-# ==========================================================
-# STATO
-# ==========================================================
-
+# ------------------------------------------------------------------------------
+# INIZIALIZZAZIONE STATO
+# ------------------------------------------------------------------------------
 if "step" not in st.session_state:
     st.session_state.step = 0
 
+# ------------------------------------------------------------------------------
+# PARAMETRI INIZIALI
+# ------------------------------------------------------------------------------
+x0_achille = 0.0
+x0_tartaruga = 100.0  # Vantaggio iniziale della tartaruga (m)
+rapporto = 0.1        # Achille è 10 volte più veloce
 
-# ==========================================================
-# MODELLO MATEMATICO
-# ==========================================================
+# Calcolo posizioni teoriche
+passi_data = []
+a_pos = float(x0_achille)
+t_pos = float(x0_tartaruga)
 
-vantaggio_iniziale = 100
-rapporto = 0.1
-
-passi = []
-
-achille = 0
-tartaruga = vantaggio_iniziale
-
-
-for n in range(12):
-
-    distanza = tartaruga - achille
-
-    passi.append({
-
-        "n": n,
-        "Achille": achille,
-        "Tartaruga": tartaruga,
-        "Distacco": distanza
-
+for i in range(15):
+    distanza = t_pos - a_pos
+    passi_data.append({
+        "Passo (n)": i,
+        "Posizione Achille (m)": round(a_pos, 4),
+        "Posizione Tartaruga (m)": round(t_pos, 4),
+        "Distacco Δs (m)": round(distanza, 4)
     })
+    # Avanzamento
+    a_pos = t_pos
+    t_pos = t_pos + distanza * rapporto
 
-    # Achille raggiunge il punto precedente della tartaruga
-    achille = tartaruga
+# ------------------------------------------------------------------------------
+# CONTROLLI SIMULAZIONE
+# ------------------------------------------------------------------------------
+col_ctrl1, col_ctrl2, col_ctrl3 = st.columns([1, 1, 4])
 
-    # la tartaruga percorre 1/10 del vantaggio perso
-    tartaruga = tartaruga + distanza*rapporto
-
-
-
-# ==========================================================
-# CONTROLLI
-# ==========================================================
-
-
-c1,c2,c3 = st.columns([1,1,3])
-
-
-with c1:
-    if st.button("⬅️ Passo precedente"):
+with col_ctrl1:
+    if st.button("⬅️ Passo Precedente", use_container_width=True):
         if st.session_state.step > 0:
             st.session_state.step -= 1
 
-
-with c2:
-    if st.button("Passo successivo ➡️"):
-
-        if st.session_state.step < len(passi)-1:
-            st.session_state.step +=1
-
-
+with col_ctrl2:
+    if st.button("Passo Successivo ➡️", use_container_width=True):
+        if st.session_state.step < 10:
+            st.session_state.step += 1
 
 n = st.session_state.step
 
-
-# ==========================================================
-# PANNELLO ATHENA
-# ==========================================================
-
-
-dati = passi[n]
-
-
-col1,col2,col3 = st.columns(3)
-
-
-col1.metric(
-    "Passo",
-    n
-)
-
-col2.metric(
-    "Posizione Achille",
-    f"{dati['Achille']:.6f} m"
-)
-
-col3.metric(
-    "Distanza residua",
-    f"{dati['Distacco']:.6f} m"
-)
-
-
-domande = [
-
-"Achille ha percorso 100 m. Perché non ha ancora raggiunto la tartaruga?",
-
-"La distanza si riduce. Significa che prima o poi sparirà?",
-
-"Ogni intervallo sembra più piccolo. Quanti intervalli dobbiamo considerare?",
-
-"Se gli intervalli sono infiniti, la distanza totale può essere finita?"
-
-]
-
-
-st.info(
-"🤖 Athena domanda:\n\n" +
-domande[min(n,3)]
-)
-
-
-
-# ==========================================================
-# GRAFICO
-# ==========================================================
-
+# ------------------------------------------------------------------------------
+# RENDERING GRAFICO
+# ------------------------------------------------------------------------------
+curr_a = float(passi_data[n]["Posizione Achille (m)"])
+curr_t = float(passi_data[n]["Posizione Tartaruga (m)"])
 
 fig = go.Figure()
 
-
-# pista Achille
-
+# Asse di riferimento
 fig.add_trace(go.Scatter(
-
-    x=[0,130],
-    y=[1,1],
+    x=[0, 120], y=[0, 0],
     mode="lines",
-    line=dict(width=4),
-    showlegend=False
-
+    line=dict(color="#cbd5e1", width=4),
+    showlegend=False,
+    hoverinfo="none"
 ))
 
+# Segnalini storici e sfalsamento etichette
+for i in range(n + 1):
+    pos_a = float(passi_data[i]["Posizione Achille (m)"])
+    
+    # Sfalsamento verticale alternato
+    y_offset = -0.35 if (i % 2 == 0) else -0.65
+    
+    # Etichetta formattata
+    label_text = "A₀" if i == 0 else f"A_{i} = T_{i-1}"
+    
+    # Punto sull'asse
+    fig.add_trace(go.Scatter(
+        x=[pos_a], y=[0],
+        mode="markers",
+        marker=dict(color="#1e3a8a", size=8),
+        showlegend=False,
+        hoverinfo="text",
+        text=f"Passo {i}: {pos_a} m"
+    ))
+    
+    # Etichetta del punto
+    fig.add_annotation(
+        x=pos_a, y=y_offset,
+        text=f"| {label_text}",
+        showarrow=False,
+        font=dict(size=12, color="#334155")
+    )
 
-# pista tartaruga
+# Visualizzazione segmento d'avanzamento corrente
+if n > 0:
+    prev_a = float(passi_data[n-1]["Posizione Achille (m)"])
+    fig.add_trace(go.Scatter(
+        x=[prev_a, curr_a], y=[0.15, 0.15],
+        mode="lines+markers",
+        line=dict(color="#2563eb", width=3),
+        marker=dict(size=8, color="#2563eb"),
+        name=f"Tratto d_{n}",
+        showlegend=False
+    ))
 
+# Marker Achille (corretto senza proprietà non valide)
 fig.add_trace(go.Scatter(
-
-    x=[0,130],
-    y=[-1,-1],
-    mode="lines",
-    line=dict(width=4),
+    x=[curr_a], y=[0.4],
+    mode="text",
+    text=["🏃 Achille"],
+    textposition="top center",
+    font=dict(size=16),
     showlegend=False
-
 ))
 
-
-# punti storici Achille
-
-for i in range(n+1):
-
-    fig.add_trace(go.Scatter(
-
-        x=[passi[i]["Achille"]],
-        y=[1],
-        mode="markers+text",
-        text=[f"A{i}"],
-        textposition="top center",
-        marker=dict(size=9),
-        showlegend=False
-
-    ))
-
-
-# punti storici tartaruga
-
-for i in range(n+1):
-
-    fig.add_trace(go.Scatter(
-
-        x=[passi[i]["Tartaruga"]],
-        y=[-1],
-        mode="markers+text",
-        text=[f"T{i}"],
-        textposition="bottom center",
-        marker=dict(size=9),
-        showlegend=False
-
-    ))
-
-
-
-# tratto percorso Achille
-
-if n>0:
-
-    fig.add_trace(go.Scatter(
-
-        x=[
-            passi[n-1]["Achille"],
-            passi[n]["Achille"]
-        ],
-
-        y=[1,1],
-
-        mode="lines",
-
-        line=dict(width=8),
-
-        showlegend=False
-
-    ))
-
-
-
-# tratto tartaruga
-
-if n>0:
-
-    fig.add_trace(go.Scatter(
-
-        x=[
-            passi[n-1]["Tartaruga"],
-            passi[n]["Tartaruga"]
-        ],
-
-        y=[-1,-1],
-
-        mode="lines",
-
-        line=dict(width=8),
-
-        showlegend=False
-
-    ))
-
-
-
-# posizione attuale
-
-fig.add_annotation(
-
-    x=dati["Achille"],
-    y=1.3,
-    text="🏃 Achille",
-    showarrow=False
-
-)
-
-
-fig.add_annotation(
-
-    x=dati["Tartaruga"],
-    y=-1.3,
-    text="🐢 Tartaruga",
-    showarrow=False
-
-)
-
+# Marker Tartaruga (corretto senza proprietà non valide)
+fig.add_trace(go.Scatter(
+    x=[curr_t], y=[0.4],
+    mode="text",
+    text=["🐢 Tartaruga"],
+    textposition="top center",
+    font=dict(size=16),
+    showlegend=False
+))
 
 fig.update_layout(
-
-    height=420,
-
-    xaxis=dict(
-        range=[-5,130],
-        title="metri"
-    ),
-
-    yaxis=dict(
-        range=[-2,2],
-        visible=False
-    ),
-
-    showlegend=False
-
+    xaxis=dict(range=[-5, 120], zeroline=False, showgrid=False, title="Spazio (metri)"),
+    yaxis=dict(range=[-1.2, 1.2], zeroline=False, showgrid=False, showticklabels=False),
+    height=320,
+    margin=dict(l=20, r=20, t=30, b=20),
+    plot_bgcolor="white"
 )
 
+st.plotly_chart(fig, use_container_width=True)
 
-st.plotly_chart(
-    fig,
-    use_container_width=True
-)
+st.markdown("---")
 
+# ------------------------------------------------------------------------------
+# TABELLA DINAMICA
+# ------------------------------------------------------------------------------
+st.subheader("TABELLA")
 
-
-# ==========================================================
-# TABELLA
-# ==========================================================
-
-
-st.subheader("Costruzione degli intervalli")
-
-
-df=pd.DataFrame(passi[:n+1])
-
-df["Distacco"]=df["Distacco"].round(6)
+df_totale = pd.DataFrame(passi_data)
+df_visibile = df_totale.iloc[:n+1].copy()
 
 st.dataframe(
-    df,
-    hide_index=True,
-    use_container_width=True
+    df_visibile,
+    use_container_width=True,
+    hide_index=True
 )
