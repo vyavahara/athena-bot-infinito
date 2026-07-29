@@ -8,7 +8,7 @@ import streamlit as st
 # ------------------------------------------------------------------------------
 st.set_page_config(
     page_title="Simulazione del Paradosso di Achille e la tartaruga",
-    page_icon="🏃",
+    page_icon="📐",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -112,7 +112,7 @@ def format_frac_html(f: Fraction) -> str:
 st.markdown(
     """
 <div class="hero-banner">
-    <h1>🏃‍♂️➔ 🐢➔ Simulazione del Paradosso di Achille e la tartaruga</h1>
+    <h1>Simulazione del Paradosso di Achille e la tartaruga</h1>
 </div>
 """,
     unsafe_allow_html=True,
@@ -208,8 +208,8 @@ st.markdown(
 <div class="init-conditions-card">
     <h4>📋 Condizioni Iniziali della Gara (Passo n = 0)</h4>
     <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 0.88rem;">
-        <span>🏃‍♂️➔ <b>Posizione Iniziale Achille (A₀):</b> 0 m</span>
-        <span>🐢➔ <b>Vantaggio Iniziale Tartaruga (T₀ = d₁):</b> {d0_val} m</span>
+        <span><b>Posizione Iniziale Achille (A₀):</b> 0 m</span>
+        <span><b>Vantaggio Iniziale Tartaruga (T₀ = d₁):</b> {d0_val} m</span>
         <span>⚡ <b>Velocità:</b> Achille corre <b>{r_denom} volte più veloce</b> della Tartaruga</span>
     </div>
 </div>
@@ -223,12 +223,12 @@ with m1:
     st.metric("Passo Logico (n)", f"{int(current_data['Passo n'])}")
 with m2:
     st.metric(
-        "Posizione Aₙ (Achille ➔)",
+        "Posizione Aₙ (Achille)",
         f"{current_data['Posizione raggiunta da Achille']} m",
     )
 with m3:
     st.metric(
-        "Posizione Tₙ (Tartaruga ➔)",
+        "Posizione Tₙ (Tartaruga)",
         f"{current_data['Posizione della tartaruga']} m",
     )
 with m4:
@@ -244,7 +244,7 @@ col_left, col_right = st.columns([1.1, 1.0])
 
 with col_left:
     st.markdown(
-        f"<div class='section-title'>🏃‍♂️➔ 🐢➔ Piste Parallele e Posizione (n = {curr_step})</div>",
+        f"<div class='section-title'>📍 Piste Parallele e Posizione (n = {curr_step})</div>",
         unsafe_allow_html=True,
     )
 
@@ -253,8 +253,8 @@ with col_left:
     pos_A_val = current_data["Pos_A_float"]
     pos_T_val = current_data["Pos_T_float"]
     
-    # Range ampio per evitare tagli del testo a destra
-    max_x = max(d0_val * 1.35, pos_T_val * 1.25 + 20)
+    # Ampio margine x a destra per evitare qualsiasi taglio del testo al passo n=10 o superiore
+    max_x = max(d0_val * 1.35, pos_T_val * 1.25 + 30)
 
     # Corsia Tartaruga (y = 1)
     fig_track.add_shape(
@@ -269,7 +269,7 @@ with col_left:
         line=dict(color="#bfdbfe", width=4),
     )
 
-    # Marcatori notevoli
+    # Marcatori notevoli: mostra solo A_0 e l'ultimo punto del passo corrente
     for k in range(min(curr_step + 2, len(df))):
         pos_ak = df.iloc[k]["Pos_A_float"]
         show_label = (k == 0) or (k == curr_step and curr_step > 0)
@@ -307,13 +307,13 @@ with col_left:
         line=dict(color="#dc2626", width=3, dash="dash"),
     )
 
-    # Marcatori direzionali nativi Plotly (freccia 'triangle-right' ad est per la corsa)
+    # Marcatori direzionali nativi Plotly (freccia vettoriale 'triangle-right' orientata ad est per avanzamento)
     fig_track.add_trace(
         go.Scatter(
             x=[pos_A_val], y=[0],
             mode="markers+text",
             marker=dict(symbol="triangle-right", size=18, color="#1e3c72"),
-            text=[f"  Achille (A{to_subscript(str(curr_step))}) ➔"],
+            text=[f"  <b>ACHILLE (A{to_subscript(str(curr_step))})</b> ➔"],
             textposition="top right",
             hoverinfo="none",
             showlegend=False,
@@ -326,7 +326,7 @@ with col_left:
             x=[pos_T_val], y=[1],
             mode="markers+text",
             marker=dict(symbol="triangle-right", size=15, color="#15803d"),
-            text=[f"  Tartaruga (T{to_subscript(str(curr_step))}) ➔"],
+            text=[f"  <b>TARTARUGA (T{to_subscript(str(curr_step))})</b> ➔"],
             textposition="top right",
             hoverinfo="none",
             showlegend=False,
@@ -342,7 +342,7 @@ with col_left:
             range=[-0.5, 1.5],
         ),
         height=270,
-        margin=dict(l=10, r=20, t=10, b=10),
+        margin=dict(l=10, r=25, t=10, b=10),
         template="plotly_white",
         showlegend=False,
     )
@@ -452,7 +452,7 @@ fig_segments.add_trace(
         y=["Tratti Achille"],
         mode="markers+text",
         marker=dict(symbol="triangle-right", size=14, color="#15803d"),
-        text=[f"  <b>T{curr_step_sub}</b> ➔"],
+        text=[f"  <b>TARTARUGA (T{curr_step_sub})</b> ➔"],
         textposition="top right",
         hoverinfo="none",
         showlegend=False,
@@ -465,7 +465,7 @@ fig_segments.update_layout(
     xaxis=dict(title="Distanza sulla Pista (metri)", range=[0, max_x]),
     yaxis=dict(visible=False),
     height=130,
-    margin=dict(l=10, r=20, t=10, b=10),
+    margin=dict(l=10, r=25, t=10, b=10),
     template="plotly_white",
     showlegend=True,
 )
