@@ -7,7 +7,7 @@ import streamlit as st
 # CONFIGURAZIONE PAGINA
 # ------------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Simulazione del Paradosso di Achille e la tartaruga",
+    page_title="Simulazione del Paradosso di Achille e la Tartaruga",
     page_icon="📐",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -175,7 +175,7 @@ def format_frac_html(f: Fraction) -> str:
 st.markdown(
     """
 <div class="hero-banner">
-    <h1>🏃 🐢 Simulazione del Paradosso di Achille e la tartaruga</h1>
+    <h1>🏃 🐢 Simulazione del Paradosso di Achille e la Tartaruga</h1>
 </div>
 """,
     unsafe_allow_html=True,
@@ -189,9 +189,8 @@ st.markdown(
 <div class="math-model-card">
     <h4>📐 Modello Matematico del Paradosso</h4>
     <p style="margin-bottom: 6px; color: #334155;">
-        La traiettoria è rappresentata da una retta orientata. Ogni punto viene identificato con la propria coordinata reale. 
+        La corsia è rappresentata da una retta orientata. Ogni punto viene identificato con la propria coordinata reale. 
         Le successioni (Aₙ) e (Tₙ) rappresentano le posizioni geometriche ai passi successivi. 
-        <b>La simulazione rappresenta una costruzione geometrica iterativa e non introduce esplicitamente il tempo o il moto continuo.</b>
     </p>
 </div>
 """,
@@ -303,7 +302,7 @@ st.markdown(
     <h4>📋 Condizioni Iniziali della Gara (Passo n = 0)</h4>
     <div class="init-conditions-text">
         <span>🏃 <b>Punto A₀:</b> 0 m</span>
-        <span>🐢 <b>Distacco iniziale Δs₀ = m(A₀T₀):</b> {delta_s0_val} m</span>
+        <span>🐢 <b>Distacco iniziale Δs₀ = m(A₀T₀) ossia la distanza tra le ascisse di A₀ e T₀ :</b> {delta_s0_val} m</span>
         <span>⚡ <b>Rapporto spostamenti:</b> dₙ = {r_denom} · tₙ</span>
     </div>
 </div>
