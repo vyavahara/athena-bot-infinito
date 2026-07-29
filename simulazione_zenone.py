@@ -7,7 +7,7 @@ import streamlit as st
 # CONFIGURAZIONE PAGINA
 # ------------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Athena - Laboratorio Socratico al Paradosso di Elea",
+    page_title="Simulazione del Paradosso di Achille e la tartaruga",
     page_icon="🏛️",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -103,8 +103,7 @@ def format_frac_html(f: Fraction) -> str:
 st.markdown(
     """
 <div class="hero-banner">
-    <h1>🏛️ Athena: Guida Socratica al Paradosso di Elea</h1>
-    <p>Laboratorio didattico di scomposizione logico-spaziale della corsa di Achille e la Tartaruga</p>
+    <h1>🏛️ Simulazione del Paradosso di Achille e la tartaruga</h1>
 </div>
 """,
     unsafe_allow_html=True,
@@ -360,12 +359,12 @@ with col_right:
     st.markdown(
         f"""
       <div class="athena-socratic-card">
-          <h3>🏛️ Athena: Osservazioni maieutiche (n = 0)</h3>
+          <h3>🏛️ Osservazioni (n = 0)</h3>
           <p><b>1. Configurazione Spaziale:</b> Achille è fermo al punto A₀ = 0 m. La Tartaruga parte con il vantaggio iniziale T₀ = {d0_val} m.</p>
           <p><b>2. Il Primo Tratto d₁:</b> Il distacco iniziale coincide con il segmento d₁ = {d0_val} m. Nessun movimento si è ancora compiuto.</p>
           <p><b>3. Relazione Cinematica:</b> Achille corre {r_denom} volte più veloce. Il rapporto r = 1/{r_denom} indica che la Tartaruga percorrerà un decimo della distanza di Achille nello stesso intervallo.</p>
           <div class="cognitive-conflict-box">
-              <h4>❓ Quesito Socratico di Partenza:</h4>
+              <h4>❓ Quesito:</h4>
               <div class="conflict-text">
                   "Per raggiungere la Tartaruga, concordi con Zenone che Achille debba prima di tutto percorrere il primo tratto d₁ = {d0_val} m per giungere in T₀ dove la Tartaruga si trova ora?"
               </div>
