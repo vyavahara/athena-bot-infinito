@@ -95,7 +95,7 @@ v_A = st.sidebar.number_input("Velocità Achille (v_A) [m/s]", value=10.0, step=
 v_T = st.sidebar.number_input("Velocità Tartaruga (v_T) [m/s]", value=1.0, step=0.5)
 d0 = st.sidebar.number_input("Vantaggio Iniziale Tartaruga (d0) [m]", value=100.0, step=10.0)
 
-max_steps = st.sidebar.slider("Numero di Passi da Esplorare (n)", min_value=1, max_value=20, value=15)
+max_steps = st.sidebar.slider("Numero di passi da esplorare (n)", min_value=1, max_value=20, value=15)
 
 # Inizializzazione Session State per il Passo Corrente
 if 'step' not in st.session_state:
@@ -300,7 +300,7 @@ st.dataframe(display_df.style.apply(highlight_current, axis=1), use_container_wi
 # BOX MAIEUTICO
 st.markdown("""
 <div class="maieutic-box">
-    <h3>🤔 Riflessione Maieutica (Il Nodo Concettuale)</h3>
+    <h3>🤔 Riflessione </h3>
     <p><b>Osserva la struttura della tabella:</b> ad ogni passo $n$, Achille copre esattamente il <i>GAP del passo precedente</i>, mentre la tartaruga avanza di un ulteriore micro-tratto nello stesso intervallo di tempo $\Delta t$.</p>
     <p>La formula del GAP rimane della forma $100 \cdot \left(\frac{1}{10}\right)^n$, garantendo che per ogni $n$ finito tutti gli intervalli e il distacco siano <b>rigorosamente maggiori di zero</b> ($\Delta t > 0$, $\Delta s > 0$).</p>
     <hr style="border-top: 1px solid #ffe8a1;">
