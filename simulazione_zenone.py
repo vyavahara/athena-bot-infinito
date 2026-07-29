@@ -325,7 +325,7 @@ with col_left:
         line=dict(color="#dc2626", width=3, dash="dash"),
     )
 
-    # Icona Achille (y = 0) - Icona con spinta orientata verso destra tramite HTML/Plotly annotation
+    # Icona Achille (y = 0) - Orientata a destra tramite CSS .flip-right
     fig_track.add_annotation(
         x=pos_A_val,
         y=0,
@@ -336,7 +336,7 @@ with col_left:
         font=dict(size=14, color="#1e3c72")
     )
 
-    # Icona Tartaruga (y = 1) - Icona con spinta orientata verso destra
+    # Icona Tartaruga (y = 1) - Orientata a destra tramite CSS .flip-right
     fig_track.add_annotation(
         x=pos_T_val,
         y=1,
@@ -467,12 +467,15 @@ for k in range(1, curr_step + 1):
     )
 
 curr_step_sub = to_subscript(str(curr_step))
+
+# Icona della tartaruga orientata verso destra tramite .flip-right
 fig_segments.add_annotation(
     x=pos_T_val,
     y="Tratti Achille",
     text=f"<span class='flip-right' style='font-size:18px;'>🐢</span> <b>T{curr_step_sub}</b>",
     showarrow=False,
     xanchor="left",
+    yshift=18,
     font=dict(size=14, color="#15803d")
 )
 
