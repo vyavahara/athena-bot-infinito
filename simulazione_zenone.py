@@ -14,7 +14,7 @@ st.set_page_config(
 )
 
 # ------------------------------------------------------------------------------
-# CSS PERSONALIZZATO (Con centramento verticale del banner e flip icone)
+# CSS PERSONALIZZATO (Con centramento banner e specchiamento icone)
 # ------------------------------------------------------------------------------
 st.markdown(
     """
@@ -44,13 +44,11 @@ st.markdown(
         line-height: 1.2;
     }
     
-    /* Classe CSS per la riflessione orizzontale obbligata */
+    /* Classe universale per ruotare le emoji verso destra */
     .icon-right {
-        display: inline-block;
-        transform: scaleX(-1);
-        -webkit-transform: scaleX(-1);
-        filter: FlipH;
-        -ms-filter: "FlipH";
+        display: inline-block !important;
+        transform: scaleX(-1) !important;
+        -webkit-transform: scaleX(-1) !important;
     }
     
     .init-conditions-card {
@@ -210,15 +208,15 @@ curr_step = st.session_state.step
 current_data = df.iloc[curr_step]
 
 # ------------------------------------------------------------------------------
-# 1. CONDIZIONI INIZIALI (Garantita la riflessione CSS su span HTML)
+# 1. CONDIZIONI INIZIALI (Coerenza totale delle icone verso destra)
 # ------------------------------------------------------------------------------
 st.markdown(
     f"""
 <div class="init-conditions-card">
     <h4>📋 Condizioni Iniziali della Gara (Passo n = 0)</h4>
-    <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 8px; font-size: 0.88rem; align-items: center;">
-        <span><div class="icon-right" style="font-size:1.1rem;">🏃‍♂️</div> <b>Posizione Iniziale Achille (A₀):</b> 0 m</span>
-        <span><div class="icon-right" style="font-size:1.1rem;">🐢</div> <b>Vantaggio Iniziale Tartaruga (T₀ = d₁):</b> {d0_val} m</span>
+    <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 0.88rem;">
+        <span style="display: flex; align-items: center; gap: 4px;"><span class="icon-right">🏃‍♂️</span> <b>Posizione Iniziale Achille (A₀):</b> 0 m</span>
+        <span style="display: flex; align-items: center; gap: 4px;"><span class="icon-right">🐢</span> <b>Vantaggio Iniziale Tartaruga (T₀ = d₁):</b> {d0_val} m</span>
         <span>⚡ <b>Velocità:</b> Achille corre <b>{r_denom} volte più veloce</b> della Tartaruga</span>
     </div>
 </div>
@@ -226,18 +224,18 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Metric Banner
+# Metric Banner con direzione esplicita
 m1, m2, m3, m4 = st.columns(4)
 with m1:
     st.metric("Passo Logico (n)", f"{int(current_data['Passo n'])}")
 with m2:
     st.metric(
-        "Posizione Aₙ (Achille)",
+        "Posizione Aₙ (Achille ▶)",
         f"{current_data['Posizione raggiunta da Achille']} m",
     )
 with m3:
     st.metric(
-        "Posizione Tₙ (Tartaruga)",
+        "Posizione Tₙ (Tartaruga ▶)",
         f"{current_data['Posizione della tartaruga']} m",
     )
 with m4:
@@ -253,7 +251,7 @@ col_left, col_right = st.columns([1.1, 1.0])
 
 with col_left:
     st.markdown(
-        f"<div class='section-title'><span class='icon-right'>🏃‍♂️</span> <span class='icon-right'>🐢</span> Piste Parallele e Posizione (n ="
+        f"<div class='section-title'><span class='icon-right'>🏃‍♂️</span><span class='icon-right'>🐢</span> Piste Parallele e Posizione (n ="
         f" {curr_step})</div>",
         unsafe_allow_html=True,
     )
@@ -315,7 +313,7 @@ with col_left:
         line=dict(color="#dc2626", width=3, dash="dash"),
     )
 
-    # Marcatori iconici orientati a destra
+    # Marcatori iconici orientati verso destra
     fig_track.add_trace(
         go.Scatter(
             x=[pos_A_val], y=[0],
