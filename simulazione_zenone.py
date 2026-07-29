@@ -14,17 +14,17 @@ st.set_page_config(
 )
 
 # ------------------------------------------------------------------------------
-# CSS PERSONALIZZATO (Stile Moderno, Contrasto Elevato e Font Maggiorati)
+# CSS PERSONALIZZATO PULITO E STABILE
 # ------------------------------------------------------------------------------
 st.markdown(
     """
 <style>
-    .main { background-color: #f1f5f9; }
+    .main { background-color: #f8fafc; }
     .stApp { font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
     
     .block-container { padding-top: 1rem !important; padding-bottom: 1.2rem !important; }
     div[data-testid="stVerticalBlock"] { gap: 0.8rem !important; }
-    p { margin-bottom: 0.4rem !important; line-height: 1.5; font-size: 1.02rem !important; }
+    p { margin-bottom: 0.4rem !important; line-height: 1.5; font-size: 1.05rem !important; }
     
     /* Hero Banner */
     .hero-banner {
@@ -33,7 +33,7 @@ st.markdown(
         padding: 20px 24px; 
         border-radius: 12px;
         text-align: center; 
-        margin-bottom: 12px;
+        margin-bottom: 14px;
         box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
         display: flex;
         justify-content: center;
@@ -46,7 +46,6 @@ st.markdown(
         font-size: 1.85rem !important; 
         margin: 0 !important; 
         line-height: 1.25;
-        letter-spacing: -0.5px;
     }
     
     /* Condizioni Iniziali */
@@ -56,14 +55,14 @@ st.markdown(
         border-left: 6px solid #0284c7; 
         border-radius: 8px;
         padding: 12px 18px; 
-        margin-bottom: 12px;
+        margin-bottom: 14px;
         box-shadow: 0 2px 6px rgba(0,0,0,0.03);
     }
     .init-conditions-card h4 { 
         color: #0f172a; 
         margin-top: 0; 
         margin-bottom: 6px; 
-        font-size: 1.08rem !important; 
+        font-size: 1.1rem !important; 
         font-weight: 700; 
     }
     .init-conditions-text {
@@ -72,7 +71,7 @@ st.markdown(
         align-items: center; 
         flex-wrap: wrap; 
         gap: 12px; 
-        font-size: 1.02rem !important;
+        font-size: 1.05rem !important;
         color: #334155;
     }
     
@@ -88,7 +87,7 @@ st.markdown(
     }
     .athena-socratic-card h3 { 
         color: #1e3c72; 
-        font-size: 1.2rem !important; 
+        font-size: 1.22rem !important; 
         margin-top: 0; 
         margin-bottom: 8px; 
         font-weight: 700;
@@ -98,14 +97,14 @@ st.markdown(
     .section-title {
         color: #0f172a; 
         font-weight: 800; 
-        font-size: 1.22rem !important;
+        font-size: 1.25rem !important;
         margin-top: 16px; 
         margin-bottom: 6px;
     }
     .section-subtitle {
         color: #475569; 
         font-weight: 600; 
-        font-size: 1.02rem !important;
+        font-size: 1.05rem !important;
         margin-top: 0px; 
         margin-bottom: 12px;
     }
@@ -117,7 +116,7 @@ st.markdown(
         padding: 2px 7px; 
         border-radius: 5px; 
         font-family: monospace;
-        font-size: 0.98rem !important; 
+        font-size: 1rem !important; 
         font-weight: bold; 
         color: #0f172a;
     }
@@ -129,32 +128,31 @@ st.markdown(
         border-left: 6px solid #f59e0b; 
         padding: 12px 16px;
         border-radius: 8px; 
-        margin-top: 12px;
+        margin-top: 14px;
         box-shadow: 0 2px 5px rgba(245, 158, 11, 0.08);
     }
     .cognitive-conflict-box h4 { 
         color: #b45309; 
         margin-top: 0; 
         margin-bottom: 4px; 
-        font-size: 1.05rem !important; 
+        font-size: 1.08rem !important; 
         font-weight: 800; 
     }
     .conflict-text { 
         color: #78350f; 
         font-weight: 600; 
-        font-size: 1.02rem !important; 
-        line-height: 1.45; 
+        font-size: 1.05rem !important; 
+        line-height: 1.48; 
     }
 
-    /* Streamlit Components Font Size */
-    div[data-testid="stDataFrame"] { font-size: 0.95rem !important; }
-    [data-testid="stMetricValue"] { font-size: 1.35rem !important; font-weight: 800 !important; color: #0f172a; }
-    [data-testid="stMetricLabel"] { font-size: 0.98rem !important; font-weight: 600 !important; color: #475569; }
+    /* Dimensione font componenti Streamlit */
+    div[data-testid="stDataFrame"] { font-size: 0.98rem !important; }
+    [data-testid="stMetricValue"] { font-size: 1.4rem !important; font-weight: 800 !important; color: #0f172a; }
+    [data-testid="stMetricLabel"] { font-size: 1rem !important; font-weight: 600 !important; color: #475569; }
 </style>
 """,
     unsafe_allow_html=True,
 )
-
 
 # ------------------------------------------------------------------------------
 # FUNZIONI DI UTILITÀ
@@ -164,13 +162,11 @@ def to_subscript(text: str) -> str:
     sub_map = str.maketrans("0123456789n", "₀₁₂₃₄₅₆₇₈₉ₙ")
     return str(text).translate(sub_map)
 
-
 def format_frac_html(f: Fraction) -> str:
     """Rende le frazioni esatte in modo chiaro e leggibile."""
     if f.denominator == 1:
         return f"{f.numerator}"
     return f"{f.numerator}/{f.denominator}"
-
 
 # ------------------------------------------------------------------------------
 # INTESTAZIONE
@@ -288,20 +284,11 @@ m1, m2, m3, m4 = st.columns(4)
 with m1:
     st.metric("Passo Logico (n)", f"{int(current_data['Passo n'])}")
 with m2:
-    st.metric(
-        "Posizione s_A (Achille)",
-        f"{current_data['Misura posizione s_A (m)']} m",
-    )
+    st.metric("Posizione s_A (Achille)", f"{current_data['Misura posizione s_A (m)']} m")
 with m3:
-    st.metric(
-        "Posizione s_T (Tartaruga)",
-        f"{current_data['Misura posizione s_T (m)']} m",
-    )
+    st.metric("Posizione s_T (Tartaruga)", f"{current_data['Misura posizione s_T (m)']} m")
 with m4:
-    st.metric(
-        "Misura distacco Δsₙ",
-        f"{current_data['Misura distacco Δs_n (m)']} m",
-    )
+    st.metric("Misura distacco Δsₙ", f"{current_data['Misura distacco Δs_n (m)']} m")
 
 # ------------------------------------------------------------------------------
 # 2. VISUALIZZAZIONE PRINCIPALE
@@ -319,7 +306,8 @@ with col_left:
     pos_A_val = current_data["Pos_A_float"]
     pos_T_val = current_data["Pos_T_float"]
     
-    max_x = max(d0_val * 1.35, pos_T_val * 1.25 + 35)
+    # Range ampiamente calcolato per evitare qualsiasi taglio a destra
+    max_x = max(d0_val * 1.40, pos_T_val * 1.30 + 40)
 
     # Corsia Tartaruga (y = 1)
     fig_track.add_shape(
@@ -334,15 +322,11 @@ with col_left:
         line=dict(color="#93c5fd", width=5),
     )
 
-    # Marcatori notevoli dei punti geometrici
+    # Marcatori dei punti A_k
     for k in range(min(curr_step + 2, len(df))):
         pos_ak = df.iloc[k]["Pos_A_float"]
         show_label = (k == 0) or (k == curr_step and curr_step > 0)
-        
-        if k == 0:
-            label_k = "A₀ = 0"
-        else:
-            label_k = f"A{to_subscript(str(k))} = T{to_subscript(str(k-1))}"
+        label_k = "A₀ = 0" if k == 0 else f"A{to_subscript(str(k))} = T{to_subscript(str(k-1))}"
 
         fig_track.add_trace(
             go.Scatter(
@@ -357,7 +341,7 @@ with col_left:
             )
         )
 
-    # Segmento geometrico A_{n-1} A_n percorso da Achille nell'ultimo passo
+    # Segmento percorso da Achille nell'ultimo passo
     if curr_step > 0:
         prev_A_val = df.iloc[curr_step - 1]["Pos_A_float"]
         fig_track.add_shape(
@@ -366,14 +350,14 @@ with col_left:
             line=dict(color="#1d4ed8", width=7),
         )
 
-    # Segmento geometrico A_n T_n rappresentante il distacco residuo
+    # Segmento rappresentante il distacco residuo
     fig_track.add_shape(
         type="line",
         x0=pos_A_val, y0=0.5, x1=pos_T_val, y1=0.5,
         line=dict(color="#b91c1c", width=4, dash="dash"),
     )
 
-    # Etichette di posizione dei punti A_n e T_n
+    # Etichette posizioni A_n e T_n con marcatori vettoriali espliciti a destra (➔)
     fig_track.add_trace(
         go.Scatter(
             x=[pos_A_val], y=[0],
@@ -415,7 +399,7 @@ with col_left:
             tickfont=dict(size=14, color="#0f172a")
         ),
         height=290,
-        margin=dict(l=10, r=25, t=10, b=10),
+        margin=dict(l=10, r=30, t=10, b=10),
         template="plotly_white",
         showlegend=False,
     )
@@ -434,7 +418,7 @@ with col_right:
           <div class="cognitive-conflict-box">
               <h4>🧠 Focus:</h4>
               <div class="conflict-text">
-                  "Per raggiungere la Tartaruga, concordi con Zenone che Achille debba prima di tutto coprire la misura del primo tratto $d_1 = {d0_val}\\text{{ m}}$ per giungere nel punto $T_0$ dove si trova la Tartaruga?"
+                  Per raggiungere la Tartaruga, concordi con Zenone che Achille debba prima di tutto coprire la misura del primo tratto $d_1 = {d0_val}\\text{{ m}}$ per giungere nel punto $T_0$ dove si trova la Tartaruga?
               </div>
           </div>
       </div>
@@ -473,7 +457,7 @@ with col_right:
           <div class="cognitive-conflict-box">
               <h4>🧠 Focus:</h4>
               <div class="conflict-text">
-                  "Per azzerare la misura del distacco residuo $\\Delta s_{{{c_step_sub}}} = {distacco_frac_str}\\text{{ m}}$, concordi con Zenone che Achille debba ora percorrere un tratto di misura $d_{{{next_step_sub}}} = {distacco_frac_str}\\text{{ m}}$ per giungere nel punto $T_{{{c_step_sub}}}$?"
+                  Per azzerare la misura del distacco residuo $\\Delta s_{{{c_step_sub}}} = {distacco_frac_str}\\text{{ m}}$, concordi con Zenone che Achille debba ora percorrere un tratto di misura $d_{{{next_step_sub}}} = {distacco_frac_str}\\text{{ m}}$ per giungere nel punto $T_{{{c_step_sub}}}$?
               </div>
           </div>
       </div>
@@ -543,7 +527,7 @@ fig_segments.update_layout(
     ),
     yaxis=dict(visible=False),
     height=140,
-    margin=dict(l=10, r=25, t=10, b=10),
+    margin=dict(l=10, r=30, t=10, b=10),
     template="plotly_white",
     showlegend=True,
     legend=dict(font=dict(size=13))
@@ -559,14 +543,12 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-
 def highlight_current(row):
     if row["Passo n"] == st.session_state.step:
         return ["background-color: #dbeafe; font-weight: bold; color: #1e40af"] * len(
             row
         )
     return [""] * len(row)
-
 
 columns_requested = [
     "Passo n",
@@ -589,7 +571,7 @@ st.markdown(
 <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-left: 6px solid #ef4444; padding: 14px 18px; border-radius: 8px; margin-top: 14px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08);">
     <h4 style="color: #991b1b; margin-top:0; font-weight: 800; font-size: 1.08rem !important;">⚡ Il Cortocircuito Epistemologico di Elea:</h4>
     <p style="color: #7f1d1d; font-size: 1.02rem !important; font-weight: 600; margin-bottom: 0; line-height: 1.48;">
-        "Se la scomposizione logica di Zenone dimostra che Achille deve percorrere una successione di <b>infiniti tratti rettilinei distinti di misura positiva (dₙ > 0)</b> espressi da frazioni sempre più piccole ma mai nulle, come fa l'esperienza reale del mondo sensibile a mostrare che la corsa si conclude e la misura del distacco si annulla?"
+        Se la scomposizione logica di Zenone dimostra che Achille deve percorrere una successione di <b>infiniti tratti rettilinei distinti di misura positiva (dₙ > 0)</b> espressi da frazioni sempre più piccole ma mai nulle, come fa l'esperienza reale del mondo sensibile a mostrare che la corsa si conclude e la misura del distacco si annulla?
     </p>
 </div>
 """,
