@@ -207,7 +207,7 @@ curr_step = st.session_state.step
 current_data = df.iloc[curr_step]
 
 # ------------------------------------------------------------------------------
-# 1. CONDIZIONI INIZIALI (Icone adeguate e orientate a destra con .flip-right)
+# 1. CONDIZIONI INIZIALI
 # ------------------------------------------------------------------------------
 st.markdown(
     f"""
@@ -259,3 +259,47 @@ with col_left:
 
     pos_A_val = current_data["Pos_A_float"]
     pos_T_val = current_data["Pos_T_float"]
+    max_x = max(d0_val * 1.25, pos_T_val * 1.08)
+
+    # Corsia Tartaruga (y = 1)
+    fig_track.add_shape(
+        type="line",
+        x0=0, y0=1, x1=max_x, y1=1,
+        line=dict(color="#bbf7d0", width=4),
+    )
+    # Corsia Achille (y = 0)
+    fig_track.add_shape(
+        type="line",
+        x0=0, y0=0, x1=max_x, y1=0,
+        line=dict(color="#bfdbfe", width=4),
+    )
+
+    # Marcatori notevoli
+    for k in range(min(curr_step + 2, len(df))):
+        pos_ak = df.iloc[k]["Pos_A_float"]
+        show_label = (k == 0) or (k == curr_step and curr_step > 0)
+        
+        if k == 0:
+            label_k = "A₀ = 0"
+        else:
+            label_k = f"A{to_subscript(str(k))} = T{to_subscript(str(k-1))}"
+
+        fig_track.add_trace(
+            go.Scatter(
+                x=[pos_ak], y=[0],
+                mode="markers+text" if show_label else "markers",
+                marker=dict(symbol="line-ns", size=12, color="#475569"),
+                text=[f"| {label_k}"] if show_label else None,
+                textposition="bottom center",
+                hoverinfo="none",
+                showlegend=False,
+            )
+        )
+
+    # Tratto d_n compiuto da Achille nell'ultimo scatto
+    if curr_step > 0:
+        prev_A_val = df.iloc[curr_step - 1]["Pos_A_float"]
+        fig_track.add_shape(
+            type="line",
+            x0=prev_A_val, y0=0, x1=pos_A_val, y1=0,
+            line=dict(color
