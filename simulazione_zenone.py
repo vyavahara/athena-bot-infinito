@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-# Configurazione della Pagina Streamlit con layout compatto e pulito
+# Configurazione della Pagina Streamlit
 st.set_page_config(
     page_title="Athena - Laboratorio Socratico al Paradosso di Elea",
     page_icon="🏛️",
@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Custom CSS per eliminare sovrapposizioni e regolare le interlinee
+# Custom CSS per layout compatto e pulito
 st.markdown(
     """
 <style>
@@ -50,10 +50,6 @@ st.markdown(
         color: #0f172a; font-weight: 700; font-size: 1.1rem;
         margin-top: 14px; margin-bottom: 4px;
     }
-    .section-subtitle {
-        color: #475569; font-weight: 600; font-size: 0.92rem;
-        margin-top: 0px; margin-bottom: 10px;
-    }
     
     .fraction-badge {
         background-color: #f1f5f9; border: 1px solid #cbd5e1;
@@ -78,16 +74,16 @@ st.markdown(
 
 
 def to_subscript(text: str) -> str:
-  """Sostituisce le cifre e le lettere 'n' con le corrispettive Unicode a pedice."""
-  sub_map = str.maketrans("0123456789n", "₀₁₂₃₄₅₆₇₈₉ₙ")
-  return str(text).translate(sub_map)
+    """Sostituisce cifre e lettere 'n' con le corrispettive Unicode a pedice."""
+    sub_map = str.maketrans("0123456789n", "₀₁₂₃₄₅₆₇₈₉ₙ")
+    return str(text).translate(sub_map)
 
 
 def format_frac_html(f: Fraction) -> str:
-  """Rende le frazioni esatte in modo chiaro e leggibile."""
-  if f.denominator == 1:
-    return f"{f.numerator}"
-  return f"{f.numerator}/{f.denominator}"
+    """Rende le frazioni esatte in modo chiaro e leggibile."""
+    if f.denominator == 1:
+        return f"{f.numerator}"
+    return f"{f.numerator}/{f.denominator}"
 
 
 # Header Compatto
@@ -125,18 +121,18 @@ max_steps = st.sidebar.slider(
 
 # Controllo Stato Navigazione
 if "step" not in st.session_state:
-  st.session_state.step = 0
+    st.session_state.step = 0
 
 col_btn1, col_btn2, col_btn3, _ = st.columns([1.2, 1.2, 1.2, 2.4])
 with col_btn1:
-  if st.button("⏮️ Stato Iniziale (n = 0)"):
-    st.session_state.step = 0
+    if st.button("⏮️ Stato Iniziale (n = 0)"):
+        st.session_state.step = 0
 with col_btn2:
-  if st.button("◀️ Passo Precedente") and st.session_state.step > 0:
-    st.session_state.step -= 1
+    if st.button("◀️ Passo Precedente") and st.session_state.step > 0:
+        st.session_state.step -= 1
 with col_btn3:
-  if st.button("▶️ Passo Successivo") and st.session_state.step < max_steps:
-    st.session_state.step += 1
+    if st.button("▶️ Passo Successivo") and st.session_state.step < max_steps:
+        st.session_state.step += 1
 
 st.sidebar.markdown("---")
 st.sidebar.markdown(f"**Passo Selezionato:** n = {st.session_state.step}")
@@ -150,30 +146,30 @@ s_A_frac = Fraction(0, 1)
 s_T_frac = d0_frac
 
 for n in range(max_steps + 1):
-  if n == 0:
-    tratto_A_frac = Fraction(0, 1)
-    tratto_T_frac = Fraction(0, 1)
-    distacco_frac = d0_frac
-  else:
-    distacco_precedente = steps_data[n - 1]["Distacco_Frac"]
-    tratto_A_frac = distacco_precedente
-    tratto_T_frac = tratto_A_frac * r_frac
-    s_A_frac += tratto_A_frac
-    s_T_frac += tratto_T_frac
-    distacco_frac = s_T_frac - s_A_frac
+    if n == 0:
+        tratto_A_frac = Fraction(0, 1)
+        tratto_T_frac = Fraction(0, 1)
+        distacco_frac = d0_frac
+    else:
+        distacco_precedente = steps_data[n - 1]["Distacco_Frac"]
+        tratto_A_frac = distacco_precedente
+        tratto_T_frac = tratto_A_frac * r_frac
+        s_A_frac += tratto_A_frac
+        s_T_frac += tratto_T_frac
+        distacco_frac = s_T_frac - s_A_frac
 
-  steps_data.append({
-      "Passo n": n,
-      "Tratto percorso da Achille": format_frac_html(tratto_A_frac),
-      "Posizione raggiunta da Achille": format_frac_html(s_A_frac),
-      "Posizione della tartaruga": format_frac_html(s_T_frac),
-      "Vantaggio della tartaruga": format_frac_html(distacco_frac),
-      "Pos_A_float": float(s_A_frac),
-      "Pos_T_float": float(s_T_frac),
-      "Tratto_A_float": float(tratto_A_frac),
-      "Distacco_Frac": distacco_frac,
-      "Tratto_A_Frac": tratto_A_frac,
-  })
+    steps_data.append({
+        "Passo n": n,
+        "Tratto percorso da Achille": format_frac_html(tratto_A_frac),
+        "Posizione raggiunta da Achille": format_frac_html(s_A_frac),
+        "Posizione della tartaruga": format_frac_html(s_T_frac),
+        "Vantaggio della tartaruga": format_frac_html(distacco_frac),
+        "Pos_A_float": float(s_A_frac),
+        "Pos_T_float": float(s_T_frac),
+        "Tratto_A_float": float(tratto_A_frac),
+        "Distacco_Frac": distacco_frac,
+        "Tratto_A_Frac": tratto_A_frac,
+    })
 
 df = pd.DataFrame(steps_data)
 curr_step = st.session_state.step
@@ -198,147 +194,147 @@ st.markdown(
 # Metric Banner
 m1, m2, m3, m4 = st.columns(4)
 with m1:
-  st.metric("Passo Logico (n)", f"{int(current_data['Passo n'])}")
+    st.metric("Passo Logico (n)", f"{int(current_data['Passo n'])}")
 with m2:
-  st.metric(
-      "Posizione Aₙ (Achille)",
-      f"{current_data['Posizione raggiunta da Achille']} m",
-  )
+    st.metric(
+        "Posizione Aₙ (Achille)",
+        f"{current_data['Posizione raggiunta da Achille']} m",
+    )
 with m3:
-  st.metric(
-      "Posizione Tₙ (Tartaruga)",
-      f"{current_data['Posizione della tartaruga']} m",
-  )
+    st.metric(
+        "Posizione Tₙ (Tartaruga)",
+        f"{current_data['Posizione della tartaruga']} m",
+    )
 with m4:
-  st.metric(
-      "Vantaggio Δsₙ (Tartaruga)",
-      f"{current_data['Vantaggio della tartaruga']} m",
-  )
+    st.metric(
+        "Vantaggio Δsₙ (Tartaruga)",
+        f"{current_data['Vantaggio della tartaruga']} m",
+    )
 
 # --- 2. SCHERMATA PRINCIPALE AFFIANCATA (PISTA A SINISTRA, ATHENA A DESTRA) ---
 col_left, col_right = st.columns([1.1, 1.0])
 
 with col_left:
-  st.markdown(
-      f"<div class='section-title'>🏃🐢 Piste Parallele e Posizione (n ="
-      f" {curr_step})</div>",
-      unsafe_allow_html=True,
-  )
+    st.markdown(
+        f"<div class='section-title'>🏃🐢 Piste Parallele e Posizione (n ="
+        f" {curr_step})</div>",
+        unsafe_allow_html=True,
+    )
 
-  fig_track = go.Figure()
+    fig_track = go.Figure()
 
-  pos_A_val = current_data["Pos_A_float"]
-  pos_T_val = current_data["Pos_T_float"]
-  max_x = max(d0_val * 1.25, pos_T_val * 1.08)
+    pos_A_val = current_data["Pos_A_float"]
+    pos_T_val = current_data["Pos_T_float"]
+    max_x = max(d0_val * 1.25, pos_T_val * 1.08)
 
-  # Corsia Tartaruga (y = 1)
-  fig_track.add_shape(
-      type="line",
-      x0=0,
-      y0=1,
-      x1=max_x,
-      y1=1,
-      line=dict(color="#bbf7d0", width=4),
-  )
-  # Corsia Achille (y = 0)
-  fig_track.add_shape(
-      type="line",
-      x0=0,
-      y0=0,
-      x1=max_x,
-      y1=0,
-      line=dict(color="#bfdbfe", width=4),
-  )
+    # Corsia Tartaruga (y = 1)
+    fig_track.add_shape(
+        type="line",
+        x0=0,
+        y0=1,
+        x1=max_x,
+        y1=1,
+        line=dict(color="#bbf7d0", width=4),
+    )
+    # Corsia Achille (y = 0)
+    fig_track.add_shape(
+        type="line",
+        x0=0,
+        y0=0,
+        x1=max_x,
+        y1=0,
+        line=dict(color="#bfdbfe", width=4),
+    )
 
-  # Marcatori notevoli rigorosamente con pedici Unicode (A₀, T₀=A₁, T₁=A₂, ecc.)
-  for k in range(min(curr_step + 2, len(df))):
-    pos_ak = df.iloc[k]["Pos_A_float"]
-    if k == 0:
-      label_k = "A₀ = 0"
-    else:
-      label_k = f"A{to_subscript(str(k))} = T{to_subscript(str(k-1))}"
+    # Marcatori notevoli con pedici Unicode (A₀, T₀=A₁, T₁=A₂, ecc.)
+    for k in range(min(curr_step + 2, len(df))):
+        pos_ak = df.iloc[k]["Pos_A_float"]
+        if k == 0:
+            label_k = "A₀ = 0"
+        else:
+            label_k = f"A{to_subscript(str(k))} = T{to_subscript(str(k-1))}"
 
+        fig_track.add_trace(
+            go.Scatter(
+                x=[pos_ak],
+                y=[0],
+                mode="markers+text",
+                marker=dict(symbol="line-ns", size=10, color="#64748b"),
+                text=[f"| {label_k}"],
+                textposition="bottom center",
+                hoverinfo="none",
+            )
+        )
+
+    # Tratto dₙ compiuto da Achille nell'ultimo scatto
+    if curr_step > 0:
+        prev_A_val = df.iloc[curr_step - 1]["Pos_A_float"]
+        fig_track.add_shape(
+            type="line",
+            x0=prev_A_val,
+            y0=0,
+            x1=pos_A_val,
+            y1=0,
+            line=dict(color="#2563eb", width=6),
+        )
+
+    # Segmento orizzontale del Vantaggio Residuo sulla corsia
+    fig_track.add_shape(
+        type="line",
+        x0=pos_A_val,
+        y0=0.5,
+        x1=pos_T_val,
+        y1=0.5,
+        line=dict(color="#dc2626", width=3, dash="dash"),
+    )
+
+    # Icona Achille (y = 0)
     fig_track.add_trace(
         go.Scatter(
-            x=[pos_ak],
+            x=[pos_A_val],
             y=[0],
             mode="markers+text",
-            marker=dict(symbol="line-ns", size=10, color="#64748b"),
-            text=[f"| {label_k}"],
-            textposition="bottom center",
-            hoverinfo="none",
+            name="Achille",
+            marker=dict(symbol="triangle-right", size=20, color="#1e3c72"),
+            text=[f"🏃 Achille (A{to_subscript(str(curr_step))})"],
+            textposition="top center",
         )
     )
 
-  # Tratto dₙ compiuto da Achille nell'ultimo scatto
-  if curr_step > 0:
-    prev_A_val = df.iloc[curr_step - 1]["Pos_A_float"]
-    fig_track.add_shape(
-        type="line",
-        x0=prev_A_val,
-        y0=0,
-        x1=pos_A_val,
-        y1=0,
-        line=dict(color="#2563eb", width=6),
+    # Icona Tartaruga (y = 1)
+    fig_track.add_trace(
+        go.Scatter(
+            x=[pos_T_val],
+            y=[1],
+            mode="markers+text",
+            name="Tartaruga",
+            marker=dict(symbol="circle", size=16, color="#16a34a"),
+            text=[f"🐢 Tartaruga (T{to_subscript(str(curr_step))})"],
+            textposition="top center",
+        )
     )
 
-  # Segmento orizzontale del Vantaggio Residuo sulla corsia
-  fig_track.add_shape(
-      type="line",
-      x0=pos_A_val,
-      y0=0.5,
-      x1=pos_T_val,
-      y1=0.5,
-      line=dict(color="#dc2626", width=3, dash="dash"),
-  )
+    fig_track.update_layout(
+        xaxis=dict(
+            title="Distanza sulla Retta Spaziale (metri)", range=[-5, max_x]
+        ),
+        yaxis=dict(
+            tickvals=[0, 1],
+            ticktext=["Corsia Achille", "Corsia Tartaruga"],
+            range=[-0.5, 1.5],
+        ),
+        height=270,
+        margin=dict(l=10, r=10, t=10, b=10),
+        template="plotly_white",
+        showlegend=False,
+    )
 
-  # Icona Achille (y = 0)
-  fig_track.add_trace(
-      go.Scatter(
-          x=[pos_A_val],
-          y=[0],
-          mode="markers+text",
-          name="Achille",
-          marker=dict(symbol="triangle-right", size=20, color="#1e3c72"),
-          text=[f"🏃 Achille (A{to_subscript(str(curr_step))})"],
-          textposition="top center",
-      )
-  )
-
-  # Icona Tartaruga (y = 1)
-  fig_track.add_trace(
-      go.Scatter(
-          x=[pos_T_val],
-          y=[1],
-          mode="markers+text",
-          name="Tartaruga",
-          marker=dict(symbol="circle", size=16, color="#16a34a"),
-          text=[f"🐢 Tartaruga (T{to_subscript(str(curr_step))})"],
-          textposition="top center",
-      )
-  )
-
-  fig_track.update_layout(
-      xaxis=dict(
-          title="Distanza sulla Retta Spaziale (metri)", range=[-5, max_x]
-      ),
-      yaxis=dict(
-          tickvals=[0, 1],
-          ticktext=["Corsia Achille", "Corsia Tartaruga"],
-          range=[-0.5, 1.5],
-      ),
-      height=270,
-      margin=dict(l=10, r=10, t=10, b=10),
-      template="plotly_white",
-      showlegend=False,
-  )
-
-  st.plotly_chart(fig_track, use_container_width=True)
+    st.plotly_chart(fig_track, use_container_width=True)
 
 with col_right:
-  if curr_step == 0:
-    st.markdown(
-        f"""
+    if curr_step == 0:
+        st.markdown(
+            f"""
       <div class="athena-socratic-card">
           <h3>🏛️ Athena: Osservazioni maieutiche (n = 0)</h3>
           <p><b>1. Configurazione Spaziale:</b> Achille è fermo al punto A₀ = 0 m. La Tartaruga parte con il vantaggio iniziale T₀ = {d0_val} m.</p>
@@ -352,33 +348,34 @@ with col_right:
           </div>
       </div>
       """,
-        unsafe_allow_html=True,
-    )
-  else:
-    tratto_a_frac_str = current_data["Tratto percorso da Achille"]
-    tratto_t_frac_str = format_frac_html(
-        Fraction(current_data["Tratto_A_Frac"], r_denom)
-    )
-    distacco_frac_str = current_data["Vantaggio della tartaruga"]
+            unsafe_allow_html=True,
+        )
+    else:
+        tratto_a_frac_str = current_data["Tratto percorso da Achille"]
+        tratto_t_frac_str = format_frac_html(
+            Fraction(current_data["Tratto_A_Frac"], r_denom)
+        )
+        distacco_frac_str = current_data["Vantaggio della tartaruga"]
 
-    somma_frazioni_list = [
-        format_frac_html(df.iloc[k]["Tratto_A_Frac"])
-        for k in range(1, curr_step + 1)
-    ]
-    somma_frazioni_str = " + ".join(somma_frazioni_list)
+        # RETTIFICA 8: Mostra esclusivamente i tratti coinvolti (es. 100 + 10 + 1)
+        somma_frazioni_list = [
+            format_frac_html(df.iloc[k]["Tratto_A_Frac"])
+            for k in range(1, curr_step + 1)
+        ]
+        somma_frazioni_str = " + ".join(somma_frazioni_list)
 
-    c_step_sub = to_subscript(str(curr_step))
-    prev_step_sub = to_subscript(str(curr_step - 1))
+        c_step_sub = to_subscript(str(curr_step))
+        prev_step_sub = to_subscript(str(curr_step - 1))
 
-    st.markdown(
-        f"""
+        st.markdown(
+            f"""
       <div class="athena-socratic-card">
           <h3>🏛️ Athena: Guida Socratica - Passo n = {curr_step}</h3>
           <p><b>1. Azione di Achille:</b> Achille copre il tratto <span class="fraction-badge">d{c_step_sub} = {tratto_a_frac_str} m</span>, giungendo in A{c_step_sub} (ex posizione T{prev_step_sub} della Tartaruga).</p>
           <p><b>2. Spostamento Tartaruga:</b> Nello stesso tempo, la Tartaruga avanza in T{c_step_sub}, coprendo il micro-tratto <span class="fraction-badge">{tratto_t_frac_str} m</span> (pari a 1/{r_denom} di d{c_step_sub}).</p>
-          <p><b>3. Distanza Totale Accumulata Sₙ:</b><br>
+          <p><b>3. Tratti Coinvolti:</b><br>
           <div style="margin: 4px 0; padding: 6px 10px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; font-family: monospace; font-size: 0.88rem;">
-              <b>S{c_step_sub} = d₁ + ... + d{c_step_sub} = {somma_frazioni_str} = {current_data['Posizione raggiunta da Achille']} m</b>
+              <b>{somma_frazioni_str}</b>
           </div>
           </p>
           <p><b>4. Vantaggio Residuo Δsₙ:</b> Vi è un nuovo segmento residuo pari a <span class="fraction-badge">Δs{c_step_sub} = {distacco_frac_str} m</span>.</p>
@@ -391,76 +388,10 @@ with col_right:
           </div>
       </div>
       """,
-        unsafe_allow_html=True,
-    )
+            unsafe_allow_html=True,
+        )
 
-# --- 3. SCOMPOSIZIONE CUMULATA DEI TRATTI RETTILINEI ---
-st.markdown(
-    f"<div class='section-title'>📏 Scomposizione dei Tratti Rettilinei di Achille"
-    f" (fino a n = {curr_step})</div>",
-    unsafe_allow_html=True,
-)
-st.markdown(
-    "<div class='section-subtitle'>Successione dei segmenti percorsi: Sₙ = d₁ +"
-    " d₂ + ... + dₙ</div>",
-    unsafe_allow_html=True,
-)
-
-fig_segments = go.Figure()
-palette = [
-    "#1f77b4",
-    "#ff7f0e",
-    "#2ca02c",
-    "#d62728",
-    "#9467bd",
-    "#8c564b",
-    "#e377c2",
-    "#bcbd22",
-    "#17becf",
-]
-
-for k in range(1, curr_step + 1):
-  tratto_val = df.iloc[k]["Tratto_A_float"]
-  tratto_frac_label = df.iloc[k]["Tratto percorso da Achille"]
-  color = palette[(k - 1) % len(palette)]
-  k_sub = to_subscript(str(k))
-  fig_segments.add_trace(
-      go.Bar(
-          y=["Tratti Achille"],
-          x=[tratto_val],
-          name=f"d{k_sub} ({tratto_frac_label} m)",
-          orientation="h",
-          marker=dict(color=color),
-          hoverinfo="name+x",
-      )
-  )
-
-curr_step_sub = to_subscript(str(curr_step))
-fig_segments.add_trace(
-    go.Scatter(
-        x=[pos_T_val],
-        y=["Tratti Achille"],
-        mode="markers+text",
-        name=f"Tartaruga in T{curr_step_sub}",
-        marker=dict(symbol="circle", size=12, color="#16a34a"),
-        text=[f"🐢 T{curr_step_sub}"],
-        textposition="top center",
-    )
-)
-
-fig_segments.update_layout(
-    barmode="stack",
-    xaxis=dict(title="Distanza sulla Pista (metri)", range=[0, max_x]),
-    yaxis=dict(visible=False),
-    height=120,
-    margin=dict(l=10, r=10, t=10, b=10),
-    template="plotly_white",
-    showlegend=True,
-)
-
-st.plotly_chart(fig_segments, use_container_width=True)
-
-# --- 4. TABELLA ANALITICA RICONFIGURATA (ESATTAMENTE COME DA RICHIEDENTE) ---
+# --- 3. TABELLA ANALITICA RICONFIGURATA ---
 st.markdown(
     "<div class='section-title'>📊 Tabella Analitica dei Punti e dei"
     " Tratti</div>",
@@ -469,11 +400,11 @@ st.markdown(
 
 
 def highlight_current(row):
-  if row["Passo n"] == st.session_state.step:
-    return ["background-color: #e0f2fe; font-weight: bold; color: #0369a1"] * len(
-        row
-    )
-  return [""] * len(row)
+    if row["Passo n"] == st.session_state.step:
+        return ["background-color: #e0f2fe; font-weight: bold; color: #0369a1"] * len(
+            row
+        )
+    return [""] * len(row)
 
 
 columns_requested = [
@@ -489,7 +420,7 @@ st.dataframe(
     use_container_width=True,
 )
 
-# --- 5. CHIUSURA MAIEUTICA ---
+# --- 4. CHIUSURA MAIEUTICA ---
 st.markdown(
     """
 <div style="background-color: #fef2f2; border: 1px solid #fee2e2; border-left: 5px solid #ef4444; padding: 10px 14px; border-radius: 6px; margin-top: 10px;">
