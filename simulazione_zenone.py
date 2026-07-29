@@ -45,7 +45,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ------------------------------------------------------------------------------
-# 5) INTESTAZIONE FORMATTATA
+# INTESTAZIONE FORMATTATA
 # ------------------------------------------------------------------------------
 st.markdown("""
     <div class="header-container">
@@ -67,9 +67,6 @@ x0_achille = 0.0
 x0_tartaruga = 100.0  # Vantaggio iniziale della tartaruga (m)
 rapporto = 0.1        # Achille è 10 volte più veloce
 
-# Calcolo posizioni teoriche
-# Passo 0: Achille a 0, Tartaruga a 100
-# Passo n: Achille raggiunge dove era la tartaruga al passo n-1
 passi_data = []
 a_pos = x0_achille
 t_pos = x0_tartaruga
@@ -82,7 +79,6 @@ for i in range(15):
         "Posizione Tartaruga (m)": round(t_pos, 4),
         "Distacco Δs (m)": round(distanza, 4)
     })
-    # Avanzamento
     a_pos = t_pos
     t_pos = t_pos + distanza * rapporto
 
@@ -104,7 +100,7 @@ with col_ctrl2:
 n = st.session_state.step
 
 # ------------------------------------------------------------------------------
-# 1) RENDERING GRAFICO (Senza sovrapposizioni e con sfalsamento)
+# RENDERING GRAFICO
 # ------------------------------------------------------------------------------
 curr_a = passi_data[n]["Posizione Achille (m)"]
 curr_t = passi_data[n]["Posizione Tartaruga (m)"]
@@ -148,19 +144,24 @@ for i in range(n + 1):
         font=dict(size=12, color="#334155")
     )
 
-# Visualizzazione segmento d'avanzamento corrente (sopra l'asse per non interferire con le etichette)
+# Visualizzazione segmento d'avanzamento corrente
 if n > 0:
     prev_a = passi_data[n-1]["Posizione Achille (m)"]
     fig.add_trace(go.Scatter(
         x=[prev_a, curr_a], y=[0.15, 0.15],
-        mode="lines+markers",
+        mode="lines",
         line=dict(color="#2563eb", width=3),
-        marker=dict(symbol="arrow", size=10, angleref="previous"),
-        name=f"Tratto d_{n}",
         showlegend=False
     ))
+    fig.add_trace(go.Scatter(
+        x=[curr_a], y=[0.15],
+        mode="markers",
+        marker=dict(symbol="triangle-right", color="#2563eb", size=10),
+        showlegend=False,
+        hoverinfo="none"
+    ))
 
-# Marker Achille (allineato a sinistra)
+# Marker Achille
 fig.add_trace(go.Scatter(
     x=[curr_a], y=[0.4],
     mode="text",
@@ -170,7 +171,7 @@ fig.add_trace(go.Scatter(
     showlegend=False
 ))
 
-# Marker Tartaruga (allineato a sinistra)
+# Marker Tartaruga
 fig.add_trace(go.Scatter(
     x=[curr_t], y=[0.4],
     mode="text",
@@ -190,17 +191,13 @@ fig.update_layout(
 
 st.plotly_chart(fig, use_container_width=True)
 
-# Note: 2) Il "Rapporto Relazionale (r)" è stato completamente rimosso dall'interfaccia.
-# Note: 3) Il box "Cortocircuito Cognitivo" è stato rimosso per ogni passo n.
-
 st.markdown("---")
 
 # ------------------------------------------------------------------------------
-# 4) TABELLA DINAMICA
+# TABELLA DINAMICA
 # ------------------------------------------------------------------------------
 st.subheader("TABELLA")
 
-# Creazione del dataframe dinamico con i soli passi fino a quello corrente n
 df_totale = pd.DataFrame(passi_data)
 df_visibile = df_totale.iloc[:n+1].copy()
 
