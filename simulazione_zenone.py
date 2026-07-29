@@ -14,7 +14,7 @@ st.set_page_config(
 )
 
 # ------------------------------------------------------------------------------
-# CSS PERSONALIZZATO (Con centramento verticale del banner)
+# CSS PERSONALIZZATO (Con centramento verticale del banner e flip icone)
 # ------------------------------------------------------------------------------
 st.markdown(
     """
@@ -39,9 +39,15 @@ st.markdown(
     .hero-banner h1 { 
         color: #ffffff; 
         font-weight: 800; 
-        font-size: 1.5rem; 
+        font-size: 1.55rem; 
         margin: 0 !important; 
         line-height: 1.2;
+    }
+    
+    /* Classe per riflettere le emoji orizzontalmente verso destra */
+    .flip-right {
+        display: inline-block;
+        transform: scaleX(-1);
     }
     
     .init-conditions-card {
@@ -76,11 +82,11 @@ st.markdown(
     
     .cognitive-conflict-box {
         background-color: #fffbeb; border: 1px solid #fef3c7;
-        border-left: 5px solid #f59e0b; padding: 8px 10px;
-        border-radius: 6px; margin-top: 8px;
+        border-left: 5px solid #f59e0b; padding: 10px 12px;
+        border-radius: 6px; margin-top: 10px;
     }
-    .cognitive-conflict-box h4 { color: #b45309; margin-top: 0; margin-bottom: 2px; font-size: 0.9rem; }
-    .conflict-text { color: #78350f; font-weight: 600; font-size: 0.88rem; line-height: 1.35; }
+    .cognitive-conflict-box h4 { color: #b45309; margin-top: 0; margin-bottom: 3px; font-size: 0.92rem; font-weight: 700; }
+    .conflict-text { color: #78350f; font-weight: 600; font-size: 0.89rem; line-height: 1.38; }
 
     div[data-testid="stDataFrame"] { font-size: 0.85rem !important; }
     [data-testid="stMetricValue"] { font-size: 1.1rem !important; font-weight: 700; }
@@ -112,7 +118,7 @@ def format_frac_html(f: Fraction) -> str:
 st.markdown(
     """
 <div class="hero-banner">
-    <h1>🏃▶ 🐢▶ Simulazione del Paradosso di Achille e la tartaruga</h1>
+    <h1><span class="flip-right">🏃‍♂️</span> <span class="flip-right">🐢</span> Simulazione del Paradosso di Achille e la tartaruga</h1>
 </div>
 """,
     unsafe_allow_html=True,
@@ -208,8 +214,8 @@ st.markdown(
 <div class="init-conditions-card">
     <h4>📋 Condizioni Iniziali della Gara (Passo n = 0)</h4>
     <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 8px; font-size: 0.88rem;">
-        <span>🏃 <b>Posizione Iniziale Achille (A₀):</b> 0 m</span>
-        <span>🐢 <b>Vantaggio Iniziale Tartaruga (T₀ = d₁):</b> {d0_val} m</span>
+        <span><span class="flip-right">🏃‍♂️</span> <b>Posizione Iniziale Achille (A₀):</b> 0 m</span>
+        <span><span class="flip-right">🐢</span> <b>Vantaggio Iniziale Tartaruga (T₀ = d₁):</b> {d0_val} m</span>
         <span>⚡ <b>Velocità:</b> Achille corre <b>{r_denom} volte più veloce</b> della Tartaruga</span>
     </div>
 </div>
@@ -244,7 +250,7 @@ col_left, col_right = st.columns([1.1, 1.0])
 
 with col_left:
     st.markdown(
-        f"<div class='section-title'>🏃🐢 Piste Parallele e Posizione (n ="
+        f"<div class='section-title'><span class='flip-right'>🏃‍♂️</span><span class='flip-right'>🐢</span> Piste Parallele e Posizione (n ="
         f" {curr_step})</div>",
         unsafe_allow_html=True,
     )
@@ -289,7 +295,7 @@ with col_left:
                 x=[pos_ak],
                 y=[0],
                 mode="markers+text" if show_label else "markers",
-                marker=dict(symbol="line-ns", size=10, color="#64748b"),
+                marker=dict(symbol="line-ns", size=12, color="#475569"),
                 text=[f"| {label_k}"] if show_label else None,
                 textposition="bottom center",
                 hoverinfo="none",
@@ -319,32 +325,26 @@ with col_left:
         line=dict(color="#dc2626", width=3, dash="dash"),
     )
 
-    # Icona Achille (y = 0)
-    fig_track.add_trace(
-        go.Scatter(
-            x=[pos_A_val],
-            y=[0],
-            mode="markers+text",
-            name="Achille",
-            marker=dict(symbol="triangle-right", size=20, color="#1e3c72"),
-            text=[f"🏃▶ Achille (A{to_subscript(str(curr_step))})"],
-            textposition="top right",
-            showlegend=False,
-        )
+    # Icona Achille (y = 0) - Icona con spinta orientata verso destra tramite HTML/Plotly annotation
+    fig_track.add_annotation(
+        x=pos_A_val,
+        y=0,
+        text=f"<span class='flip-right' style='font-size:20px;'>🏃‍♂️</span> <b>Achille (A{to_subscript(str(curr_step))})</b>",
+        showarrow=False,
+        xanchor="left",
+        yshift=22,
+        font=dict(size=14, color="#1e3c72")
     )
 
-    # Icona Tartaruga (y = 1)
-    fig_track.add_trace(
-        go.Scatter(
-            x=[pos_T_val],
-            y=[1],
-            mode="markers+text",
-            name="Tartaruga",
-            marker=dict(symbol="triangle-right", size=16, color="#16a34a"),
-            text=[f"🐢▶ Tartaruga (T{to_subscript(str(curr_step))})"],
-            textposition="top right",
-            showlegend=False,
-        )
+    # Icona Tartaruga (y = 1) - Icona con spinta orientata verso destra
+    fig_track.add_annotation(
+        x=pos_T_val,
+        y=1,
+        text=f"<span class='flip-right' style='font-size:20px;'>🐢</span> <b>Tartaruga (T{to_subscript(str(curr_step))})</b>",
+        showarrow=False,
+        xanchor="left",
+        yshift=22,
+        font=dict(size=14, color="#15803d")
     )
 
     fig_track.update_layout(
@@ -398,6 +398,7 @@ with col_right:
 
         c_step_sub = to_subscript(str(curr_step))
         prev_step_sub = to_subscript(str(curr_step - 1))
+        next_step_sub = to_subscript(str(curr_step + 1))
 
         st.markdown(
             f"""
@@ -414,7 +415,7 @@ with col_right:
           <div class="cognitive-conflict-box">
               <h4>🧠 Focus:</h4>
               <div class="conflict-text">
-                  "Il vantaggio residuo (Δs{c_step_sub} = {distacco_frac_str} m) è <b>rigorosamente diverso da zero</b>."
+                  "Per annullare il vantaggio residuo Δs{c_step_sub} = {distacco_frac_str} m, concordi con Zenone che Achille debba ora percorrere il successivo tratto d{next_step_sub} = {distacco_frac_str} m per giungere in T{c_step_sub} dove la Tartaruga si trova ora?"
               </div>
           </div>
       </div>
@@ -466,17 +467,13 @@ for k in range(1, curr_step + 1):
     )
 
 curr_step_sub = to_subscript(str(curr_step))
-fig_segments.add_trace(
-    go.Scatter(
-        x=[pos_T_val],
-        y=["Tratti Achille"],
-        mode="markers+text",
-        name=f"Tartaruga in T{curr_step_sub}",
-        marker=dict(symbol="triangle-right", size=12, color="#16a34a"),
-        text=[f"🐢▶ T{curr_step_sub}"],
-        textposition="top right",
-        showlegend=True,
-    )
+fig_segments.add_annotation(
+    x=pos_T_val,
+    y="Tratti Achille",
+    text=f"<span class='flip-right' style='font-size:18px;'>🐢</span> <b>T{curr_step_sub}</b>",
+    showarrow=False,
+    xanchor="left",
+    font=dict(size=14, color="#15803d")
 )
 
 fig_segments.update_layout(
