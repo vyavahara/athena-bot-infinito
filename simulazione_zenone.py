@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 # ------------------------------------------------------------------------------
-# CONFIGURAZIONE PAGINA & CSS
+# CONFIGURAZIONE PAGINA
 # ------------------------------------------------------------------------------
 st.set_page_config(
     page_title="Athena - Paradosso di Elea",
@@ -11,6 +11,9 @@ st.set_page_config(
     layout="wide"
 )
 
+# ------------------------------------------------------------------------------
+# CSS PERSONALIZZATO (Intestazione & Layout)
+# ------------------------------------------------------------------------------
 st.markdown("""
     <style>
     .header-container {
@@ -50,34 +53,33 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ------------------------------------------------------------------------------
-# GESTIONE STATO & GENEREAZIONE DATI
+# GESTIONE STATO E GENERAZIONE DATI
 # ------------------------------------------------------------------------------
 if "step" not in st.session_state:
     st.session_state.step = 0
 
-@st.cache_data
-def calcola_passi(x0_a=0.0, x0_t=100.0, rapporto=0.1, num_passi=15):
-    """Calcola la successione delle posizioni per la simulazione."""
-    data = []
-    a_pos = float(x0_a)
-    t_pos = float(x0_t)
+# Parametri modello
+x0_achille = 0.0
+x0_tartaruga = 100.0
+rapporto = 0.1
 
-    for i in range(num_passi):
-        distanza = t_pos - a_pos
-        data.append({
-            "Passo (n)": i,
-            "Posizione Achille (m)": round(a_pos, 4),
-            "Posizione Tartaruga (m)": round(t_pos, 4),
-            "Distacco Δs (m)": round(distanza, 4)
-        })
-        a_pos = t_pos
-        t_pos += distanza * rapporto
-    return data
+passi_data = []
+a_pos = float(x0_achille)
+t_pos = float(x0_tartaruga)
 
-passi_data = calcola_passi()
+for i in range(15):
+    distanza = t_pos - a_pos
+    passi_data.append({
+        "Passo (n)": int(i),
+        "Posizione Achille (m)": float(round(a_pos, 4)),
+        "Posizione Tartaruga (m)": float(round(t_pos, 4)),
+        "Distacco Δs (m)": float(round(distanza, 4))
+    })
+    a_pos = t_pos
+    t_pos = t_pos + (distanza * rapporto)
 
 # ------------------------------------------------------------------------------
-# CONTROLLI
+# CONTROLLI SIMULAZIONE
 # ------------------------------------------------------------------------------
 col_ctrl1, col_ctrl2, _ = st.columns([1, 1, 4])
 
@@ -101,23 +103,26 @@ curr_t = float(passi_data[n]["Posizione Tartaruga (m)"])
 
 fig = go.Figure()
 
-# 1. Asse di riferimento
+# 1. Asse di riferimento principale
 fig.add_trace(go.Scatter(
-    x=[-5, 120], y=[0, 0],
+    x=[-5, 120],
+    y=[0.0, 0.0],
     mode="lines",
-    line=dict(color="#cbd5e1", width=3),
+    line=dict(color="#cbd5e1", width=4),
     showlegend=False,
     hoverinfo="none"
 ))
 
-# 2. Marcatori e annotazioni dei passi precedenti (A_i)
+# 2. Marcatori e annotazioni dei passi storici (A_i)
 for i in range(n + 1):
     pos_a = float(passi_data[i]["Posizione Achille (m)"])
     y_offset = -0.35 if (i % 2 == 0) else -0.65
     label_text = "A₀" if i == 0 else f"A_{i} = T_{i-1}"
 
+    # Punto sull'asse
     fig.add_trace(go.Scatter(
-        x=[pos_a], y=[0],
+        x=[pos_a],
+        y=[0.0],
         mode="markers",
         marker=dict(color="#1e3a8a", size=8),
         showlegend=False,
@@ -125,8 +130,10 @@ for i in range(n + 1):
         text=f"Passo {i}: {pos_a} m"
     ))
 
+    # Etichetta sotto l'asse
     fig.add_annotation(
-        x=pos_a, y=y_offset,
+        x=pos_a,
+        y=y_offset,
         text=f"| {label_text}",
         showarrow=False,
         font=dict(size=12, color="#334155")
@@ -136,7 +143,8 @@ for i in range(n + 1):
 if n > 0:
     prev_a = float(passi_data[n - 1]["Posizione Achille (m)"])
     fig.add_trace(go.Scatter(
-        x=[prev_a, curr_a], y=[0.15, 0.15],
+        x=[prev_a, curr_a],
+        y=[0.15, 0.15],
         mode="lines+markers",
         line=dict(color="#2563eb", width=3),
         marker=dict(size=6, color="#2563eb"),
@@ -144,24 +152,24 @@ if n > 0:
         hoverinfo="none"
     ))
 
-# 4. Marker di Achille e Tartaruga
-fig.add_trace(go.Scatter(
-    x=[curr_a], y=[0.4],
-    mode="text",
-    text=["🏃 Achille"],
-    textposition="top center",
-    font=dict(size=15),
-    showlegend=False
-))
+# 4. Marker di Achille e Tartaruga (tramite add_annotation per stabilità assoluta)
+fig.add_annotation(
+    x=curr_a,
+    y=0.4,
+    text="🏃 Achille",
+    showarrow=False,
+    font=dict(size=16, color="#0f172a"),
+    yshift=10
+)
 
-fig.add_trace(go.Scatter(
-    x=[curr_t], y=[0.4],
-    mode="text",
-    text=["🐢 Tartaruga"],
-    textposition="top center",
-    font=dict(size=15),
-    showlegend=False
-))
+fig.add_annotation(
+    x=curr_t,
+    y=0.4,
+    text="🐢 Tartaruga",
+    showarrow=False,
+    font=dict(size=16, color="#0f172a"),
+    yshift=10
+)
 
 fig.update_layout(
     xaxis=dict(range=[-5, 120], zeroline=False, showgrid=False, title="Spazio (metri)"),
