@@ -3,10 +3,10 @@ import pandas as pd
 import plotly.graph_objects as go
 
 # ------------------------------------------------------------------------------
-# CONFIGURAZIONE PAGINA & CSS DIDATTICO
+# CONFIGURAZIONE PAGINA
 # ------------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Athena - Paradosso di Elea",
+    page_title="Athena - Paradosso di Elea & Il Limite",
     page_icon="🏛️",
     layout="wide"
 )
@@ -72,62 +72,12 @@ st.markdown("""
 st.markdown("""
     <div class="header-container">
         <h1 class="header-title">🏛️ Athena: Guida Socratica al Paradosso di Elea</h1>
-        <p class="header-subtitle">Laboratorio didattico di scomposizione logico-spaziale della corsa di Achille e la Tartaruga</p>
+        <p class="header-subtitle">Laboratorio didattico: dalla scomposizione spaziale alla somma di infiniti termini</p>
     </div>
 """, unsafe_allow_html=True)
 
 # ------------------------------------------------------------------------------
-# GUIDA SOCRATICA DIDATTICA
-# ------------------------------------------------------------------------------
-guida_socratica = {
-    0: {
-        "titolo": "Passo 0: Il Contesto Iniziale",
-        "punti": [
-            "La Tartaruga parte con un vantaggio iniziale di 100 metri (T₀ = 100 m).",
-            "Achille parte dall'origine (A₀ = 0 m) ed è 10 volte più veloce della tartaruga.",
-            "Per raggiungere la tartaruga, Achille deve prima percorrere la distanza che li separa."
-        ],
-        "domanda": "Se Achille corre più veloce, perché non raggiunge subito la tartaruga?"
-    },
-    1: {
-        "titolo": "Passo 1: Il Primo Raggiungimento (A₁ = T₀)",
-        "punti": [
-            "Achille corre fino al punto A₁ = 100 m, occupando la posizione iniziale della tartaruga.",
-            "Nello stesso tempo, la tartaruga è avanzata del 10% della distanza, arrivando a T₁ = 110 m.",
-            "Il distacco Δs si è ridotto da 100 m a 10 m."
-        ],
-        "domanda": "Achille ha annullato il distacco o lo ha solo ridotto?"
-    },
-    2: {
-        "titolo": "Passo 2: La Riduzione Scalare (A₂ = T₁)",
-        "punti": [
-            "Achille copre i 10 metri arrivando a A₂ = 110 m.",
-            "La tartaruga avanza ulteriormente di 1 metro, raggiungendo T₂ = 111 m.",
-            "Il distacco residuale è ora di solo 1 metro (Δs = 1 m)."
-        ],
-        "domanda": "Il numero di passaggi necessari per annullare il distacco è finito o infinito?"
-    },
-    3: {
-        "titolo": "Passo 3: La Scomposizione dell'Infinitesimo",
-        "punti": [
-            "Achille raggiunge A₃ = 111 m.",
-            "La tartaruga si trova a T₃ = 111.1 m. Il distacco è di 0.1 metri (10 cm).",
-            "I punti di arresto si concentrano sempre più nello spazio."
-        ],
-        "domanda": "Se dividiamo lo spazio in infiniti intervalli, il tempo impiegato diventa anch'esso infinito?"
-    },
-    4: {
-        "titolo": "Passo 4: Il Limite della Percezione",
-        "punti": [
-            "Achille giunge a A₄ = 111.1 m. La tartaruga è a T₄ = 111.11 m (distacco: 1 cm).",
-            "I punti sull'asse sono visivamente vicinissimi, ma la relazione matematica resta invariata."
-        ],
-        "domanda": "La ragione ci dice che la tartaruga è avanti, i sensi ci dicono che sono insieme: a chi credere?"
-    }
-}
-
-# ------------------------------------------------------------------------------
-# INIZIALIZZAZIONE E CALCOLO DATI
+# CALCOLO DATI E INIZIALIZZAZIONE
 # ------------------------------------------------------------------------------
 if "step" not in st.session_state:
     st.session_state.step = 0
@@ -138,11 +88,15 @@ a_pos, t_pos = float(x0_a), float(x0_t)
 
 for i in range(15):
     distanza = t_pos - a_pos
+    # Calcolo della somma parziale S_n per il fattore tra parentesi (1 + 1/10 + ...)
+    s_n_fattore = (1.0 - (rapporto ** (i + 1))) / (1.0 - rapporto) if i >= 0 else 1.0
+    
     passi_data.append({
         "Passo (n)": int(i),
         "Posizione Achille (m)": float(round(a_pos, 4)),
         "Posizione Tartaruga (m)": float(round(t_pos, 4)),
-        "Distacco Δs (m)": float(round(distanza, 4))
+        "Distacco Δs (m)": float(round(distanza, 4)),
+        "Somma Parziale S_n (m)": float(round(100 * s_n_fattore, 4))
     })
     a_pos = t_pos
     t_pos = t_pos + (distanza * rapporto)
@@ -165,7 +119,7 @@ with col_c2:
 n = st.session_state.step
 
 # ------------------------------------------------------------------------------
-# GRAFICO PLOTLY ANTI-SOVRAPPOSIZIONE
+# GRAFICO PLOTLY CON PEDICI FORMATTATI IN HTML
 # ------------------------------------------------------------------------------
 curr_a = passi_data[n]["Posizione Achille (m)"]
 curr_t = passi_data[n]["Posizione Tartaruga (m)"]
@@ -182,17 +136,12 @@ fig.add_trace(go.Scatter(
     hoverinfo="none"
 ))
 
-# Punti storici A_i con staggering dinamico delle etichette
+# Marcatori ed etichette storiche con pedici HTML nativi
 for i in range(n + 1):
     pos_a = passi_data[i]["Posizione Achille (m)"]
-    
-    # Sfalsamento verticale alternato a 3 livelli per evitare sovrapposizioni nei punti vicini
-    offsets = [-0.35, -0.65, -0.95]
-    y_off = offsets[i % 3]
-    
-    label_text = "A₀" if i == 0 else f"A_{i}=T_{i-1}"
+    label_html = "A<sub>0</sub>" if i == 0 else f"A<sub>{i}</sub> = T<sub>{i-1}</sub>"
+    y_off = -0.35 if (i % 2 == 0) else -0.75
 
-    # Punto
     fig.add_trace(go.Scatter(
         x=[pos_a], y=[0],
         mode="markers",
@@ -202,15 +151,19 @@ for i in range(n + 1):
         text=f"Passo {i}: {pos_a} m"
     ))
 
-    # Etichetta
+    x_anchor_val = "center"
+    if i >= 3 and (i == n or i == n - 1):
+        x_anchor_val = "left" if (i % 2 == 0) else "right"
+
     fig.add_annotation(
         x=pos_a, y=y_off,
-        text=f"| {label_text}",
+        text=f"| {label_html}",
         showarrow=False,
+        xanchor=x_anchor_val,
         font=dict(size=11, color="#334155")
     )
 
-# Tratto d'avanzamento corrente
+# Segmento d'avanzamento corrente
 if n > 0:
     prev_a = passi_data[n - 1]["Posizione Achille (m)"]
     fig.add_trace(go.Scatter(
@@ -222,32 +175,24 @@ if n > 0:
         hoverinfo="none"
     ))
 
-# Posizionamento verticale disaccoppiato per evitare sovrapposizione tra Achille e Tartaruga
-y_achille = 0.45
-y_tartaruga = 0.75 if dist_attuale < 15.0 else 0.45
+# Posizionamento verticale non sovrapposto
+y_achille = 0.40
+y_tartaruga = 0.70 if dist_attuale < 12.0 else 0.40
 
-# Icona Achille
 fig.add_annotation(
-    x=curr_a, y=y_achille,
-    text="🏃 Achille",
-    showarrow=False,
-    font=dict(size=15, color="#0f172a"),
-    xanchor="center"
+    x=curr_a, y=y_achille, text="🏃 Achille",
+    showarrow=False, font=dict(size=14, color="#0f172a"), xanchor="center"
 )
 
-# Icona Tartaruga
 fig.add_annotation(
-    x=curr_t, y=y_tartaruga,
-    text="🐢 Tartaruga",
-    showarrow=False,
-    font=dict(size=15, color="#0f172a"),
-    xanchor="center"
+    x=curr_t, y=y_tartaruga, text="🐢 Tartaruga",
+    showarrow=False, font=dict(size=14, color="#0f172a"), xanchor="center"
 )
 
 fig.update_layout(
     xaxis=dict(range=[-5, 120], zeroline=False, showgrid=False, title="Spazio (metri)"),
-    yaxis=dict(range=[-1.3, 1.1], zeroline=False, showgrid=False, showticklabels=False),
-    height=340,
+    yaxis=dict(range=[-1.1, 1.0], zeroline=False, showgrid=False, showticklabels=False),
+    height=330,
     margin=dict(l=20, r=20, t=20, b=20),
     plot_bgcolor="white"
 )
@@ -255,28 +200,39 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
 # ------------------------------------------------------------------------------
-# RENDER BOX SOCRATICO
+# FORMALIZZAZIONE MATEMATICA E GUIDA SOCRATICA (Scheda Liceo Matematico)
 # ------------------------------------------------------------------------------
-info = guida_socratica.get(n, {
-    "titolo": f"Passo {n}: Iterazione Avanzata",
-    "punti": [f"Posizione Achille: {curr_a} m", f"Posizione Tartaruga: {curr_t} m", f"Distacco attuale: {dist_attuale} m"],
-    "domanda": "Come si comporta la somma infinita di questi segmenti di spazio?"
-})
+st.markdown("### 📐 Formalizzazione Matematica: La Serie delle Somme Parziali")
 
-st.markdown(f"""
-    <div class="socratic-card">
-        <div class="socratic-title">{info['titolo']}</div>
-        {"".join([f'<div class="socratic-text">• {p}</div>' for p in info['punti']])}
-        <div class="socratic-question">🤔 Riflessione Socratica: {info['domanda']}</div>
-    </div>
-""", unsafe_allow_html=True)
+col_mat1, col_mat2 = st.columns([1, 1])
+
+with col_mat1:
+    st.markdown("""
+    La distanza totale percorsa da Achille per raggiungere la tartaruga si esprime come somma di infiniti tratti rettilinei:
+    $$S = 100 + 10 + 1 + \\frac{1}{10} + \\frac{1}{100} + \\dots + \\frac{1}{10^n} + \\dots$$
+    
+    Raccogliendo il vantaggio iniziale $100\\text{ m}$:
+    $$S = 100 \\cdot \\left(1 + \\frac{1}{10} + \\frac{1}{100} + \\dots + \\frac{1}{10^{n-1}} + \\dots\\right)$$
+    """)
+
+with col_mat2:
+    st.markdown("""
+    Calcoliamo la successione delle somme parziali $S_n$ per l'espressione tra parentesi:
+    $$(1 - \\frac{1}{10})S_n = 1 - \\frac{1}{10^n} \\implies S_n = \\frac{1 - \\frac{1}{10^n}}{1 - \\frac{1}{10}}$$
+    
+    Quando $n \\to \\infty$, il termine $\\frac{1}{10^n} \\to 0$. Pertanto:
+    $$\\lim_{n \\to \\infty} S_n = \\frac{1}{1 - \\frac{1}{10}} = \\frac{10}{9}$$
+    """)
+
+# Esito numerico finale
+st.success(f"**Risultato del Limite**: Achille raggiunge la Tartaruga a $100 \\cdot \\frac{{10}}{{9}} = 111,\\bar{{1}}\\text{{ metri}}$. La somma di infiniti termini è finita!")
 
 st.markdown("---")
 
 # ------------------------------------------------------------------------------
 # TABELLA DATI DINAMICA
 # ------------------------------------------------------------------------------
-st.subheader("TABELLA")
+st.subheader("📊 Successione delle Somme Parziali S_n")
 
 df_totale = pd.DataFrame(passi_data)
 st.dataframe(
