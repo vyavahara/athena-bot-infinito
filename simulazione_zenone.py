@@ -14,7 +14,7 @@ st.set_page_config(
 )
 
 # ------------------------------------------------------------------------------
-# CSS PERSONALIZZATO (PULITO ED ELEGANTE)
+# CSS PERSONALIZZATO (Stile Moderno, Contrasto Elevato e Font Maggiorati)
 # ------------------------------------------------------------------------------
 st.markdown(
     """
@@ -145,6 +145,7 @@ st.markdown(
         line-height: 1.48; 
     }
 
+    /* Streamlit Components Font Size */
     div[data-testid="stDataFrame"] { font-size: 0.98rem !important; }
     [data-testid="stMetricValue"] { font-size: 1.4rem !important; font-weight: 800 !important; color: #0f172a; }
     [data-testid="stMetricLabel"] { font-size: 1rem !important; font-weight: 600 !important; color: #475569; }
@@ -154,7 +155,7 @@ st.markdown(
 )
 
 # ------------------------------------------------------------------------------
-# FUNZIONI DI UTILITÀ PER I PEDICI
+# FUNZIONI DI UTILITÀ PER I PEDICI UNICODE
 # ------------------------------------------------------------------------------
 def to_subscript(text: str) -> str:
     """Convertitore universale di cifre e lettere minuscole in pedici Unicode."""
@@ -307,7 +308,7 @@ with col_left:
     pos_A_val = current_data["Pos_A_float"]
     pos_T_val = current_data["Pos_T_float"]
     
-    # Ampiamento dinamico per evitare tagli a destra
+    # Range ampiamente calcolato per evitare qualsiasi taglio a destra
     max_x = max(d0_val * 1.40, pos_T_val * 1.30 + 40)
 
     # Corsia Tartaruga (y = 1)
@@ -323,7 +324,7 @@ with col_left:
         line=dict(color="#93c5fd", width=5),
     )
 
-    # Marcatori notevoli dei punti A_k
+    # Marcatori dei punti A_k
     for k in range(min(curr_step + 2, len(df))):
         pos_ak = df.iloc[k]["Pos_A_float"]
         show_label = (k == 0) or (k == curr_step and curr_step > 0)
