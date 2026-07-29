@@ -8,7 +8,7 @@ import streamlit as st
 # ------------------------------------------------------------------------------
 st.set_page_config(
     page_title="Simulazione del Paradosso di Achille e la tartaruga",
-    page_icon="🏛️",
+    page_icon="🏃",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -112,7 +112,7 @@ def format_frac_html(f: Fraction) -> str:
 st.markdown(
     """
 <div class="hero-banner">
-    <h1>🏛️ Simulazione del Paradosso di Achille e la tartaruga</h1>
+    <h1>🏃▶ 🐢▶ Simulazione del Paradosso di Achille e la tartaruga</h1>
 </div>
 """,
     unsafe_allow_html=True,
@@ -201,7 +201,7 @@ curr_step = st.session_state.step
 current_data = df.iloc[curr_step]
 
 # ------------------------------------------------------------------------------
-# 1. CONDIZIONI INIZIALI (Rapporto Relazionale Rimosso)
+# 1. CONDIZIONI INIZIALI
 # ------------------------------------------------------------------------------
 st.markdown(
     f"""
@@ -274,11 +274,9 @@ with col_left:
         line=dict(color="#bfdbfe", width=4),
     )
 
-    # Marcatori notevoli: mostra SOLO A_0 e L'ULTIMO PASSO CORRENTE per evitare sovrapposizioni illegibili
+    # Marcatori notevoli
     for k in range(min(curr_step + 2, len(df))):
         pos_ak = df.iloc[k]["Pos_A_float"]
-        
-        # Mostra l'etichetta solo se è il punto di partenza (k=0) oppure se è l'ultimo passo raggiunto
         show_label = (k == 0) or (k == curr_step and curr_step > 0)
         
         if k == 0:
@@ -328,9 +326,9 @@ with col_left:
             y=[0],
             mode="markers+text",
             name="Achille",
-            marker=dict(symbol="triangle-right", size=18, color="#1e3c72"),
-            text=[f"🏃 Achille (A{to_subscript(str(curr_step))})"],
-            textposition="top center",
+            marker=dict(symbol="triangle-right", size=20, color="#1e3c72"),
+            text=[f"🏃▶ Achille (A{to_subscript(str(curr_step))})"],
+            textposition="top right",
             showlegend=False,
         )
     )
@@ -342,9 +340,9 @@ with col_left:
             y=[1],
             mode="markers+text",
             name="Tartaruga",
-            marker=dict(symbol="circle", size=14, color="#16a34a"),
-            text=[f"🐢 Tartaruga (T{to_subscript(str(curr_step))})"],
-            textposition="top center",
+            marker=dict(symbol="triangle-right", size=16, color="#16a34a"),
+            text=[f"🐢▶ Tartaruga (T{to_subscript(str(curr_step))})"],
+            textposition="top right",
             showlegend=False,
         )
     )
@@ -376,7 +374,7 @@ with col_right:
           <p><b>2. Il Primo Tratto d₁:</b> Il distacco iniziale coincide con il segmento d₁ = {d0_val} m. Nessun movimento si è ancora compiuto.</p>
           <p><b>3. Relazione Cinematica:</b> Achille corre {r_denom} volte più veloce. Il rapporto r = 1/{r_denom} indica che la Tartaruga percorrerà un decimo della distanza di Achille nello stesso intervallo.</p>
           <div class="cognitive-conflict-box">
-              <h4>❓ Quesito:</h4>
+              <h4>🧠 Focus:</h4>
               <div class="conflict-text">
                   "Per raggiungere la Tartaruga, concordi con Zenone che Achille debba prima di tutto percorrere il primo tratto d₁ = {d0_val} m per giungere in T₀ dove la Tartaruga si trova ora?"
               </div>
@@ -414,10 +412,9 @@ with col_right:
           </p>
           <p><b>4. Vantaggio Residuo Δsₙ:</b> Vi è un nuovo segmento residuo pari a <span class="fraction-badge">Δs{c_step_sub} = {distacco_frac_str} m</span>.</p>
           <div class="cognitive-conflict-box">
-              <h4>🧠 Cortocircuito Cognitivo al Passo {curr_step}:</h4>
+              <h4>🧠 Focus:</h4>
               <div class="conflict-text">
-                  "Il vantaggio residuo (Δs{c_step_sub} = {distacco_frac_str} m) è <b>rigorosamente diverso da zero</b>.<br>
-                  Se ad ogni passo si genera un nuovo segmento positivo, quanti tratti d₁, d₂, d₃, ... dovrà compiere Achille in totale?"
+                  "Il vantaggio residuo (Δs{c_step_sub} = {distacco_frac_str} m) è <b>rigorosamente diverso da zero</b>."
               </div>
           </div>
       </div>
@@ -475,9 +472,9 @@ fig_segments.add_trace(
         y=["Tratti Achille"],
         mode="markers+text",
         name=f"Tartaruga in T{curr_step_sub}",
-        marker=dict(symbol="circle", size=12, color="#16a34a"),
-        text=[f"🐢 T{curr_step_sub}"],
-        textposition="top center",
+        marker=dict(symbol="triangle-right", size=12, color="#16a34a"),
+        text=[f"🐢▶ T{curr_step_sub}"],
+        textposition="top right",
         showlegend=True,
     )
 )
