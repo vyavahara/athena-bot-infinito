@@ -160,21 +160,23 @@ if n > 0:
 
 # Marker Achille (corretto senza proprietà non valide)
 fig.add_trace(go.Scatter(
-    x=[curr_a], y=[0.4],
+    x=[curr_a],
+    y=[0.4],
     mode="text",
     text=["🏃 Achille"],
-    textposition="top center",
-    font=dict(size=16),
+    textposition="top right",
+    textfont=dict(size=16),
     showlegend=False
 ))
 
 # Marker Tartaruga (corretto senza proprietà non valide)
 fig.add_trace(go.Scatter(
-    x=[curr_t], y=[0.4],
+    x=[curr_t],
+    y=[0.4],
     mode="text",
     text=["🐢 Tartaruga"],
-    textposition="top center",
-    font=dict(size=16),
+    textposition="top right",
+    textfont=dict(size=16),
     showlegend=False
 ))
 
