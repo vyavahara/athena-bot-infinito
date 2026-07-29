@@ -7,7 +7,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-# Configurazione della Pagina Streamlit
+# Configurazione della Pagina Streamlit con layout compatto
 st.set_page_config(
     page_title="Athena - Laboratorio Socratico al Paradosso di Elea",
     page_icon="🏛️",
@@ -15,63 +15,67 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Custom CSS per un'interfaccia classica-moderna, leggibile ed elegante
+# Custom CSS per ridurre le interlinee e ottimizzare l'impatto visivo
 st.markdown(
     """
 <style>
     .main { background-color: #f8fafc; }
     .stApp { font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
     
+    /* Riduzione interlinee e padding generali */
+    .block-container { padding-top: 1.2rem; padding-bottom: 1.2rem; }
+    p { margin-bottom: 0.5rem; line-height: 1.4; }
+    
     .hero-banner {
         background: linear-gradient(135deg, #0f172a 0%, #1e3c72 60%, #2a5298 100%);
-        color: #ffffff; padding: 22px 20px; border-radius: 12px;
-        text-align: center; margin-bottom: 20px;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        color: #ffffff; padding: 16px 18px; border-radius: 10px;
+        text-align: center; margin-bottom: 14px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
-    .hero-banner h1 { color: #ffffff; font-weight: 800; font-size: 2.0rem; margin-bottom: 4px; }
-    .hero-banner p { color: #94a3b8; font-size: 1.0rem; margin-bottom: 0; }
+    .hero-banner h1 { color: #ffffff; font-weight: 800; font-size: 1.7rem; margin-bottom: 2px; }
+    .hero-banner p { color: #94a3b8; font-size: 0.95rem; margin-bottom: 0; }
     
     .init-conditions-card {
         background-color: #ffffff; border: 1px solid #e2e8f0;
-        border-left: 6px solid #0284c7; border-radius: 10px;
-        padding: 16px 20px; margin-bottom: 20px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        border-left: 6px solid #0284c7; border-radius: 8px;
+        padding: 12px 16px; margin-bottom: 14px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
     }
-    .init-conditions-card h4 { color: #0f172a; margin-top: 0; margin-bottom: 8px; font-size: 1.05rem; }
+    .init-conditions-card h4 { color: #0f172a; margin-top: 0; margin-bottom: 6px; font-size: 1.0rem; font-weight: 700; }
     
     .athena-socratic-card {
         background-color: #ffffff; border: 1px solid #cbd5e1;
-        border-left: 6px solid #1e3c72; border-radius: 10px;
-        padding: 20px; margin-bottom: 20px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        border-left: 6px solid #1e3c72; border-radius: 8px;
+        padding: 16px; margin-bottom: 14px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
     }
-    .athena-socratic-card h3 { color: #1e3c72; font-size: 1.2rem; margin-top: 0; }
+    .athena-socratic-card h3 { color: #1e3c72; font-size: 1.12rem; margin-top: 0; margin-bottom: 8px; }
     
     .fraction-badge {
         background-color: #f1f5f9; border: 1px solid #cbd5e1;
-        padding: 4px 10px; border-radius: 6px; font-family: monospace;
-        font-size: 1.0rem; font-weight: bold; color: #0f172a;
+        padding: 2px 8px; border-radius: 4px; font-family: monospace;
+        font-size: 0.95rem; font-weight: bold; color: #0f172a;
     }
     
     .cognitive-conflict-box {
         background-color: #fffbeb; border: 1px solid #fef3c7;
-        border-left: 6px solid #f59e0b; padding: 16px 20px;
-        border-radius: 8px; margin-top: 16px;
+        border-left: 6px solid #f59e0b; padding: 12px 16px;
+        border-radius: 6px; margin-top: 12px; margin-bottom: 6px;
     }
-    .cognitive-conflict-box h4 { color: #b45309; margin-top: 0; font-size: 1.05rem; }
-    .conflict-text { color: #78350f; font-weight: 600; font-size: 1.02rem; line-height: 1.5; }
+    .cognitive-conflict-box h4 { color: #b45309; margin-top: 0; margin-bottom: 4px; font-size: 1.0rem; }
+    .conflict-text { color: #78350f; font-weight: 600; font-size: 0.98rem; line-height: 1.4; }
 
-    div[data-testid="stDataFrame"] { font-size: 0.85rem !important; }
-    [data-testid="stMetricValue"] { font-size: 1.3rem !important; font-weight: 700; }
+    div[data-testid="stDataFrame"] { font-size: 0.82rem !important; }
+    [data-testid="stMetricValue"] { font-size: 1.2rem !important; font-weight: 700; }
 </style>
 """,
     unsafe_allow_html=True,
 )
 
 
-# Helper per la sintesi vocale di Athena (EdgeTTS)
+# Helper per la sintesi vocale di Athena
 def genera_audio_athena(testo: str) -> BytesIO:
-  """Genera l'audio in mp3 per la spiegazione di Athena."""
+  """Genera l'audio in mp3 per le osservazioni di Athena."""
 
   async def _tts():
     communicate = edge_tts.Communicate(
@@ -87,7 +91,7 @@ def genera_audio_athena(testo: str) -> BytesIO:
   return BytesIO(audio_bytes)
 
 
-# Header
+# Header dell'App
 st.markdown(
     """
 <div class="hero-banner">
@@ -199,18 +203,18 @@ st.markdown(
     f"""
 <div class="init-conditions-card">
     <h4>📋 Condizioni Iniziali della Gara (Passo n = 0)</h4>
-    <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 15px; font-size: 0.95rem;">
+    <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 12px; font-size: 0.92rem;">
         <span>🏃 <b>Posizione Iniziale Achille (A₀):</b> 0 m</span>
         <span>🐢 <b>Vantaggio Iniziale Tartaruga (T₀ = d₁):</b> {d0_val} m</span>
-        <span>⚡ <b>Relazione di Velocità:</b> Achille corre <b>{r_denom} volte più veloce</b> della Tartaruga</span>
-        <span>⚖️ <b>Rapporto Relazionale (r):</b> 1/{r_denom} (frazione dello spostamento di Achille compiuta dalla Tartaruga nello stesso intervallo)</span>
+        <span>⚡ <b>Velocità:</b> Achille corre <b>10 volte più veloce</b> della Tartaruga</span>
+        <span>⚖️ <b>Rapporto Relazionale (r):</b> 1/{r_denom} (frazione dello spostamento di Achille compiuta dalla Tartaruga)</span>
     </div>
 </div>
 """,
     unsafe_allow_html=True,
 )
 
-# Metric Banner con Unicode Subscripts
+# Metric Banner con pedici Unicode corretti
 m1, m2, m3, m4 = st.columns(4)
 with m1:
   st.metric("Passo Logico (n)", f"{int(current_data['Passo (n)'])}")
@@ -230,7 +234,7 @@ with m4:
       f"{current_data['Distacco Residuo (Δsₙ) [Frazione]']} m",
   )
 
-# --- 2. SIMULAZIONE VISIVA DINAMICA DELLO SPOSTAMENTO SULLA PISTA ---
+# --- 2. SIMULAZIONE VISIVA DINAMICA DELLA PISTA (Struttura Punto 1 & Immagine) ---
 st.subheader(
     f"🏃🐢 Rappresentazione Spaziale della Pista al Passo n = {curr_step}"
 )
@@ -251,7 +255,7 @@ fig_track.add_shape(
     line=dict(color="#cbd5e1", width=6),
 )
 
-# Traccia i marcatori notevoli A₀, T₀=A₁, T₁=A₂, T₂=A₃ sulla retta
+# Tracciamento dei punti notevoli esatti sulla retta (A₀, T₀=A₁, T₁=A₂, ecc.)
 for k in range(min(curr_step + 2, len(df))):
   pos_ak = df.iloc[k]["Pos_A_float"]
   label_k = f"A₀ = 0" if k == 0 else f"A_{k} = T_{k-1}"
@@ -296,7 +300,7 @@ fig_track.add_trace(
         y=[0],
         mode="markers+text",
         name="Achille (Aₙ)",
-        marker=dict(symbol="triangle-right", size=24, color="#1e3c72"),
+        marker=dict(symbol="triangle-right", size=22, color="#1e3c72"),
         text=[f"🏃 Achille A_{curr_step}"],
         textposition="top center",
     )
@@ -309,7 +313,7 @@ fig_track.add_trace(
         y=[0],
         mode="markers+text",
         name="Tartaruga (Tₙ)",
-        marker=dict(symbol="circle", size=20, color="#16a34a"),
+        marker=dict(symbol="circle", size=18, color="#16a34a"),
         text=[f"🐢 Tartaruga T_{curr_step}"],
         textposition="top center",
     )
@@ -318,8 +322,8 @@ fig_track.add_trace(
 fig_track.update_layout(
     xaxis=dict(title="Posizione sulla Retta Spaziale (metri)", range=[-5, max_x]),
     yaxis=dict(visible=False, range=[-0.6, 0.8]),
-    height=210,
-    margin=dict(l=20, r=20, t=30, b=20),
+    height=190,
+    margin=dict(l=20, r=20, t=25, b=20),
     template="plotly_white",
     showlegend=False,
 )
@@ -332,9 +336,9 @@ st.markdown("---")
 if curr_step == 0:
   testo_athena_audio = (
       f"Benvenuti al punto di partenza. Achille si trova in A₀ uguale a 0 metri,"
-      f" mentre la Tartaruga ha un vantaggio di T₀ uguale a {d0_val} metri."
-      f" Poiché Achille corre {r_denom} volte più veloce della Tartaruga,"
-      " per raggiungerla deve prima percorrere interamente questo tratto iniziale"
+      f" mentre la Tartaruga ha un vantaggio iniziale di T₀ uguale a {d0_val} metri."
+      f" Poiché Achille corre 10 volte più veloce della Tartaruga, per"
+      f" raggiungerla deve prima percorrere interamente questo tratto iniziale"
       f" d₁ di {d0_val} metri. Riuscirà a superarla?"
   )
 
@@ -344,7 +348,7 @@ if curr_step == 0:
         <h3>🏛️ Athena: Osservazioni maieutiche sulle Condizioni Iniziali (n = 0)</h3>
         <p><b>1. Configurazione Spaziale di Partenza:</b> Achille è fermo al punto A₀ = 0 m. Alla Tartaruga viene assegnato il vantaggio iniziale T₀ = {d0_val} m.</p>
         <p><b>2. Il Primo Tratto d₁:</b> Il distacco iniziale tra i due corridori coincide esattamente con il segmento d₁ = {d0_val} m. Nessun movimento si è ancora compiuto.</p>
-        <p><b>3. Relazione Cinematica:</b> Sapendo che Achille corre {r_denom} volte più veloce della Tartaruga, il rapporto relazionale r = 1/{r_denom} indica che la Tartaruga percorrerà un decimo della distanza coperta da Achille nello stesso tempo.</p>
+        <p><b>3. Relazione Cinematica:</b> Sapendo che Achille corre 10 volte più veloce della Tartaruga, il rapporto relazionale r = 1/{r_denom} indica che la Tartaruga percorrerà un decimo della distanza coperta da Achille nello stesso intervallo logico.</p>
         <div class="cognitive-conflict-box">
             <h4>❓ Quesito Socratico di Partenza:</h4>
             <div class="conflict-text">
@@ -386,10 +390,10 @@ else:
         <p><b>2. Lo Spostamento della Tartaruga:</b> Durante questo medesimo intervallo, la Tartaruga non rimane immobile: essa avanza dal punto T_{curr_step-1} al nuovo punto T_{curr_step}, coprendo una frazione pari a <span class="fraction-badge">1/{r_denom}</span> del tratto d_{curr_step}, ossia un micro-spostamento di <span class="fraction-badge">{tratto_t_frac_str} m</span>.</p>
         <p><b>3. La Somma dei Tratti Accumulati (Distanza Totale Percorsa Sₙ):</b><br>
         La quantità S_{curr_step} rappresenta la <i>distanza totale accumulata da Achille sulla pista dal momento della partenza</i>. Essa non viene fornita come un blocco unico, ma si costruisce sommando uno per uno i singoli tratti rettilinei compiuti ad ogni scatto:<br>
-        <div style="margin: 12px 0; padding: 12px 16px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; font-family: monospace; font-size: 1.02rem;">
+        <div style="margin: 10px 0; padding: 10px 14px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; font-family: monospace; font-size: 1.0rem;">
             <b>S_{curr_step} = d₁ + d₂ + ... + d_{curr_step} = {somma_frazioni_str} = {current_data['Punto Achille (Aₙ) [Frazione]']} m</b>
         </div>
-        <i>Rifletti: ad ogni passo si aggiunge un addendo dₙ sempre più piccolo. La somma parziale Sₙ cresce ad ogni scatto, ma sembra schiacciarsi verso una soglia limite senza superarla mai.</i>
+        <i>Rifletti: ad ogni passo si aggiunge un addendo dₙ sempre più piccolo. La somma parziale Sₙ cresce ad ogni scatto, ma si accumula avvicinandosi a una soglia senza superarla in un numero finito di passaggi.</i>
         </p>
         <p><b>4. Il Distacco Residuo Δsₙ:</b> Achille ha raggiunto la posizione precedente della Tartaruga, ma la Tartaruga si trova ora più avanti nel punto T_{curr_step}, lasciando un distacco residuo pari a <span class="fraction-badge">Δs_{curr_step} = {distacco_frac_str} m</span>.</p>
         <div class="cognitive-conflict-box">
@@ -404,7 +408,7 @@ else:
       unsafe_allow_html=True,
   )
 
-# Lettore Audio per le Osservazioni di Athena
+# Lettore Audio per le Osservazioni di Athena (Indicazione 6)
 col_aud1, col_aud2 = st.columns([1, 4])
 with col_aud1:
   if st.button(
@@ -461,12 +465,10 @@ fig_segments.add_trace(
 fig_segments.update_layout(
     barmode="stack",
     title=f"Successione dei segmenti percorsi: S_{curr_step} = d₁ + d₂ + ... + d_{curr_step}",
-    xaxis=dict(
-        title="Distanza sulla Pista (metri)", range=[0, max_x]
-    ),
+    xaxis=dict(title="Distanza sulla Pista (metri)", range=[0, max_x]),
     yaxis=dict(visible=False),
-    height=180,
-    margin=dict(l=20, r=20, t=35, b=25),
+    height=170,
+    margin=dict(l=20, r=20, t=30, b=20),
     template="plotly_white",
     showlegend=True,
 )
@@ -514,9 +516,9 @@ testo_cortocircuito = (
 
 st.markdown(
     """
-<div style="background-color: #fef2f2; border: 1px solid #fee2e2; border-left: 6px solid #ef4444; padding: 18px 20px; border-radius: 8px;">
+<div style="background-color: #fef2f2; border: 1px solid #fee2e2; border-left: 6px solid #ef4444; padding: 16px 18px; border-radius: 8px;">
     <h4 style="color: #991b1b; margin-top:0; font-weight: 700;">⚡ Il Cortocircuito Epistemologico di Elea:</h4>
-    <p style="color: #7f1d1d; font-size: 1.05rem; font-weight: 500; margin-bottom: 0; line-height: 1.5;">
+    <p style="color: #7f1d1d; font-size: 1.02rem; font-weight: 500; margin-bottom: 0; line-height: 1.4;">
         "Se la scomposizione logica di Zenone dimostra che Achille deve percorrere una successione di <b>infiniti tratti rettilinei distinti (dₙ > 0)</b> espressi da frazioni sempre più piccole ma mai nulle, come fa l'esperienza reale del mondo sensibile a mostrare che la corsa si conclude e la tartaruga viene superata?"
     </p>
 </div>
@@ -526,6 +528,6 @@ st.markdown(
 
 col_aud_fin1, col_aud_fin2 = st.columns([1, 4])
 with col_aud_fin1:
-  if st.button("🔊 Ascolta il Cortocircuito Epistemologico", key="audio_final_btn"):
+  if st.button("🔊 Ascolta il Cortocircuito", key="audio_final_btn"):
     audio_final_data = genera_audio_athena(testo_cortocircuito)
     st.audio(audio_final_data, format="audio/mp3")
