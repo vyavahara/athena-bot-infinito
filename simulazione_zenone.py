@@ -189,9 +189,17 @@ st.markdown(
 <div class="math-model-card">
     <h4>📐 Modello Matematico del Paradosso</h4>
     <p style="margin-bottom: 6px; color: #334155;">
-        La pista è rappresentata da una semiretta orientata con origine O. 
-        Ogni posizione occupata da Achille e dalla tartaruga è rappresentata da un punto
-        della semiretta, individuato dalla propria coordinata rispetto all'origine. 
+        Questa simulazione rappresenta il procedimento geometrico alla base del Paradosso di Achille e la tartaruga
+        formulato da Zenone di Elea.
+        La pista è modellata come una semiretta orientata: ogni posizione occupata da Achille e dalla tartaruga è 
+        rappresentata da un punto della semiretta, individuato dalla propria coordinata.
+        Il parametro n indica il passo della costruzione logica iterativa e non rappresenta un istante di tempo. 
+        La simulazione non descrive quindi un moto continuo, ma la successione delle configurazioni geometriche 
+        generate dal ragionamento di Zenone. 
+        Ad ogni passo Achille raggiunge il punto precedentemente occupato dalla tartaruga; tuttavia la tartaruga
+        ha già generato un nuovo vantaggio, determinando un ulteriore segmento residuo.
+        La domanda posta dal paradosso è:
+        Se ogni passo lascia sempre un nuovo distacco positivo, come può la costruzione geometrica arrivare al raggiungimento? 
     </p>
 </div>
 """,
