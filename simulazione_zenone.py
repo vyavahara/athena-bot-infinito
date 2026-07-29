@@ -1,279 +1,530 @@
-import streamlit as st
+from fractions import Fraction
 import pandas as pd
 import plotly.graph_objects as go
+import streamlit as st
 
 # ------------------------------------------------------------------------------
 # CONFIGURAZIONE PAGINA
 # ------------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Athena - Laboratorio Paradosso & Limiti",
+    page_title="Athena - Laboratorio Socratico al Paradosso di Elea",
     page_icon="🏛️",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded",
 )
 
-st.markdown("""
-    <style>
-    .header-container {
-        background: linear-gradient(135deg, #1e293b, #0f172a);
-        padding: 2.2rem 1.5rem;
-        border-radius: 12px;
-        text-align: center;
-        color: #ffffff;
-        margin-bottom: 1.8rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+# ------------------------------------------------------------------------------
+# CSS PERSONALIZZATO
+# ------------------------------------------------------------------------------
+st.markdown(
+    """
+<style>
+    .main { background-color: #f8fafc; }
+    .stApp { font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+    
+    .block-container { padding-top: 0.8rem !important; padding-bottom: 0.8rem !important; }
+    div[data-testid="stVerticalBlock"] { gap: 0.6rem !important; }
+    p { margin-bottom: 0.3rem !important; line-height: 1.35; }
+    
+    .hero-banner {
+        background: linear-gradient(135deg, #0f172a 0%, #1e3c72 60%, #2a5298 100%);
+        color: #ffffff; padding: 12px 16px; border-radius: 8px;
+        text-align: center; margin-bottom: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
-    .header-title {
-        font-size: 2.1rem;
-        font-weight: 700;
-        margin: 0;
-        color: #ffffff;
+    .hero-banner h1 { color: #ffffff; font-weight: 800; font-size: 1.5rem; margin-bottom: 2px; }
+    .hero-banner p { color: #94a3b8; font-size: 0.88rem; margin-bottom: 0; }
+    
+    .init-conditions-card {
+        background-color: #ffffff; border: 1px solid #e2e8f0;
+        border-left: 5px solid #0284c7; border-radius: 6px;
+        padding: 8px 12px; margin-bottom: 10px;
     }
-    .header-subtitle {
-        font-size: 1.05rem;
-        color: #cbd5e1;
-        margin-top: 0.5rem;
-        margin-bottom: 0;
-        font-weight: 400;
+    .init-conditions-card h4 { color: #0f172a; margin-top: 0; margin-bottom: 4px; font-size: 0.95rem; font-weight: 700; }
+    
+    .athena-socratic-card {
+        background-color: #ffffff; border: 1px solid #cbd5e1;
+        border-left: 5px solid #1e3c72; border-radius: 6px;
+        padding: 12px; height: 100%;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
-    .socratic-card {
-        background-color: #f8fafc;
-        border-left: 5px solid #2563eb;
-        border-radius: 8px;
-        padding: 1.25rem 1.5rem;
-        margin: 1.2rem 0;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    .athena-socratic-card h3 { color: #1e3c72; font-size: 1.02rem; margin-top: 0; margin-bottom: 6px; }
+    
+    .section-title {
+        color: #0f172a; font-weight: 700; font-size: 1.1rem;
+        margin-top: 14px; margin-bottom: 4px;
     }
-    .socratic-title {
-        color: #1e293b;
-        font-size: 1.15rem;
-        font-weight: 700;
-        margin-bottom: 0.75rem;
+    .section-subtitle {
+        color: #475569; font-weight: 600; font-size: 0.92rem;
+        margin-top: 0px; margin-bottom: 10px;
     }
-    .socratic-text {
-        color: #334155;
-        font-size: 0.98rem;
-        line-height: 1.5;
-        margin-bottom: 0.5rem;
+    
+    .fraction-badge {
+        background-color: #f1f5f9; border: 1px solid #cbd5e1;
+        padding: 1px 5px; border-radius: 4px; font-family: monospace;
+        font-size: 0.88rem; font-weight: bold; color: #0f172a;
     }
-    .socratic-question {
-        margin-top: 0.8rem;
-        padding-top: 0.6rem;
-        border-top: 1px dashed #cbd5e1;
-        color: #1e3a8a;
-        font-weight: 600;
-        font-style: italic;
+    
+    .cognitive-conflict-box {
+        background-color: #fffbeb; border: 1px solid #fef3c7;
+        border-left: 5px solid #f59e0b; padding: 8px 10px;
+        border-radius: 6px; margin-top: 8px;
     }
-    </style>
-""", unsafe_allow_html=True)
+    .cognitive-conflict-box h4 { color: #b45309; margin-top: 0; margin-bottom: 2px; font-size: 0.9rem; }
+    .conflict-text { color: #78350f; font-weight: 600; font-size: 0.88rem; line-height: 1.35; }
+
+    div[data-testid="stDataFrame"] { font-size: 0.85rem !important; }
+    [data-testid="stMetricValue"] { font-size: 1.1rem !important; font-weight: 700; }
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+
+# ------------------------------------------------------------------------------
+# FUNZIONI DI UTILITÀ
+# ------------------------------------------------------------------------------
+def to_subscript(text: str) -> str:
+  """Sostituisce le cifre e la lettera 'n' con le corrispettive Unicode a pedice."""
+  sub_map = str.maketrans("0123456789n", "₀₁₂₃₄₅₆₇₈₉ₙ")
+  return str(text).translate(sub_map)
+
+
+def format_frac_html(f: Fraction) -> str:
+  """Rende le frazioni esatte in modo chiaro e leggibile."""
+  if f.denominator == 1:
+    return f"{f.numerator}"
+  return f"{f.numerator}/{f.denominator}"
+
 
 # ------------------------------------------------------------------------------
 # INTESTAZIONE
 # ------------------------------------------------------------------------------
-st.markdown("""
-    <div class="header-container">
-        <h1 class="header-title">🏛️ Athena: Guida Socratica al Paradosso di Elea</h1>
-        <p class="header-subtitle">Laboratorio didattico: dalla scomposizione spaziale alla convergenza della serie</p>
-    </div>
-""", unsafe_allow_html=True)
+st.markdown(
+    """
+<div class="hero-banner">
+    <h1>🏛️ Athena: Guida Socratica al Paradosso di Elea</h1>
+    <p>Laboratorio didattico di scomposizione logico-spaziale della corsa di Achille e la Tartaruga</p>
+</div>
+""",
+    unsafe_allow_html=True,
+)
 
 # ------------------------------------------------------------------------------
-# CALCOLO DATI BASE
+# SIDEBAR - PARAMETRI GEOMETRICI
 # ------------------------------------------------------------------------------
+st.sidebar.header("⚙️ Impostazione della Pista")
+d0_val = st.sidebar.number_input(
+    "Vantaggio Iniziale Tartaruga (T₀ = d₁) [metri]:",
+    value=100,
+    step=10,
+    min_value=1,
+)
+r_denom = st.sidebar.number_input(
+    "Rapporto di contrazione relazionale (1/k):",
+    value=10,
+    min_value=2,
+    max_value=100,
+    step=1,
+)
+max_steps = st.sidebar.slider(
+    "Numero di suddivisioni logiche da esplorare (n):",
+    min_value=1,
+    max_value=15,
+    value=10,
+)
+
+# Gestione Stato Navigazione
 if "step" not in st.session_state:
+  st.session_state.step = 0
+
+col_btn1, col_btn2, col_btn3, _ = st.columns([1.2, 1.2, 1.2, 2.4])
+with col_btn1:
+  if st.button("⏮️ Stato Iniziale (n = 0)"):
     st.session_state.step = 0
+with col_btn2:
+  if st.button("◀️ Passo Precedente") and st.session_state.step > 0:
+    st.session_state.step -= 1
+with col_btn3:
+  if st.button("▶️ Passo Successivo") and st.session_state.step < max_steps:
+    st.session_state.step += 1
 
-x0_a, x0_t, rapporto = 0.0, 100.0, 0.1
-passi_data = []
-a_pos, t_pos = float(x0_a), float(x0_t)
-
-for i in range(15):
-    distanza = t_pos - a_pos
-    # Calcolo algebrico esatto Sn secondo la scheda UMI-SIS (100 * (1 - (1/10)^(i+1)) / (1 - 1/10))
-    s_n_fattore = (1.0 - (rapporto ** (i + 1))) / (1.0 - rapporto)
-    s_n_valore = 100.0 * s_n_fattore
-    
-    passi_data.append({
-        "Passo (n)": int(i),
-        "Posizione Achille (m)": float(round(a_pos, 4)),
-        "Posizione Tartaruga (m)": float(round(t_pos, 4)),
-        "Distacco Δs (m)": float(round(distanza, 4)),
-        "Tratto d_n (m)": float(round(100.0 * (rapporto ** i), 4)),
-        "Somma Parziale S_n (m)": float(round(s_n_valore, 6))
-    })
-    a_pos = t_pos
-    t_pos = t_pos + (distanza * rapporto)
+st.sidebar.markdown("---")
+st.sidebar.markdown(f"**Passo Selezionato:** n = {st.session_state.step}")
 
 # ------------------------------------------------------------------------------
-# SEZIONE 1: SIMULAZIONE SPAZIALE INTERATTIVA
+# CALCOLI CON FRAZIONI ESATTE
 # ------------------------------------------------------------------------------
-st.subheader("1. Scomposizione Spaziale della Corsa")
+d0_frac = Fraction(d0_val, 1)
+r_frac = Fraction(1, r_denom)
 
-col_c1, col_c2, _ = st.columns([1, 1, 4])
+steps_data = []
+s_A_frac = Fraction(0, 1)
+s_T_frac = d0_frac
 
-with col_c1:
-    if st.button("⬅️ Passo Precedente", use_container_width=True):
-        if st.session_state.step > 0:
-            st.session_state.step -= 1
+for n in range(max_steps + 1):
+  if n == 0:
+    tratto_A_frac = Fraction(0, 1)
+    tratto_T_frac = Fraction(0, 1)
+    distacco_frac = d0_frac
+  else:
+    distacco_precedente = steps_data[n - 1]["Distacco_Frac"]
+    tratto_A_frac = distacco_precedente
+    tratto_T_frac = tratto_A_frac * r_frac
+    s_A_frac += tratto_A_frac
+    s_T_frac += tratto_T_frac
+    distacco_frac = s_T_frac - s_A_frac
 
-with col_c2:
-    if st.button("Passo Successivo ➡️", use_container_width=True):
-        if st.session_state.step < 10:
-            st.session_state.step += 1
+  steps_data.append({
+      "Passo n": n,
+      "Tratto percorso da Achille": format_frac_html(tratto_A_frac),
+      "Posizione raggiunta da Achille": format_frac_html(s_A_frac),
+      "Posizione della tartaruga": format_frac_html(s_T_frac),
+      "Vantaggio della tartaruga": format_frac_html(distacco_frac),
+      "Pos_A_float": float(s_A_frac),
+      "Pos_T_float": float(s_T_frac),
+      "Tratto_A_float": float(tratto_A_frac),
+      "Distacco_Frac": distacco_frac,
+      "Tratto_A_Frac": tratto_A_frac,
+  })
 
-n = st.session_state.step
+df = pd.DataFrame(steps_data)
+curr_step = st.session_state.step
+current_data = df.iloc[curr_step]
 
-curr_a = passi_data[n]["Posizione Achille (m)"]
-curr_t = passi_data[n]["Posizione Tartaruga (m)"]
-dist_attuale = passi_data[n]["Distacco Δs (m)"]
+# ------------------------------------------------------------------------------
+# 1. CONDIZIONI INIZIALI
+# ------------------------------------------------------------------------------
+st.markdown(
+    f"""
+<div class="init-conditions-card">
+    <h4>📋 Condizioni Iniziali della Gara (Passo n = 0)</h4>
+    <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 8px; font-size: 0.88rem;">
+        <span>🏃 <b>Posizione Iniziale Achille (A₀):</b> 0 m</span>
+        <span>🐢 <b>Vantaggio Iniziale Tartaruga (T₀ = d₁):</b> {d0_val} m</span>
+        <span>⚡ <b>Velocità:</b> Achille corre <b>{r_denom} volte più veloce</b> della Tartaruga</span>
+        <span>⚖️ <b>Rapporto Relazionale (r):</b> 1/{r_denom} (frazione dello spostamento compiuta dalla Tartaruga)</span>
+    </div>
+</div>
+""",
+    unsafe_allow_html=True,
+)
 
-fig = go.Figure()
+# Metric Banner
+m1, m2, m3, m4 = st.columns(4)
+with m1:
+  st.metric("Passo Logico (n)", f"{int(current_data['Passo n'])}")
+with m2:
+  st.metric(
+      "Posizione Aₙ (Achille)",
+      f"{current_data['Posizione raggiunta da Achille']} m",
+  )
+with m3:
+  st.metric(
+      "Posizione Tₙ (Tartaruga)",
+      f"{current_data['Posizione della tartaruga']} m",
+  )
+with m4:
+  st.metric(
+      "Vantaggio Δsₙ (Tartaruga)",
+      f"{current_data['Vantaggio della tartaruga']} m",
+  )
 
-# Asse principale
-fig.add_trace(go.Scatter(
-    x=[-5, 120], y=[0, 0],
-    mode="lines",
-    line=dict(color="#cbd5e1", width=4),
-    showlegend=False,
-    hoverinfo="none"
-))
+# ------------------------------------------------------------------------------
+# 2. VISUALIZZAZIONE PRINCIPALE
+# ------------------------------------------------------------------------------
+col_left, col_right = st.columns([1.1, 1.0])
 
-# Marcatori storici con pedici HTML nativi
-for i in range(n + 1):
-    pos_a = passi_data[i]["Posizione Achille (m)"]
-    label_html = "A<sub>0</sub>" if i == 0 else f"A<sub>{i}</sub> = T<sub>{i-1}</sub>"
-    y_off = -0.35 if (i % 2 == 0) else -0.75
+with col_left:
+  st.markdown(
+      f"<div class='section-title'>🏃🐢 Piste Parallele e Posizione (n ="
+      f" {curr_step})</div>",
+      unsafe_allow_html=True,
+  )
 
-    fig.add_trace(go.Scatter(
-        x=[pos_a], y=[0],
-        mode="markers",
-        marker=dict(color="#1e3a8a", size=7),
-        showlegend=False,
-        hoverinfo="text",
-        text=f"Passo {i}: {pos_a} m"
-    ))
+  fig_track = go.Figure()
 
-    x_anchor_val = "center"
-    if i >= 3 and (i == n or i == n - 1):
-        x_anchor_val = "left" if (i % 2 == 0) else "right"
+  pos_A_val = current_data["Pos_A_float"]
+  pos_T_val = current_data["Pos_T_float"]
+  max_x = max(d0_val * 1.25, pos_T_val * 1.08)
 
-    fig.add_annotation(
-        x=pos_a, y=y_off,
-        text=f"| {label_html}",
-        showarrow=False,
-        xanchor=x_anchor_val,
-        font=dict(size=11, color="#334155")
+  # Corsia Tartaruga (y = 1)
+  fig_track.add_shape(
+      type="line",
+      x0=0,
+      y0=1,
+      x1=max_x,
+      y1=1,
+      line=dict(color="#bbf7d0", width=4),
+  )
+  # Corsia Achille (y = 0)
+  fig_track.add_shape(
+      type="line",
+      x0=0,
+      y0=0,
+      x1=max_x,
+      y1=0,
+      line=dict(color="#bfdbfe", width=4),
+  )
+
+  # Marcatori notevoli con pedici Unicode
+  for k in range(min(curr_step + 2, len(df))):
+    pos_ak = df.iloc[k]["Pos_A_float"]
+    if k == 0:
+      label_k = "A₀ = 0"
+    else:
+      label_k = f"A{to_subscript(str(k))} = T{to_subscript(str(k-1))}"
+
+    fig_track.add_trace(
+        go.Scatter(
+            x=[pos_ak],
+            y=[0],
+            mode="markers+text",
+            marker=dict(symbol="line-ns", size=10, color="#64748b"),
+            text=[f"| {label_k}"],
+            textposition="bottom center",
+            hoverinfo="none",
+            showlegend=False,
+        )
     )
 
-if n > 0:
-    prev_a = passi_data[n - 1]["Posizione Achille (m)"]
-    fig.add_trace(go.Scatter(
-        x=[prev_a, curr_a], y=[0.15, 0.15],
-        mode="lines+markers",
-        line=dict(color="#2563eb", width=3),
-        marker=dict(size=6, color="#2563eb"),
-        showlegend=False,
-        hoverinfo="none"
-    ))
-
-y_achille = 0.40
-y_tartaruga = 0.70 if dist_attuale < 12.0 else 0.40
-
-fig.add_annotation(
-    x=curr_a, y=y_achille, text="🏃 Achille",
-    showarrow=False, font=dict(size=14, color="#0f172a"), xanchor="center"
-)
-
-fig.add_annotation(
-    x=curr_t, y=y_tartaruga, text="🐢 Tartaruga",
-    showarrow=False, font=dict(size=14, color="#0f172a"), xanchor="center"
-)
-
-fig.update_layout(
-    xaxis=dict(range=[-5, 120], zeroline=False, showgrid=False, title="Spazio (metri)"),
-    yaxis=dict(range=[-1.1, 1.0], zeroline=False, showgrid=False, showticklabels=False),
-    height=320,
-    margin=dict(l=20, r=20, t=20, b=20),
-    plot_bgcolor="white"
-)
-
-st.plotly_chart(fig, use_container_width=True)
-
-st.markdown("---")
-
-# ------------------------------------------------------------------------------
-# SEZIONE 2: LABORATORIO INTERATTIVO SULLE SOMME PARZIALI S_n E SUL LIMITE
-# ------------------------------------------------------------------------------
-st.subheader("2. Laboratorio Algebrico: Andamento e Limite di S_n")
-
-tab1, tab2 = st.tabs(["📈 Grafico di Convergenza di S_n", "🧮 Calcolatore Algebrico Guidato"])
-
-with tab1:
-    st.markdown("Esplora l'andamento della successione delle somme parziali $S_n$ al crescere del numero di termini $n$[cite: 1].")
-    
-    # Grafico di convergenza Plotly
-    df_chart = pd.DataFrame(passi_data[:n+1])
-    
-    fig_limit = go.Figure()
-    
-    # Punti della successione
-    fig_limit.add_trace(go.Scatter(
-        x=df_chart["Passo (n)"],
-        y=df_chart["Somma Parziale S_n (m)"],
-        mode="lines+markers",
-        name="S_n (Somma Parziale)",
-        line=dict(color="#2563eb", width=3),
-        marker=dict(size=8, color="#1e3a8a")
-    ))
-    
-    # Asintoto Limite (111.1111 m)
-    fig_limit.add_trace(go.Scatter(
-        x=[0, 14], y=[111.1111, 111.1111],
-        mode="lines",
-        name="Limite S_∞ = 111.1̄ m",
-        line=dict(color="#dc2626", width=2, dash="dash")
-    ))
-    
-    fig_limit.update_layout(
-        xaxis=dict(title="Numero di passi (n)", dtick=1),
-        yaxis=dict(title="Distanza percorsa da Achille S_n (m)", range=[90, 115]),
-        height=350,
-        margin=dict(l=20, r=20, t=30, b=20),
-        plot_bgcolor="#f8fafc"
+  # Tratto d_n compiuto da Achille nell'ultimo scatto
+  if curr_step > 0:
+    prev_A_val = df.iloc[curr_step - 1]["Pos_A_float"]
+    fig_track.add_shape(
+        type="line",
+        x0=prev_A_val,
+        y0=0,
+        x1=pos_A_val,
+        y1=0,
+        line=dict(color="#2563eb", width=6),
     )
-    
-    st.plotly_chart(fig_limit, use_container_width=True)
 
-with tab2:
-    st.markdown("### Studio analitico dell'infinitesimo $\\frac{1}{10^n}$[cite: 1]")
-    
-    # Slider interattivo per testare grandi valori di n
-    n_test = st.slider("Seleziona il valore di n per calcolare S_n:", min_value=1, max_value=20, value=n+1 if n>0 else 1)
-    
-    # Calcolo analitico dinamico
-    termine_infinitesimo = 1 / (10 ** n_test)
-    sn_calcolata = 100 * ((1 - termine_infinitesimo) / 0.9)
-    
-    col_a, col_b, col_c = st.columns(3)
-    col_a.metric(label=f"Termine (1/10)^{n_test}", value=f"{termine_infinitesimo:.2e}")
-    col_b.metric(label=f"Fattore [1 - (1/10)^{n_test}] / 0.9", value=f"{((1 - termine_infinitesimo)/0.9):.8f}")
-    col_c.metric(label=f"Somma S_{n_test} (metri)", value=f"{sn_calcolata:.6f} m")
-    
-    st.markdown(f"""
-    > **Osservazione Guidata**:  
-    > Per $n = {n_test}$, la quantità $\\frac{{1}}{{10^{{{n_test}}}}}$ vale **{termine_infinitesimo:.2e}**[cite: 1].  
-    > Man mano che $n \\to \\infty$, questo termine diventa trascurabile (tende a $0$), consentendo a $S_n$ di stabilizzarsi sul valore limite finito $100 \\cdot \\frac{{10}}{{9}} = 111,\\bar{{1}}\\text{{ m}}$[cite: 1].
-    """)
+  # Segmento orizzontale del Vantaggio Residuo
+  fig_track.add_shape(
+      type="line",
+      x0=pos_A_val,
+      y0=0.5,
+      x1=pos_T_val,
+      y1=0.5,
+      line=dict(color="#dc2626", width=3, dash="dash"),
+  )
 
-st.markdown("---")
+  # Icona Achille (y = 0)
+  fig_track.add_trace(
+      go.Scatter(
+          x=[pos_A_val],
+          y=[0],
+          mode="markers+text",
+          name="Achille",
+          marker=dict(symbol="triangle-right", size=18, color="#1e3c72"),
+          text=[f"🏃 Achille (A{to_subscript(str(curr_step))})"],
+          textposition="top center",
+          showlegend=False,
+      )
+  )
+
+  # Icona Tartaruga (y = 1)
+  fig_track.add_trace(
+      go.Scatter(
+          x=[pos_T_val],
+          y=[1],
+          mode="markers+text",
+          name="Tartaruga",
+          marker=dict(symbol="circle", size=14, color="#16a34a"),
+          text=[f"🐢 Tartaruga (T{to_subscript(str(curr_step))})"],
+          textposition="top center",
+          showlegend=False,
+      )
+  )
+
+  fig_track.update_layout(
+      xaxis=dict(
+          title="Distanza sulla Retta Spaziale (metri)", range=[-5, max_x]
+      ),
+      yaxis=dict(
+          tickvals=[0, 1],
+          ticktext=["Corsia Achille", "Corsia Tartaruga"],
+          range=[-0.5, 1.5],
+      ),
+      height=270,
+      margin=dict(l=10, r=10, t=10, b=10),
+      template="plotly_white",
+      showlegend=False,
+  )
+
+  st.plotly_chart(fig_track, use_container_width=True)
+
+with col_right:
+  if curr_step == 0:
+    st.markdown(
+        f"""
+      <div class="athena-socratic-card">
+          <h3>🏛️ Athena: Osservazioni maieutiche (n = 0)</h3>
+          <p><b>1. Configurazione Spaziale:</b> Achille è fermo al punto A₀ = 0 m. La Tartaruga parte con il vantaggio iniziale T₀ = {d0_val} m.</p>
+          <p><b>2. Il Primo Tratto d₁:</b> Il distacco iniziale coincide con il segmento d₁ = {d0_val} m. Nessun movimento si è ancora compiuto.</p>
+          <p><b>3. Relazione Cinematica:</b> Achille corre {r_denom} volte più veloce. Il rapporto r = 1/{r_denom} indica che la Tartaruga percorrerà un decimo della distanza di Achille nello stesso intervallo.</p>
+          <div class="cognitive-conflict-box">
+              <h4>❓ Quesito Socratico di Partenza:</h4>
+              <div class="conflict-text">
+                  "Per raggiungere la Tartaruga, concordi con Zenone che Achille debba prima di tutto percorrere il primo tratto d₁ = {d0_val} m per giungere in T₀ dove la Tartaruga si trova ora?"
+              </div>
+          </div>
+      </div>
+      """,
+        unsafe_allow_html=True,
+    )
+  else:
+    tratto_a_frac_str = current_data["Tratto percorso da Achille"]
+    tratto_t_frac_str = format_frac_html(
+        Fraction(current_data["Tratto_A_Frac"], r_denom)
+    )
+    distacco_frac_str = current_data["Vantaggio della tartaruga"]
+
+    somma_frazioni_list = [
+        format_frac_html(df.iloc[k]["Tratto_A_Frac"])
+        for k in range(1, curr_step + 1)
+    ]
+    somma_frazioni_str = " + ".join(somma_frazioni_list)
+
+    c_step_sub = to_subscript(str(curr_step))
+    prev_step_sub = to_subscript(str(curr_step - 1))
+
+    st.markdown(
+        f"""
+      <div class="athena-socratic-card">
+          <h3>🏛️ Athena: Guida Socratica - Passo n = {curr_step}</h3>
+          <p><b>1. Azione di Achille:</b> Achille copre il tratto <span class="fraction-badge">d{c_step_sub} = {tratto_a_frac_str} m</span>, giungendo in A{c_step_sub} (ex posizione T{prev_step_sub} della Tartaruga).</p>
+          <p><b>2. Spostamento Tartaruga:</b> Nello stesso tempo, la Tartaruga avanza in T{c_step_sub}, coprendo il micro-tratto <span class="fraction-badge">{tratto_t_frac_str} m</span> (pari a 1/{r_denom} di d{c_step_sub}).</p>
+          <p><b>3. Distanza Totale Accumulata Sₙ:</b><br>
+          <div style="margin: 4px 0; padding: 6px 10px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; font-family: monospace; font-size: 0.88rem;">
+              <b>S{c_step_sub} = d₁ + ... + d{c_step_sub} = {somma_frazioni_str} = {current_data['Posizione raggiunta da Achille']} m</b>
+          </div>
+          </p>
+          <p><b>4. Vantaggio Residuo Δsₙ:</b> Vi è un nuovo segmento residuo pari a <span class="fraction-badge">Δs{c_step_sub} = {distacco_frac_str} m</span>.</p>
+          <div class="cognitive-conflict-box">
+              <h4>🧠 Cortocircuito Cognitivo al Passo {curr_step}:</h4>
+              <div class="conflict-text">
+                  "Il vantaggio residuo (Δs{c_step_sub} = {distacco_frac_str} m) è <b>rigorosamente diverso da zero</b>.<br>
+                  Se ad ogni passo si genera un nuovo segmento positivo, quanti tratti d₁, d₂, d₃, ... dovrà compiere Achille in totale?"
+              </div>
+          </div>
+      </div>
+      """,
+        unsafe_allow_html=True,
+    )
 
 # ------------------------------------------------------------------------------
-# SEZIONE 3: TABELLA DATI DINAMICA
+# 3. SCOMPOSIZIONE CUMULATA DEI TRATTI RETTILINEI
 # ------------------------------------------------------------------------------
-st.subheader("3. Tabella della Successione S_n")
+st.markdown(
+    f"<div class='section-title'>📏 Scomposizione dei Tratti Rettilinei di Achille"
+    f" (fino a n = {curr_step})</div>",
+    unsafe_allow_html=True,
+)
+st.markdown(
+    "<div class='section-subtitle'>Successione dei segmenti percorsi: Sₙ = d₁ +"
+    " d₂ + ... + dₙ</div>",
+    unsafe_allow_html=True,
+)
 
-df_totale = pd.DataFrame(passi_data)
+fig_segments = go.Figure()
+palette = [
+    "#1f77b4",
+    "#ff7f0e",
+    "#2ca02c",
+    "#d62728",
+    "#9467bd",
+    "#8c564b",
+    "#e377c2",
+    "#bcbd22",
+    "#17becf",
+]
+
+for k in range(1, curr_step + 1):
+  tratto_val = df.iloc[k]["Tratto_A_float"]
+  tratto_frac_label = df.iloc[k]["Tratto percorso da Achille"]
+  color = palette[(k - 1) % len(palette)]
+  k_sub = to_subscript(str(k))
+  fig_segments.add_trace(
+      go.Bar(
+          y=["Tratti Achille"],
+          x=[tratto_val],
+          name=f"d{k_sub} ({tratto_frac_label} m)",
+          orientation="h",
+          marker=dict(color=color),
+          hoverinfo="name+x",
+      )
+  )
+
+curr_step_sub = to_subscript(str(curr_step))
+fig_segments.add_trace(
+    go.Scatter(
+        x=[pos_T_val],
+        y=["Tratti Achille"],
+        mode="markers+text",
+        name=f"Tartaruga in T{curr_step_sub}",
+        marker=dict(symbol="circle", size=12, color="#16a34a"),
+        text=[f"🐢 T{curr_step_sub}"],
+        textposition="top center",
+        showlegend=True,
+    )
+)
+
+fig_segments.update_layout(
+    barmode="stack",
+    xaxis=dict(title="Distanza sulla Pista (metri)", range=[0, max_x]),
+    yaxis=dict(visible=False),
+    height=130,
+    margin=dict(l=10, r=10, t=10, b=10),
+    template="plotly_white",
+    showlegend=True,
+)
+
+st.plotly_chart(fig_segments, use_container_width=True)
+
+# ------------------------------------------------------------------------------
+# 4. TABELLA ANALITICA
+# ------------------------------------------------------------------------------
+st.markdown(
+    "<div class='section-title'>📊 Tabella Analitica dei Punti e dei"
+    " Tratti</div>",
+    unsafe_allow_html=True,
+)
+
+
+def highlight_current(row):
+  if row["Passo n"] == st.session_state.step:
+    return ["background-color: #e0f2fe; font-weight: bold; color: #0369a1"] * len(
+        row
+    )
+  return [""] * len(row)
+
+
+columns_requested = [
+    "Passo n",
+    "Tratto percorso da Achille",
+    "Posizione raggiunta da Achille",
+    "Posizione della tartaruga",
+    "Vantaggio della tartaruga",
+]
+
 st.dataframe(
-    df_totale.iloc[:n + 1],
+    df[columns_requested].style.apply(highlight_current, axis=1),
     use_container_width=True,
-    hide_index=True
+)
+
+# ------------------------------------------------------------------------------
+# 5. CHIUSURA MAIEUTICA
+# ------------------------------------------------------------------------------
+st.markdown(
+    """
+<div style="background-color: #fef2f2; border: 1px solid #fee2e2; border-left: 5px solid #ef4444; padding: 10px 14px; border-radius: 6px; margin-top: 10px;">
+    <h4 style="color: #991b1b; margin-top:0; font-weight: 700; font-size: 0.95rem;">⚡ Il Cortocircuito Epistemologico di Elea:</h4>
+    <p style="color: #7f1d1d; font-size: 0.90rem; font-weight: 500; margin-bottom: 0; line-height: 1.35;">
+        "Se la scomposizione logica di Zenone dimostra che Achille deve percorrere una successione di <b>infiniti tratti rettilinei distinti (dₙ > 0)</b> espressi da frazioni sempre più piccole ma mai nulle, come fa l'esperienza reale del mondo sensibile a mostrare che la corsa si conclude e la tartaruga viene superata?"
+    </p>
+</div>
+""",
+    unsafe_allow_html=True,
 )
