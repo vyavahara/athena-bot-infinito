@@ -48,8 +48,8 @@ st.markdown(
         line-height: 1.25;
     }
     
-    /* Condizioni Iniziali */
-    .init-conditions-card {
+    /* Condizioni Iniziali e Modello Matematico */
+    .init-conditions-card, .math-model-card {
         background-color: #ffffff; 
         border: 1px solid #cbd5e1;
         border-left: 6px solid #0284c7; 
@@ -58,7 +58,7 @@ st.markdown(
         margin-bottom: 14px;
         box-shadow: 0 2px 6px rgba(0,0,0,0.03);
     }
-    .init-conditions-card h4 { 
+    .init-conditions-card h4, .math-model-card h4 { 
         color: #0f172a; 
         margin-top: 0; 
         margin-bottom: 6px; 
@@ -145,7 +145,6 @@ st.markdown(
         line-height: 1.48; 
     }
 
-    /* Dimensione font componenti Streamlit */
     div[data-testid="stDataFrame"] { font-size: 0.98rem !important; }
     [data-testid="stMetricValue"] { font-size: 1.4rem !important; font-weight: 800 !important; color: #0f172a; }
     [data-testid="stMetricLabel"] { font-size: 1rem !important; font-weight: 600 !important; color: #475569; }
@@ -155,11 +154,11 @@ st.markdown(
 )
 
 # ------------------------------------------------------------------------------
-# FUNZIONE HELPER PER CONVERTIRE UNDERSCORE E NUMERI IN PEDICI UNICODE
+# FUNZIONE HELPER PER CONVERTIRE CIFRE IN PEDICI UNICODE CORRETTI
 # ------------------------------------------------------------------------------
 def to_subscript(text: str) -> str:
-    """Convertitore universale di caratteri in pedici Unicode ufficiali."""
-    sub_map = str.maketrans("0123456789aA_nNtT+-", "₀₁₂₃₄₅₆₇₈₉ₐₐ₋ₙₙₜₜ₊₋")
+    """Converte cifre e indicatori in pedici Unicode ufficiali puliti (es. ₀, ₁, ₂, ₙ)."""
+    sub_map = str.maketrans("0123456789n", "₀₁₂₃₄₅₆₇₈₉ₙ")
     return str(text).translate(sub_map)
 
 
@@ -183,11 +182,28 @@ st.markdown(
 )
 
 # ------------------------------------------------------------------------------
+# DEFINIZIONE FORMALE DEL MODELLO MATEMATICO (Riquadro Introduttivo)
+# ------------------------------------------------------------------------------
+st.markdown(
+    """
+<div class="math-model-card">
+    <h4>📐 Modello Matematico del Paradosso</h4>
+    <p style="margin-bottom: 6px; color: #334155;">
+        La traiettoria è rappresentata da una retta orientata. Ogni punto viene identificato con la propria coordinata reale. 
+        Le successioni (Aₙ) e (Tₙ) rappresentano le posizioni geometriche ai passi successivi. 
+        <b>La simulazione rappresenta una costruzione geometrica iterativa e non introduce esplicitamente il tempo o il moto continuo.</b>
+    </p>
+</div>
+""",
+    unsafe_allow_html=True,
+)
+
+# ------------------------------------------------------------------------------
 # SIDEBAR - PARAMETRI GEOMETRICI
 # ------------------------------------------------------------------------------
 st.sidebar.header("⚙️ Impostazione della Pista")
-d0_val = st.sidebar.number_input(
-    "Misura del vantaggio iniziale d₁ = m(A₀T₀) [metri]:",
+delta_s0_val = st.sidebar.number_input(
+    "Misura del distacco iniziale Δs₀ = m(A₀T₀) [metri]:",
     value=100,
     step=10,
     min_value=1,
@@ -225,39 +241,53 @@ st.sidebar.markdown("---")
 st.sidebar.markdown(f"**Passo Selezionato:** n = {st.session_state.step}")
 
 # ------------------------------------------------------------------------------
-# CALCOLI CON FRAZIONI ESATTE
+# MODELLO MATEMATICO INTERNO E CALCOLI CON FRAZIONI ESATTE
 # ------------------------------------------------------------------------------
-d0_frac = Fraction(d0_val, 1)
-r_frac = Fraction(1, r_denom)
+delta_s0_frac = Fraction(delta_s0_val, 1)
+contraction_frac = Fraction(1, r_denom)
 
 steps_data = []
-s_A_frac = Fraction(0, 1)
-s_T_frac = d0_frac
+
+# Relazioni matematiche formali iniziali:
+# A₀ = 0
+# T₀ = Δs₀
+A_frac = Fraction(0, 1)
+T_frac = delta_s0_frac
 
 for n in range(max_steps + 1):
     if n == 0:
-        tratto_A_frac = Fraction(0, 1)
-        tratto_T_frac = Fraction(0, 1)
-        distacco_frac = d0_frac
+        d_frac = Fraction(0, 1)
+        t_frac = Fraction(0, 1)
+        delta_s_frac = delta_s0_frac
     else:
-        distacco_precedente = steps_data[n - 1]["Distacco_Frac"]
-        tratto_A_frac = distacco_precedente
-        tratto_T_frac = tratto_A_frac * r_frac
-        s_A_frac += tratto_A_frac
-        s_T_frac += tratto_T_frac
-        distacco_frac = s_T_frac - s_A_frac
+        # Relazioni matematiche formali iterative per ogni step n:
+        # A₀ = 0
+        # T₀ = Δs₀
+        # Δsₙ = Tₙ - Aₙ
+        # dₙ = Δsₙ₋₁
+        # tₙ = Δsₙ₋₁ / k
+        # Aₙ = Aₙ₋₁ + dₙ
+        # Tₙ = Tₙ₋₁ + tₙ
+        delta_s_precedente = steps_data[n - 1]["delta_s"]
+        d_frac = delta_s_precedente
+        t_frac = delta_s_precedente / Fraction(r_denom, 1)
+        A_frac += d_frac
+        T_frac += t_frac
+        delta_s_frac = T_frac - A_frac
 
+    # Struttura interna contenente solo dati matematici grezzi
     steps_data.append({
-        "Passo n": n,
-        "Misura tratto dₙ (m)": format_frac_html(tratto_A_frac),
-        "Misura posizione sₐ (m)": format_frac_html(s_A_frac),
-        "Misura posizione sₜ (m)": format_frac_html(s_T_frac),
-        "Misura distacco Δsₙ (m)": format_frac_html(distacco_frac),
-        "Pos_A_float": float(s_A_frac),
-        "Pos_T_float": float(s_T_frac),
-        "Tratto_A_float": float(tratto_A_frac),
-        "Distacco_Frac": distacco_frac,
-        "Tratto_A_Frac": tratto_A_frac,
+        "n": n,
+        "A": A_frac,
+        "d": d_frac,
+        "T": T_frac,
+        "t": t_frac,
+        "delta_s": delta_s_frac,
+        "A_float": float(A_frac),
+        "T_float": float(T_frac),
+        "d_float": float(d_frac),
+        "t_float": float(t_frac),
+        "delta_s_float": float(delta_s_frac),
     })
 
 df = pd.DataFrame(steps_data)
@@ -272,25 +302,25 @@ st.markdown(
 <div class="init-conditions-card">
     <h4>📋 Condizioni Iniziali della Gara (Passo n = 0)</h4>
     <div class="init-conditions-text">
-        <span>🏃 <b>Posizione iniziale Achille sₐ(0):</b> 0 m</span>
-        <span>🐢 <b>Misura vantaggio iniziale d₁ = m(A₀T₀):</b> {d0_val} m</span>
-        <span>⚡ <b>Rapporto velocità:</b> vₐ = {r_denom} · vₜ</span>
+        <span>🏃 <b>Punto A₀:</b> 0 m</span>
+        <span>🐢 <b>Distacco iniziale Δs₀ = m(A₀T₀):</b> {delta_s0_val} m</span>
+        <span>⚡ <b>Rapporto spostamenti:</b> dₙ = {r_denom} · tₙ</span>
     </div>
 </div>
 """,
     unsafe_allow_html=True,
 )
 
-# Metric Banner
+# Metric Banner con etichette geometriche rigorose aggiornate
 m1, m2, m3, m4 = st.columns(4)
 with m1:
-    st.metric("Passo Logico (n)", f"{int(current_data['Passo n'])}")
+    st.metric("Passo Logico (n)", f"{int(current_data['n'])}")
 with m2:
-    st.metric("Posizione sₐ (Achille)", f"{current_data['Misura posizione sₐ (m)']} m")
+    st.metric("Punto Aₙ - coordinata sulla retta", f"{format_frac_html(current_data['A'])} m")
 with m3:
-    st.metric("Posizione sₜ (Tartaruga)", f"{current_data['Misura posizione sₜ (m)']} m")
+    st.metric("Punto Tₙ - coordinata sulla retta", f"{format_frac_html(current_data['T'])} m")
 with m4:
-    st.metric("Misura distacco Δsₙ", f"{current_data['Misura distacco Δsₙ (m)']} m")
+    st.metric("Distacco residuo Δsₙ", f"{format_frac_html(current_data['delta_s'])} m")
 
 # ------------------------------------------------------------------------------
 # 2. VISUALIZZAZIONE PRINCIPALE
@@ -305,11 +335,11 @@ with col_left:
 
     fig_track = go.Figure()
 
-    pos_A_val = current_data["Pos_A_float"]
-    pos_T_val = current_data["Pos_T_float"]
+    A_val = current_data["A_float"]
+    T_val = current_data["T_float"]
     
     # Range ampio per evitare tagli del testo sul lato destro dell'asse X
-    max_x = max(d0_val * 1.40, pos_T_val * 1.30 + 40)
+    max_x = max(delta_s0_val * 1.40, T_val * 1.30 + 40)
 
     # Corsia Tartaruga (y = 1)
     fig_track.add_shape(
@@ -326,7 +356,7 @@ with col_left:
 
     # Marcatori dei punti geometrici A_k
     for k in range(min(curr_step + 2, len(df))):
-        pos_ak = df.iloc[k]["Pos_A_float"]
+        pos_ak = df.iloc[k]["A_float"]
         show_label = (k == 0) or (k == curr_step and curr_step > 0)
         label_k = "A₀ = 0" if k == 0 else f"A{to_subscript(str(k))} = T{to_subscript(str(k-1))}"
 
@@ -343,26 +373,26 @@ with col_left:
             )
         )
 
-    # Segmento percorso da Achille nell'ultimo passo
+    # Segmento percorso da Achille nello step corrente
     if curr_step > 0:
-        prev_A_val = df.iloc[curr_step - 1]["Pos_A_float"]
+        prev_A_val = df.iloc[curr_step - 1]["A_float"]
         fig_track.add_shape(
             type="line",
-            x0=prev_A_val, y0=0, x1=pos_A_val, y1=0,
+            x0=prev_A_val, y0=0, x1=A_val, y1=0,
             line=dict(color="#1d4ed8", width=7),
         )
 
-    # Segmento rappresentante il distacco residuo
+    # Segmento rappresentante il distacco residuo Δsₙ
     fig_track.add_shape(
         type="line",
-        x0=pos_A_val, y0=0.5, x1=pos_T_val, y1=0.5,
+        x0=A_val, y0=0.5, x1=T_val, y1=0.5,
         line=dict(color="#b91c1c", width=4, dash="dash"),
     )
 
     # Marcatori di Achille e Tartaruga
     fig_track.add_trace(
         go.Scatter(
-            x=[pos_A_val], y=[0],
+            x=[A_val], y=[0],
             mode="markers+text",
             marker=dict(symbol="circle", size=16, color="#1e3c72"),
             text=[f" 🏃 <b>Achille (A{to_subscript(str(curr_step))})</b>"],
@@ -376,7 +406,7 @@ with col_left:
 
     fig_track.add_trace(
         go.Scatter(
-            x=[pos_T_val], y=[1],
+            x=[T_val], y=[1],
             mode="markers+text",
             marker=dict(symbol="circle", size=14, color="#15803d"),
             text=[f" 🐢 <b>Tartaruga (T{to_subscript(str(curr_step))})</b>"],
@@ -390,7 +420,7 @@ with col_left:
 
     fig_track.update_layout(
         xaxis=dict(
-            title=dict(text="Asse della Posizione Spaziale s (metri)", font=dict(size=15, color="#0f172a")),
+            title=dict(text="Coordinata sulla Retta Orientata (metri)", font=dict(size=15, color="#0f172a")),
             range=[-5, max_x],
             tickfont=dict(size=13, color="#334155")
         ),
@@ -418,13 +448,13 @@ with col_right:
             f"""
       <div class="athena-socratic-card">
           <h3>🏛️ Osservazioni (n = 0)</h3>
-          <p><b>1. Configurazione Spaziale:</b> Achille si trova nella posizione iniziale A₀ (sₐ = 0 m). La Tartaruga occupa il punto T₀ con un vantaggio rappresentato dal segmento A₀T₀.</p>
-          <p><b>2. Misura Iniziale d₁:</b> La misura della lunghezza del segmento A₀T₀ è d₁ = {d0_val} m.</p>
-          <p><b>3. Relazione Cinematica:</b> Achille corre {r_denom} volte più veloce. La misura dello spostamento della Tartaruga è pari a 1/{r_denom} della misura del tratto percorso da Achille nello stesso intervallo temporale.</p>
+          <p><b>1. Configurazione Spaziale:</b> Achille occupa il punto geometrico A₀ = 0 m. La Tartaruga occupa il punto geometrico T₀, determinando il segmento di distacco iniziale A₀T₀.</p>
+          <p><b>2. Distacco Iniziale Δs₀:</b> La misura del segmento residuo iniziale è Δs₀ = m(A₀T₀) = {delta_s0_val} m.</p>
+          <p><b>3. Relazione geometrica iterativa:</b> Per ogni step n, lo spostamento della Tartaruga ha misura tₙ = Δsₙ₋₁ / {r_denom}.</p>
           <div class="cognitive-conflict-box">
               <h4>🧠 Focus:</h4>
               <div class="conflict-text">
-                  Per raggiungere la Tartaruga, concordi con Zenone che Achille debba prima di tutto coprire la misura del primo tratto d₁ = {d0_val} m per giungere nel punto T₀ dove si trova la Tartaruga?
+                  Per raggiungere la Tartaruga, concordi con Zenone che Achille debba prima di tutto compiere lo spostamento d₁ = Δs₀ = {delta_s0_val} m per giungere nel punto T₀ dove si trova ora la Tartaruga?
               </div>
           </div>
       </div>
@@ -432,34 +462,34 @@ with col_right:
             unsafe_allow_html=True,
         )
     else:
-        tratto_a_frac_str = current_data["Misura tratto dₙ (m)"]
-        tratto_t_frac_str = format_frac_html(
-            Fraction(current_data["Tratto_A_Frac"], r_denom)
-        )
-        distacco_frac_str = current_data["Misura distacco Δsₙ (m)"]
+        d_str = format_frac_html(current_data["d"])
+        t_str = format_frac_html(current_data["t"])
+        delta_s_str = format_frac_html(current_data["delta_s"])
 
         somma_frazioni_list = [
-            format_frac_html(df.iloc[k]["Tratto_A_Frac"])
+            format_frac_html(df.iloc[k]["d"])
             for k in range(1, curr_step + 1)
         ]
         somma_frazioni_str = " + ".join(somma_frazioni_list)
+
+        relazione_base = f"A₁ = T₀" if curr_step == 1 else f"A{c_step_sub} = T{to_subscript(str(curr_step - 1))}"
 
         st.markdown(
             f"""
       <div class="athena-socratic-card">
           <h3>🏛️ Athena: Guida Socratica - Passo n = {curr_step}</h3>
-          <p><b>1. Spostamento di Achille:</b> Achille percorre il segmento A{prev_step_sub}A{c_step_sub} di misura <span class="fraction-badge">d{c_step_sub} = {tratto_a_frac_str} m</span>, giungendo nel punto A{c_step_sub} (coincidente con la posizione precedente T{prev_step_sub} della Tartaruga).</p>
-          <p><b>2. Spostamento della Tartaruga:</b> Nello stesso intervallo, la Tartaruga avanza nel punto T{c_step_sub}, percorrendo un tratto di misura <span class="fraction-badge">{tratto_t_frac_str} m</span> (pari a 1/{r_denom} di d{c_step_sub}).</p>
-          <p><b>3. Misura della Posizione Cumulata sₐ:</b><br>
+          <p><b>1. Spostamento di Achille:</b> Achille compie lo spostamento d{c_step_sub} (misura del segmento A{prev_step_sub}A{c_step_sub}) pari a <span class="fraction-badge">d{c_step_sub} = {d_str} m</span>, raggiungendo il punto geometrico A{c_step_sub} (coincidente con la precedente posizione T{prev_step_sub} della Tartaruga, applicando la relazione fondamentale <b>{relazione_base}</b>).</p>
+          <p><b>2. Spostamento della Tartaruga:</b> Nello stesso step, la Tartaruga compie lo spostamento t{c_step_sub} (misura del segmento T{prev_step_sub}T{c_step_sub}) pari a <span class="fraction-badge">t{c_step_sub} = {t_str} m</span> (ottenuto come Δs{prev_step_sub} / {r_denom}), raggiungendo il punto geometrico T{c_step_sub}.</p>
+          <p><b>3. Posizione Aₙ:</b><br>
           <div style="margin: 6px 0; padding: 8px 12px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; font-family: monospace; font-size: 0.98rem;">
-              <b>sₐ({c_step_sub}) = d₁ + ... + d{c_step_sub} = {somma_frazioni_str} = {current_data['Misura posizione sₐ (m)']} m</b>
+              <b>s_A({c_step_sub}) = d₁ + ... + d{c_step_sub} = {somma_frazioni_str} = {format_frac_html(current_data['A'])} m</b>
           </div>
           </p>
-          <p><b>4. Misura del Distacco Residuo Δsₙ:</b> Il nuovo segmento di distacco A{c_step_sub}T{c_step_sub} ha misura pari a <span class="fraction-badge">Δs{c_step_sub} = {distacco_frac_str} m</span>.</p>
+          <p><b>4. Distacco Residuo Δsₙ:</b> Il segmento A{c_step_sub}T{c_step_sub} ha misura pari a <span class="fraction-badge">Δs{c_step_sub} = {delta_s_str} m</span>.</p>
           <div class="cognitive-conflict-box">
               <h4>🧠 Focus:</h4>
               <div class="conflict-text">
-                  Per azzerare la misura del distacco residuo Δs{c_step_sub} = {distacco_frac_str} m, concordi con Zenone che Achille debba ora percorrere un tratto di misura d{next_step_sub} = {distacco_frac_str} m per giungere nel punto T{c_step_sub}?
+                  Per azzerare il distacco residuo Δs{c_step_sub} = {delta_s_str} m, concordi con Zenone che Achille debba ora compiere lo spostamento d{next_step_sub} = Δs{c_step_sub} = {delta_s_str} m per giungere nel punto T{c_step_sub}?
               </div>
           </div>
       </div>
@@ -468,15 +498,14 @@ with col_right:
         )
 
 # ------------------------------------------------------------------------------
-# 3. SCOMPOSIZIONE CUMULATA DEI TRATTI RETTILINEI
+# 3. SCOMPOSIZIONE CUMULATA DEGLI SPOSTAMENTI
 # ------------------------------------------------------------------------------
 st.markdown(
-    f"<div class='section-title'>📏 Scomposizione Additiva delle Misure dei Tratti dₙ"
-    f" (fino al passo n = {curr_step})</div>",
+    f"<div class='section-title'>📏 s_A(n)=d₁+d₂+...+dₙ (fino al passo n = {curr_step})</div>",
     unsafe_allow_html=True,
 )
 st.markdown(
-    "<div class='section-subtitle'>Somma delle misure dei segmenti percorsi da Achille: sₐ(n) = d₁ +"
+    "<div class='section-subtitle'>Posizione di Achille come somma dei segmenti percorsi: s_A(n) = d₁ +"
     " d₂ + ... + dₙ</div>",
     unsafe_allow_html=True,
 )
@@ -488,15 +517,15 @@ palette = [
 ]
 
 for k in range(1, curr_step + 1):
-    tratto_val = df.iloc[k]["Tratto_A_float"]
-    tratto_frac_label = df.iloc[k]["Misura tratto dₙ (m)"]
+    d_val = df.iloc[k]["d_float"]
+    d_frac_label = format_frac_html(df.iloc[k]["d"])
     color = palette[(k - 1) % len(palette)]
     k_sub = to_subscript(str(k))
     fig_segments.add_trace(
         go.Bar(
-            y=["Tratti Achille"],
-            x=[tratto_val],
-            name=f"Tratto d{k_sub} ({tratto_frac_label} m)",
+            y=["Spostamenti Achille"],
+            x=[d_val],
+            name=f"Spostamento d{k_sub} ({d_frac_label} m)",
             orientation="h",
             marker=dict(color=color),
             hoverinfo="name+x",
@@ -507,8 +536,8 @@ curr_step_sub = to_subscript(str(curr_step))
 
 fig_segments.add_trace(
     go.Scatter(
-        x=[pos_T_val],
-        y=["Tratti Achille"],
+        x=[T_val],
+        y=["Spostamenti Achille"],
         mode="markers+text",
         marker=dict(symbol="circle", size=14, color="#15803d"),
         text=[f" 🐢 <b>Tartaruga (T{curr_step_sub})</b>"],
@@ -523,7 +552,7 @@ fig_segments.add_trace(
 fig_segments.update_layout(
     barmode="stack",
     xaxis=dict(
-        title=dict(text="Misura della Posizione Spaziale s (metri)", font=dict(size=14, color="#0f172a")),
+        title=dict(text="Posizione Aₙ (metri)", font=dict(size=14, color="#0f172a")),
         range=[0, max_x],
         tickfont=dict(size=12, color="#334155")
     ),
@@ -541,7 +570,7 @@ st.plotly_chart(fig_segments, use_container_width=True)
 # 4. TABELLA ANALITICA
 # ------------------------------------------------------------------------------
 st.markdown(
-    "<div class='section-title'>📊 Tabella Analitica delle Misure di Posizione e Distacco</div>",
+    "<div class='section-title'>📊 Tabella Analitica del Modello Geometrico</div>",
     unsafe_allow_html=True,
 )
 
@@ -552,16 +581,31 @@ def highlight_current(row):
         )
     return [""] * len(row)
 
+# Formattazione formale della tabella a partire dai dati grezzi
+display_data = []
+for idx, row in df.iterrows():
+    display_data.append({
+        "Passo n": row["n"],
+        "Punto Aₙ - coordinata sulla retta": f"{format_frac_html(row['A'])} m",
+        "Misura dello spostamento dₙ": f"{format_frac_html(row['d'])} m",
+        "Punto Tₙ - coordinata sulla retta": f"{format_frac_html(row['T'])} m",
+        "Misura dello spostamento tₙ": f"{format_frac_html(row['t'])} m",
+        "Distacco residuo Δsₙ": f"{format_frac_html(row['delta_s'])} m",
+    })
+
+df_display = pd.DataFrame(display_data)
+
 columns_requested = [
     "Passo n",
-    "Misura tratto dₙ (m)",
-    "Misura posizione sₐ (m)",
-    "Misura posizione sₜ (m)",
-    "Misura distacco Δsₙ (m)",
+    "Punto Aₙ - coordinata sulla retta",
+    "Misura dello spostamento dₙ",
+    "Punto Tₙ - coordinata sulla retta",
+    "Misura dello spostamento tₙ",
+    "Distacco residuo Δsₙ",
 ]
 
 st.dataframe(
-    df[columns_requested].style.apply(highlight_current, axis=1),
+    df_display[columns_requested].style.apply(highlight_current, axis=1),
     use_container_width=True,
 )
 
@@ -573,7 +617,7 @@ st.markdown(
 <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-left: 6px solid #ef4444; padding: 14px 18px; border-radius: 8px; margin-top: 14px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08);">
     <h4 style="color: #991b1b; margin-top:0; font-weight: 800; font-size: 1.08rem !important;">⚡ Il Cortocircuito Epistemologico di Elea:</h4>
     <p style="color: #7f1d1d; font-size: 1.02rem !important; font-weight: 600; margin-bottom: 0; line-height: 1.48;">
-        Se la scomposizione logica di Zenone dimostra che Achille deve percorrere una successione di <b>infiniti tratti rettilinei distinti di misura positiva (dₙ > 0)</b> espressi da frazioni sempre più piccole ma mai nulle, come fa l'esperienza reale del mondo sensibile a mostrare che la corsa si conclude e la misura del distacco si annulla?
+        Se la scomposizione logica di Zenone dimostra che Achille deve compiere una successione di infiniti spostamenti di misura positiva (dₙ > 0), ogni passo finito lascia inevitabilmente un distacco positivo Δsₙ > 0. Come fa la costruzione geometrica a svilupparsi senza che la misura del distacco residuo diventi mai esattamente zero in un numero finito di passi?
     </p>
 </div>
 """,
