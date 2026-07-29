@@ -189,8 +189,9 @@ st.markdown(
 <div class="math-model-card">
     <h4>📐 Modello Matematico del Paradosso</h4>
     <p style="margin-bottom: 6px; color: #334155;">
-        La corsia è una semiretta orientata con origine O. Ad ogni punto della corsia è 
-        associata una coordinata reale non negativa che ne determina la posizione geometrica
+        La pista è rappresentata da una semiretta orientata con origine O. 
+        Ogni posizione occupata da Achille e dalla tartaruga è rappresentata da un punto
+        della semiretta, individuato dalla propria coordinata rispetto all'origine. 
     </p>
 </div>
 """,
