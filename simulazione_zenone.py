@@ -428,13 +428,13 @@ with col_right:
             f"""
       <div class="athena-socratic-card">
           <h3>🏛️ Osservazioni (n = 0)</h3>
-          <p><b>1. Configurazione Spaziale:</b> Achille si trova nella posizione iniziale $A_0$ ($s_A = 0\\text{ m}$). La Tartaruga occupa il punto $T_0$ con un vantaggio rappresentato dal segmento $A_0T_0$.</p>
-          <p><b>2. Misura Iniziale d₁:</b> La misura della lunghezza del segmento $A_0T_0$ è $d_1 = {d0_val}\\text{ m}$.</p>
+          <p><b>1. Configurazione Spaziale:</b> Achille si trova nella posizione iniziale $A_0$ ($s_A = 0\\text{{ m}}$). La Tartaruga occupa il punto $T_0$ con un vantaggio rappresentato dal segmento $A_0T_0$.</p>
+          <p><b>2. Misura Iniziale d₁:</b> La misura della lunghezza del segmento $A_0T_0$ è $d_1 = {d0_val}\\text{{ m}}$.</p>
           <p><b>3. Relazione Cinematica:</b> Achille corre {r_denom} volte più veloce. La misura dello spostamento della Tartaruga è pari a $1/{r_denom}$ della misura del tratto percorso da Achille nello stesso intervallo temporale.</p>
           <div class="cognitive-conflict-box">
               <h4>🧠 Focus:</h4>
               <div class="conflict-text">
-                  "Per raggiungere la Tartaruga, concordi con Zenone che Achille debba prima di tutto coprire la misura del primo tratto $d_1 = {d0_val}\\text{ m}$ per giungere nel punto $T_0$ dove si trova la Tartaruga?"
+                  "Per raggiungere la Tartaruga, concordi con Zenone che Achille debba prima di tutto coprire la misura del primo tratto $d_1 = {d0_val}\\text{{ m}}$ per giungere nel punto $T_0$ dove si trova la Tartaruga?"
               </div>
           </div>
       </div>
@@ -473,7 +473,7 @@ with col_right:
           <div class="cognitive-conflict-box">
               <h4>🧠 Focus:</h4>
               <div class="conflict-text">
-                  "Per azzerare la misura del distacco residuo $\\Delta s_{{{c_step_sub}}} = {distacco_frac_str}\\text{ m}$, concordi con Zenone che Achille debba ora percorrere un tratto di misura $d_{{{next_step_sub}}} = {distacco_frac_str}\\text{ m}$ per giungere nel punto $T_{{{c_step_sub}}}$?"
+                  "Per azzerare la misura del distacco residuo $\\Delta s_{{{c_step_sub}}} = {distacco_frac_str}\\text{{ m}}$, concordi con Zenone che Achille debba ora percorrere un tratto di misura $d_{{{next_step_sub}}} = {distacco_frac_str}\\text{{ m}}$ per giungere nel punto $T_{{{c_step_sub}}}$?"
               </div>
           </div>
       </div>
