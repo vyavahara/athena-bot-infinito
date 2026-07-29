@@ -189,8 +189,8 @@ st.markdown(
 <div class="math-model-card">
     <h4>📐 Modello Matematico del Paradosso</h4>
     <p style="margin-bottom: 6px; color: #334155;">
-        La corsia è rappresentata da una retta orientata. Ogni punto viene identificato con la propria coordinata reale. 
-        Le successioni (Aₙ) e (Tₙ) rappresentano le posizioni geometriche ai passi successivi. 
+        La corsia è una semiretta orientata con origine O. Ad ogni punto della corsia è 
+        associata una coordinata reale non negativa che ne determina la posizione geometrica
     </p>
 </div>
 """,
@@ -301,9 +301,9 @@ st.markdown(
 <div class="init-conditions-card">
     <h4>📋 Condizioni Iniziali della Gara (Passo n = 0)</h4>
     <div class="init-conditions-text">
-        <span>🏃 <b>Punto A₀:</b> 0 m</span>
-        <span>🐢 <b>Distacco iniziale Δs₀ = m(A₀T₀) ossia la distanza tra le ascisse di A₀ e T₀ :</b> {delta_s0_val} m</span>
-        <span>⚡ <b>Rapporto spostamenti:</b> dₙ = {r_denom} · tₙ</span>
+        <span>🏃 <b>Posizione iniziale di Achille A₀:</b> 0 m</span>
+        <span>🏃 <b>Posizione iniziale della Tartaruga T₀:</b> 100 m</span>
+        <span>🐢 <b>Distacco iniziale Δs₀ = d(A₀;T₀) ossia la distanza tra le ascisse di A₀ e T₀ :</b> {delta_s0_val} m</span>
     </div>
 </div>
 """,
@@ -315,11 +315,11 @@ m1, m2, m3, m4 = st.columns(4)
 with m1:
     st.metric("Passo Logico (n)", f"{int(current_data['n'])}")
 with m2:
-    st.metric("Punto Aₙ - coordinata sulla retta", f"{format_frac_html(current_data['A'])} m")
+    st.metric("Aₙ", f"{format_frac_html(current_data['A'])} m")
 with m3:
-    st.metric("Punto Tₙ - coordinata sulla retta", f"{format_frac_html(current_data['T'])} m")
+    st.metric("Tₙ", f"{format_frac_html(current_data['T'])} m")
 with m4:
-    st.metric("Distacco residuo Δsₙ", f"{format_frac_html(current_data['delta_s'])} m")
+    st.metric("Δsₙ", f"{format_frac_html(current_data['delta_s'])} m")
 
 # ------------------------------------------------------------------------------
 # 2. VISUALIZZAZIONE PRINCIPALE
@@ -328,7 +328,7 @@ col_left, col_right = st.columns([1.15, 1.0])
 
 with col_left:
     st.markdown(
-        f"<div class='section-title'>🏃 🐢 Piste Parallele e Rappresentazione Spaziale (n = {curr_step})</div>",
+        f"<div class='section-title'>🏃 🐢 Piste Parallele e Rappresentazione (n = {curr_step})</div>",
         unsafe_allow_html=True,
     )
 
@@ -447,8 +447,8 @@ with col_right:
             f"""
       <div class="athena-socratic-card">
           <h3>🏛️ Osservazioni (n = 0)</h3>
-          <p><b>1. Configurazione Spaziale:</b> Achille occupa il punto geometrico A₀ = 0 m. La Tartaruga occupa il punto geometrico T₀, determinando il segmento di distacco iniziale A₀T₀.</p>
-          <p><b>2. Distacco Iniziale Δs₀:</b> La misura del segmento residuo iniziale è Δs₀ = m(A₀T₀) = {delta_s0_val} m.</p>
+          <p><b>1. Configurazione Spaziale:</b> Achille occupa la posizione A₀ = 0. La Tartaruga occupa la posizione T₀, determinando il segmento di distacco iniziale A₀T₀.</p>
+          <p><b>2. Distacco Iniziale Δs₀:</b> La misura del segmento residuo iniziale è Δs₀ = d(A₀;T₀) = {delta_s0_val} m.</p>
           <p><b>3. Relazione geometrica iterativa:</b> Per ogni step n, lo spostamento della Tartaruga ha misura tₙ = Δsₙ₋₁ / {r_denom}.</p>
           <div class="cognitive-conflict-box">
               <h4>🧠 Focus:</h4>
