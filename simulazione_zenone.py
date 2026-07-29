@@ -189,7 +189,7 @@ st.markdown(
 # ------------------------------------------------------------------------------
 st.sidebar.header("⚙️ Impostazione della Pista")
 d0_val = st.sidebar.number_input(
-    "Vantaggio Iniziale Tartaruga (T₀ = d₁) [metri]:",
+    "Misura del vantaggio iniziale d₁ = m(A₀T₀) [metri]:",
     value=100,
     step=10,
     min_value=1,
@@ -251,10 +251,10 @@ for n in range(max_steps + 1):
 
     steps_data.append({
         "Passo n": n,
-        "Tratto percorso da Achille": format_frac_html(tratto_A_frac),
-        "Posizione raggiunta da Achille": format_frac_html(s_A_frac),
-        "Posizione della tartaruga": format_frac_html(s_T_frac),
-        "Vantaggio della tartaruga": format_frac_html(distacco_frac),
+        "Misura tratto d_n (m)": format_frac_html(tratto_A_frac),
+        "Misura posizione s_A (m)": format_frac_html(s_A_frac),
+        "Misura posizione s_T (m)": format_frac_html(s_T_frac),
+        "Misura distacco Δs_n (m)": format_frac_html(distacco_frac),
         "Pos_A_float": float(s_A_frac),
         "Pos_T_float": float(s_T_frac),
         "Tratto_A_float": float(tratto_A_frac),
@@ -274,9 +274,9 @@ st.markdown(
 <div class="init-conditions-card">
     <h4>📋 Condizioni Iniziali della Gara (Passo n = 0)</h4>
     <div class="init-conditions-text">
-        <span><b>Posizione Iniziale Achille (A₀):</b> 0 m</span>
-        <span><b>Vantaggio Iniziale Tartaruga (T₀ = d₁):</b> {d0_val} m</span>
-        <span>⚡ <b>Velocità:</b> Achille corre <b>{r_denom} volte più veloce</b> della Tartaruga</span>
+        <span><b>Posizione iniziale Achille s_A(0):</b> 0 m</span>
+        <span><b>Misura vantaggio iniziale d₁ = m(A₀T₀):</b> {d0_val} m</span>
+        <span>⚡ <b>Rapporto velocità:</b> v_A = {r_denom} · v_T</span>
     </div>
 </div>
 """,
@@ -289,18 +289,18 @@ with m1:
     st.metric("Passo Logico (n)", f"{int(current_data['Passo n'])}")
 with m2:
     st.metric(
-        "Posizione Aₙ (Achille)",
-        f"{current_data['Posizione raggiunta da Achille']} m",
+        "Posizione s_A (Achille)",
+        f"{current_data['Misura posizione s_A (m)']} m",
     )
 with m3:
     st.metric(
-        "Posizione Tₙ (Tartaruga)",
-        f"{current_data['Posizione della tartaruga']} m",
+        "Posizione s_T (Tartaruga)",
+        f"{current_data['Misura posizione s_T (m)']} m",
     )
 with m4:
     st.metric(
-        "Vantaggio Δsₙ (Tartaruga)",
-        f"{current_data['Vantaggio della tartaruga']} m",
+        "Misura distacco Δsₙ",
+        f"{current_data['Misura distacco Δs_n (m)']} m",
     )
 
 # ------------------------------------------------------------------------------
@@ -310,7 +310,7 @@ col_left, col_right = st.columns([1.15, 1.0])
 
 with col_left:
     st.markdown(
-        f"<div class='section-title'>📍 Piste Parallele e Posizione (n = {curr_step})</div>",
+        f"<div class='section-title'>📍 Piste Parallele e Rappresentazione Spaziale (n = {curr_step})</div>",
         unsafe_allow_html=True,
     )
 
@@ -319,7 +319,6 @@ with col_left:
     pos_A_val = current_data["Pos_A_float"]
     pos_T_val = current_data["Pos_T_float"]
     
-    # Range ampio per evitare tagli del testo sul lato destro
     max_x = max(d0_val * 1.35, pos_T_val * 1.25 + 35)
 
     # Corsia Tartaruga (y = 1)
@@ -335,7 +334,7 @@ with col_left:
         line=dict(color="#93c5fd", width=5),
     )
 
-    # Marcatori notevoli
+    # Marcatori notevoli dei punti geometrici
     for k in range(min(curr_step + 2, len(df))):
         pos_ak = df.iloc[k]["Pos_A_float"]
         show_label = (k == 0) or (k == curr_step and curr_step > 0)
@@ -358,7 +357,7 @@ with col_left:
             )
         )
 
-    # Tratto d_n compiuto da Achille nell'ultimo scatto
+    # Segmento geometrico A_{n-1} A_n percorso da Achille nell'ultimo passo
     if curr_step > 0:
         prev_A_val = df.iloc[curr_step - 1]["Pos_A_float"]
         fig_track.add_shape(
@@ -367,14 +366,14 @@ with col_left:
             line=dict(color="#1d4ed8", width=7),
         )
 
-    # Segmento orizzontale del Vantaggio Residuo
+    # Segmento geometrico A_n T_n rappresentante il distacco residuo
     fig_track.add_shape(
         type="line",
         x0=pos_A_val, y0=0.5, x1=pos_T_val, y1=0.5,
         line=dict(color="#b91c1c", width=4, dash="dash"),
     )
 
-    # Marcatori direzionali Plotly ad est (Avanzamento a destra) con Font Maggiorato
+    # Etichette di posizione dei punti A_n e T_n
     fig_track.add_trace(
         go.Scatter(
             x=[pos_A_val], y=[0],
@@ -405,7 +404,7 @@ with col_left:
 
     fig_track.update_layout(
         xaxis=dict(
-            title=dict(text="Distanza sulla Retta Spaziale (metri)", font=dict(size=15, color="#0f172a")),
+            title=dict(text="Asse della Posizione Spaziale s (metri)", font=dict(size=15, color="#0f172a")),
             range=[-5, max_x],
             tickfont=dict(size=13, color="#334155")
         ),
@@ -429,13 +428,13 @@ with col_right:
             f"""
       <div class="athena-socratic-card">
           <h3>🏛️ Osservazioni (n = 0)</h3>
-          <p><b>1. Configurazione Spaziale:</b> Achille è fermo al punto A₀ = 0 m. La Tartaruga parte con il vantaggio iniziale T₀ = {d0_val} m.</p>
-          <p><b>2. Il Primo Tratto d₁:</b> Il distacco iniziale coincide con il segmento d₁ = {d0_val} m. Nessun movimento si è ancora compiuto.</p>
-          <p><b>3. Relazione Cinematica:</b> Achille corre {r_denom} volte più veloce. Il rapporto r = 1/{r_denom} indica che la Tartaruga percorrerà un decimo della distanza di Achille nello stesso intervallo.</p>
+          <p><b>1. Configurazione Spaziale:</b> Achille si trova nella posizione iniziale $A_0$ ($s_A = 0\\text{ m}$). La Tartaruga occupa il punto $T_0$ con un vantaggio rappresentato dal segmento $A_0T_0$.</p>
+          <p><b>2. Misura Iniziale d₁:</b> La misura della lunghezza del segmento $A_0T_0$ è $d_1 = {d0_val}\\text{ m}$.</p>
+          <p><b>3. Relazione Cinematica:</b> Achille corre {r_denom} volte più veloce. La misura dello spostamento della Tartaruga è pari a $1/{r_denom}$ della misura del tratto percorso da Achille nello stesso intervallo temporale.</p>
           <div class="cognitive-conflict-box">
               <h4>🧠 Focus:</h4>
               <div class="conflict-text">
-                  "Per raggiungere la Tartaruga, concordi con Zenone che Achille debba prima di tutto percorrere il primo tratto d₁ = {d0_val} m per giungere in T₀ dove la Tartaruga si trova ora?"
+                  "Per raggiungere la Tartaruga, concordi con Zenone che Achille debba prima di tutto coprire la misura del primo tratto $d_1 = {d0_val}\\text{ m}$ per giungere nel punto $T_0$ dove si trova la Tartaruga?"
               </div>
           </div>
       </div>
@@ -443,11 +442,11 @@ with col_right:
             unsafe_allow_html=True,
         )
     else:
-        tratto_a_frac_str = current_data["Tratto percorso da Achille"]
+        tratto_a_frac_str = current_data["Misura tratto d_n (m)"]
         tratto_t_frac_str = format_frac_html(
             Fraction(current_data["Tratto_A_Frac"], r_denom)
         )
-        distacco_frac_str = current_data["Vantaggio della tartaruga"]
+        distacco_frac_str = current_data["Misura distacco Δs_n (m)"]
 
         somma_frazioni_list = [
             format_frac_html(df.iloc[k]["Tratto_A_Frac"])
@@ -463,18 +462,18 @@ with col_right:
             f"""
       <div class="athena-socratic-card">
           <h3>🏛️ Athena: Guida Socratica - Passo n = {curr_step}</h3>
-          <p><b>1. Azione di Achille:</b> Achille copre il tratto <span class="fraction-badge">d{c_step_sub} = {tratto_a_frac_str} m</span>, giungendo in A{c_step_sub} (ex posizione T{prev_step_sub} della Tartaruga).</p>
-          <p><b>2. Spostamento Tartaruga:</b> Nello stesso tempo, la Tartaruga avanza in T{c_step_sub}, coprendo il micro-tratto <span class="fraction-badge">{tratto_t_frac_str} m</span> (pari a 1/{r_denom} di d{c_step_sub}).</p>
-          <p><b>3. Distanza Totale Accumulata Sₙ:</b><br>
+          <p><b>1. Spostamento di Achille:</b> Achille percorre il segmento $A_{{{prev_step_sub}}}A_{{{c_step_sub}}}$ di misura <span class="fraction-badge">d{c_step_sub} = {tratto_a_frac_str} m</span>, giungendo nel punto $A_{{{c_step_sub}}}$ (coincidente con la posizione precedente $T_{{{prev_step_sub}}}$ della Tartaruga).</p>
+          <p><b>2. Spostamento della Tartaruga:</b> Nello stesso intervallo, la Tartaruga avanza nel punto $T_{{{c_step_sub}}}$, percorrendo un tratto di misura <span class="fraction-badge">{tratto_t_frac_str} m</span> (pari a 1/{r_denom} di $d_{{{c_step_sub}}}$).</p>
+          <p><b>3. Misura della Posizione Cumulata s_A:</b><br>
           <div style="margin: 6px 0; padding: 8px 12px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; font-family: monospace; font-size: 0.98rem;">
-              <b>S{c_step_sub} = d₁ + ... + d{c_step_sub} = {somma_frazioni_str} = {current_data['Posizione raggiunta da Achille']} m</b>
+              <b>s_A({c_step_sub}) = d₁ + ... + d{c_step_sub} = {somma_frazioni_str} = {current_data['Misura posizione s_A (m)']} m</b>
           </div>
           </p>
-          <p><b>4. Vantaggio Residuo Δsₙ:</b> Vi è un nuovo segmento residuo pari a <span class="fraction-badge">Δs{c_step_sub} = {distacco_frac_str} m</span>.</p>
+          <p><b>4. Misura del Distacco Residuo Δsₙ:</b> Il nuovo segmento di distacco $A_{{{c_step_sub}}}T_{{{c_step_sub}}}$ ha misura pari a <span class="fraction-badge">Δs{c_step_sub} = {distacco_frac_str} m</span>.</p>
           <div class="cognitive-conflict-box">
               <h4>🧠 Focus:</h4>
               <div class="conflict-text">
-                  "Per annullare il vantaggio residuo Δs{c_step_sub} = {distacco_frac_str} m, concordi con Zenone che Achille debba ora percorrere il successivo tratto d{next_step_sub} = {distacco_frac_str} m per giungere in T{c_step_sub} dove la Tartaruga si trova ora?"
+                  "Per azzerare la misura del distacco residuo $\\Delta s_{{{c_step_sub}}} = {distacco_frac_str}\\text{ m}$, concordi con Zenone che Achille debba ora percorrere un tratto di misura $d_{{{next_step_sub}}} = {distacco_frac_str}\\text{ m}$ per giungere nel punto $T_{{{c_step_sub}}}$?"
               </div>
           </div>
       </div>
@@ -486,12 +485,12 @@ with col_right:
 # 3. SCOMPOSIZIONE CUMULATA DEI TRATTI RETTILINEI
 # ------------------------------------------------------------------------------
 st.markdown(
-    f"<div class='section-title'>📏 Scomposizione dei Tratti Rettilinei di Achille"
-    f" (fino a n = {curr_step})</div>",
+    f"<div class='section-title'>📏 Scomposizione Additiva delle Misure dei Tratti d_n"
+    f" (fino al passo n = {curr_step})</div>",
     unsafe_allow_html=True,
 )
 st.markdown(
-    "<div class='section-subtitle'>Successione dei segmenti percorsi: Sₙ = d₁ +"
+    "<div class='section-subtitle'>Somma delle misure dei segmenti percorsi da Achille: s_A(n) = d₁ +"
     " d₂ + ... + dₙ</div>",
     unsafe_allow_html=True,
 )
@@ -504,14 +503,14 @@ palette = [
 
 for k in range(1, curr_step + 1):
     tratto_val = df.iloc[k]["Tratto_A_float"]
-    tratto_frac_label = df.iloc[k]["Tratto percorso da Achille"]
+    tratto_frac_label = df.iloc[k]["Misura tratto d_n (m)"]
     color = palette[(k - 1) % len(palette)]
     k_sub = to_subscript(str(k))
     fig_segments.add_trace(
         go.Bar(
             y=["Tratti Achille"],
             x=[tratto_val],
-            name=f"d{k_sub} ({tratto_frac_label} m)",
+            name=f"Tratto d{k_sub} ({tratto_frac_label} m)",
             orientation="h",
             marker=dict(color=color),
             hoverinfo="name+x",
@@ -538,7 +537,7 @@ fig_segments.add_trace(
 fig_segments.update_layout(
     barmode="stack",
     xaxis=dict(
-        title=dict(text="Distanza sulla Pista (metri)", font=dict(size=14, color="#0f172a")),
+        title=dict(text="Misura della Posizione Spaziale s (metri)", font=dict(size=14, color="#0f172a")),
         range=[0, max_x],
         tickfont=dict(size=12, color="#334155")
     ),
@@ -556,8 +555,7 @@ st.plotly_chart(fig_segments, use_container_width=True)
 # 4. TABELLA ANALITICA
 # ------------------------------------------------------------------------------
 st.markdown(
-    "<div class='section-title'>📊 Tabella Analitica dei Punti e dei"
-    " Tratti</div>",
+    "<div class='section-title'>📊 Tabella Analitica delle Misure di Posizione e Distacco</div>",
     unsafe_allow_html=True,
 )
 
@@ -572,10 +570,10 @@ def highlight_current(row):
 
 columns_requested = [
     "Passo n",
-    "Tratto percorso da Achille",
-    "Posizione raggiunta da Achille",
-    "Posizione della tartaruga",
-    "Vantaggio della tartaruga",
+    "Misura tratto d_n (m)",
+    "Misura posizione s_A (m)",
+    "Misura posizione s_T (m)",
+    "Misura distacco Δs_n (m)",
 ]
 
 st.dataframe(
@@ -591,7 +589,7 @@ st.markdown(
 <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-left: 6px solid #ef4444; padding: 14px 18px; border-radius: 8px; margin-top: 14px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08);">
     <h4 style="color: #991b1b; margin-top:0; font-weight: 800; font-size: 1.08rem !important;">⚡ Il Cortocircuito Epistemologico di Elea:</h4>
     <p style="color: #7f1d1d; font-size: 1.02rem !important; font-weight: 600; margin-bottom: 0; line-height: 1.48;">
-        "Se la scomposizione logica di Zenone dimostra che Achille deve percorrere una successione di <b>infiniti tratti rettilinei distinti (dₙ > 0)</b> espressi da frazioni sempre più piccole ma mai nulle, come fa l'esperienza reale del mondo sensibile a mostrare che la corsa si conclude e la tartaruga viene superata?"
+        "Se la scomposizione logica di Zenone dimostra che Achille deve percorrere una successione di <b>infiniti tratti rettilinei distinti di misura positiva (dₙ > 0)</b> espressi da frazioni sempre più piccole ma mai nulle, come fa l'esperienza reale del mondo sensibile a mostrare che la corsa si conclude e la misura del distacco si annulla?"
     </p>
 </div>
 """,
