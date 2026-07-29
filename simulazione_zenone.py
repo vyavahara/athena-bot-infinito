@@ -67,9 +67,10 @@ x0_achille = 0.0
 x0_tartaruga = 100.0  # Vantaggio iniziale della tartaruga (m)
 rapporto = 0.1        # Achille è 10 volte più veloce
 
+# Calcolo posizioni teoriche
 passi_data = []
-a_pos = x0_achille
-t_pos = x0_tartaruga
+a_pos = float(x0_achille)
+t_pos = float(x0_tartaruga)
 
 for i in range(15):
     distanza = t_pos - a_pos
@@ -79,6 +80,7 @@ for i in range(15):
         "Posizione Tartaruga (m)": round(t_pos, 4),
         "Distacco Δs (m)": round(distanza, 4)
     })
+    # Avanzamento
     a_pos = t_pos
     t_pos = t_pos + distanza * rapporto
 
@@ -102,8 +104,8 @@ n = st.session_state.step
 # ------------------------------------------------------------------------------
 # RENDERING GRAFICO
 # ------------------------------------------------------------------------------
-curr_a = passi_data[n]["Posizione Achille (m)"]
-curr_t = passi_data[n]["Posizione Tartaruga (m)"]
+curr_a = float(passi_data[n]["Posizione Achille (m)"])
+curr_t = float(passi_data[n]["Posizione Tartaruga (m)"])
 
 fig = go.Figure()
 
@@ -116,15 +118,15 @@ fig.add_trace(go.Scatter(
     hoverinfo="none"
 ))
 
-# Segnalini storici e sfalsamento etichette per evitare sovrapposizioni
+# Segnalini storici e sfalsamento etichette
 for i in range(n + 1):
-    pos_a = passi_data[i]["Posizione Achille (m)"]
+    pos_a = float(passi_data[i]["Posizione Achille (m)"])
     
-    # Sfalsamento verticale alternato (Staggering)
+    # Sfalsamento verticale alternato
     y_offset = -0.35 if (i % 2 == 0) else -0.65
     
-    # Etichetta formattata unificata per evitare overlap
-    label_text = f"A₀" if i == 0 else f"A_{i} = T_{i-1}"
+    # Etichetta formattata
+    label_text = "A₀" if i == 0 else f"A_{i} = T_{i-1}"
     
     # Punto sull'asse
     fig.add_trace(go.Scatter(
@@ -146,37 +148,32 @@ for i in range(n + 1):
 
 # Visualizzazione segmento d'avanzamento corrente
 if n > 0:
-    prev_a = passi_data[n-1]["Posizione Achille (m)"]
+    prev_a = float(passi_data[n-1]["Posizione Achille (m)"])
     fig.add_trace(go.Scatter(
         x=[prev_a, curr_a], y=[0.15, 0.15],
-        mode="lines",
+        mode="lines+markers",
         line=dict(color="#2563eb", width=3),
+        marker=dict(size=8, color="#2563eb"),
+        name=f"Tratto d_{n}",
         showlegend=False
     ))
-    fig.add_trace(go.Scatter(
-        x=[curr_a], y=[0.15],
-        mode="markers",
-        marker=dict(symbol="triangle-right", color="#2563eb", size=10),
-        showlegend=False,
-        hoverinfo="none"
-    ))
 
-# Marker Achille
+# Marker Achille (corretto senza proprietà non valide)
 fig.add_trace(go.Scatter(
     x=[curr_a], y=[0.4],
     mode="text",
     text=["🏃 Achille"],
-    textposition="top right",
+    textposition="top center",
     font=dict(size=16),
     showlegend=False
 ))
 
-# Marker Tartaruga
+# Marker Tartaruga (corretto senza proprietà non valide)
 fig.add_trace(go.Scatter(
     x=[curr_t], y=[0.4],
     mode="text",
     text=["🐢 Tartaruga"],
-    textposition="top right",
+    textposition="top center",
     font=dict(size=16),
     showlegend=False
 ))
