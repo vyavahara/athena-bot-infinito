@@ -14,7 +14,7 @@ st.set_page_config(
 )
 
 # ------------------------------------------------------------------------------
-# CSS PERSONALIZZATO (Con centramento banner e specchiamento icone)
+# CSS PERSONALIZZATO
 # ------------------------------------------------------------------------------
 st.markdown(
     """
@@ -42,13 +42,6 @@ st.markdown(
         font-size: 1.55rem; 
         margin: 0 !important; 
         line-height: 1.2;
-    }
-    
-    /* Classe universale per ruotare le emoji verso destra */
-    .icon-right {
-        display: inline-block !important;
-        transform: scaleX(-1) !important;
-        -webkit-transform: scaleX(-1) !important;
     }
     
     .init-conditions-card {
@@ -119,7 +112,7 @@ def format_frac_html(f: Fraction) -> str:
 st.markdown(
     """
 <div class="hero-banner">
-    <h1><span class="icon-right">🏃‍♂️</span> <span class="icon-right">🐢</span> Simulazione del Paradosso di Achille e la tartaruga</h1>
+    <h1>🏃‍♂️▶ 🐢▶ Simulazione del Paradosso di Achille e la tartaruga</h1>
 </div>
 """,
     unsafe_allow_html=True,
@@ -208,15 +201,15 @@ curr_step = st.session_state.step
 current_data = df.iloc[curr_step]
 
 # ------------------------------------------------------------------------------
-# 1. CONDIZIONI INIZIALI (Coerenza totale delle icone verso destra)
+# 1. CONDIZIONI INIZIALI
 # ------------------------------------------------------------------------------
 st.markdown(
     f"""
 <div class="init-conditions-card">
     <h4>📋 Condizioni Iniziali della Gara (Passo n = 0)</h4>
     <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 0.88rem;">
-        <span style="display: flex; align-items: center; gap: 4px;"><span class="icon-right">🏃‍♂️</span> <b>Posizione Iniziale Achille (A₀):</b> 0 m</span>
-        <span style="display: flex; align-items: center; gap: 4px;"><span class="icon-right">🐢</span> <b>Vantaggio Iniziale Tartaruga (T₀ = d₁):</b> {d0_val} m</span>
+        <span>🏃‍♂️▶ <b>Posizione Iniziale Achille (A₀):</b> 0 m</span>
+        <span>🐢▶ <b>Vantaggio Iniziale Tartaruga (T₀ = d₁):</b> {d0_val} m</span>
         <span>⚡ <b>Velocità:</b> Achille corre <b>{r_denom} volte più veloce</b> della Tartaruga</span>
     </div>
 </div>
@@ -224,7 +217,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Metric Banner con direzione esplicita
+# Metric Banner con indicatore di direzione esplicito
 m1, m2, m3, m4 = st.columns(4)
 with m1:
     st.metric("Passo Logico (n)", f"{int(current_data['Passo n'])}")
@@ -251,8 +244,7 @@ col_left, col_right = st.columns([1.1, 1.0])
 
 with col_left:
     st.markdown(
-        f"<div class='section-title'><span class='icon-right'>🏃‍♂️</span><span class='icon-right'>🐢</span> Piste Parallele e Posizione (n ="
-        f" {curr_step})</div>",
+        f"<div class='section-title'>🏃‍♂️▶ 🐢▶ Piste Parallele e Posizione (n = {curr_step})</div>",
         unsafe_allow_html=True,
     )
 
@@ -260,7 +252,9 @@ with col_left:
 
     pos_A_val = current_data["Pos_A_float"]
     pos_T_val = current_data["Pos_T_float"]
-    max_x = max(d0_val * 1.25, pos_T_val * 1.08)
+    
+    # Risoluzione taglio a destra: ampiamo il margine massimo x dell'asse cartesiano
+    max_x = max(d0_val * 1.30, pos_T_val * 1.25 + 15)
 
     # Corsia Tartaruga (y = 1)
     fig_track.add_shape(
@@ -313,26 +307,30 @@ with col_left:
         line=dict(color="#dc2626", width=3, dash="dash"),
     )
 
-    # Marcatori iconici orientati verso destra
+    # Icone marcatori Achille e Tartaruga con freccia direzionale d'avanzamento
     fig_track.add_trace(
         go.Scatter(
             x=[pos_A_val], y=[0],
-            mode="text",
-            text=[f"<span class='icon-right' style='font-size:20px;'>🏃‍♂️</span> <b>Achille (A{to_subscript(str(curr_step))})</b>"],
+            mode="markers+text",
+            marker=dict(symbol="triangle-right", size=16, color="#1e3c72"),
+            text=[f" 🏃‍♂️▶ <b>Achille (A{to_subscript(str(curr_step))})</b>"],
             textposition="top right",
             hoverinfo="none",
             showlegend=False,
+            cliponaxis=False,
         )
     )
 
     fig_track.add_trace(
         go.Scatter(
             x=[pos_T_val], y=[1],
-            mode="text",
-            text=[f"<span class='icon-right' style='font-size:20px;'>🐢</span> <b>Tartaruga (T{to_subscript(str(curr_step))})</b>"],
+            mode="markers+text",
+            marker=dict(symbol="triangle-right", size=14, color="#15803d"),
+            text=[f" 🐢▶ <b>Tartaruga (T{to_subscript(str(curr_step))})</b>"],
             textposition="top right",
             hoverinfo="none",
             showlegend=False,
+            cliponaxis=False,
         )
     )
 
@@ -344,7 +342,7 @@ with col_left:
             range=[-0.5, 1.5],
         ),
         height=270,
-        margin=dict(l=10, r=10, t=10, b=10),
+        margin=dict(l=10, r=20, t=10, b=10),
         template="plotly_white",
         showlegend=False,
     )
@@ -452,11 +450,13 @@ fig_segments.add_trace(
     go.Scatter(
         x=[pos_T_val],
         y=["Tratti Achille"],
-        mode="text",
-        text=[f"<span class='icon-right' style='font-size:18px;'>🐢</span> <b>T{curr_step_sub}</b>"],
+        mode="markers+text",
+        marker=dict(symbol="triangle-right", size=12, color="#15803d"),
+        text=[f" 🐢▶ <b>T{curr_step_sub}</b>"],
         textposition="top right",
         hoverinfo="none",
         showlegend=False,
+        cliponaxis=False,
     )
 )
 
@@ -465,7 +465,7 @@ fig_segments.update_layout(
     xaxis=dict(title="Distanza sulla Pista (metri)", range=[0, max_x]),
     yaxis=dict(visible=False),
     height=130,
-    margin=dict(l=10, r=10, t=10, b=10),
+    margin=dict(l=10, r=20, t=10, b=10),
     template="plotly_white",
     showlegend=True,
 )
