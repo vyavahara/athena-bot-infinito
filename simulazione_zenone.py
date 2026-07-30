@@ -40,7 +40,7 @@ st.markdown(
         margin: 0 !important; 
     }
     
-    /* STYLE: Scheda "Inquadramento Assiomatico" (Bordo Azzurro) */
+    /* STYLE: Scheda "PREMESSA" (Bordo Azzurro) */
     .epistemic-card {
         background-color: #ffffff; 
         border: 1px solid #cbd5e1;
@@ -179,11 +179,11 @@ st.markdown(
 )
 
 # --- UI ELEMENT: Menu Laterale Sinistro (Sidebar - Parametri di Controllo) ---
-st.sidebar.header("⚙️ Parametri del Modello Geometrico")
+st.sidebar.header("⚙️ Parametri del Modello")
 
 # 1. Input numerico per il Vantaggio Iniziale
 delta_s0_input = st.sidebar.number_input(
-    "Distacco Iniziale Δs₀ = m(A₀T₀) [metri]:",
+    "Distacco Iniziale Δs₀ = d(A₀;T₀) [metri]:",
     value=100, min_value=1, step=10
 )
 
@@ -229,14 +229,14 @@ current_row = df.iloc[curr_step]
 # 📌 5. INTERFACCIA: INQUADRAMENTO ASSIOMATICO, PULSANTI E METRICHE
 # ==============================================================================
 
-# --- UI ELEMENT: Scheda Bordo Azzurro ("Inquadramento Assiomatico") ---
+# --- UI ELEMENT: Scheda Bordo Azzurro ("PREMESSA") ---
 st.markdown(
     """
 <div class="epistemic-card">
-<h4>📐 Inquadramento Assiomatico della Simulazione</h4>
+<h4>📐 PREMESSA </h4>
 <p>
-La pista è descritta sulla semiretta orientata ℝ. La simulazione genera la <b>successione delle configurazioni geometriche</b> (Aₙ, Tₙ).
-Nessun riferimento al tempo <i>t</i>: analizziamo la paradossalità del conteggio discreto passo dopo passo.
+La pista è descritta dalla semiretta orientata. Le posizioni di Achille e della Tartaruga sono rappresentate 
+rispettivamente da punti su tale semiretta. La poszione iniziale di Achille coincide con l'origine della semiretta.
 </p>
 </div>
 """,
@@ -272,7 +272,7 @@ col_graph, col_athena = st.columns([1.35, 1.0])
 # 📍 SEZIONE GRAFICA (COLONNA SINISTRA)
 # ------------------------------------------------------------------------------
 with col_graph:
-    st.markdown(f"##### 📍 Diagramma a Cascata delle Posizioni (fino al passo n = {curr_step})")
+    st.markdown(f"##### 📍 Rappresentazione grafica del paradosso (fino al passo n = {curr_step})")
     
     fig_track = go.Figure()
     
@@ -408,12 +408,12 @@ with col_athena:
         socratic_html = f"""
         <div class="socratic-card">
             <h3>🏛️ Stato Iniziale (n = 0)</h3>
-            <p><b>Configurazione:</b> Achille occupa la posizione A₀ coincidente con l'origine del sistema di riferimento e la tartaruga occupa la posizione T₀ a distanza di {delta_s0_input} m dall'origine.</p>
+            <p><b>Configurazione:</b> Achille occupa la posizione A₀ coincidente con l'origine del sistema di riferimento; la Tartaruga occupa la posizione T₀ a distanza di {delta_s0_input} m dall'origine.</p>
             <p><b>Distacco Iniziale:</b> Δs₀ = {delta_s0_input}.</p>
             <div class="cognitive-conflict-box">
                 <h4>🧠 Quesito:</h4>
                 <div class="conflict-text">
-                    Per poter raggiungere o superare la Tartaruga, concordi che Achille debba <i>necessariamente</i> occupare prima il punto geometrico T₀ dove la Tartaruga si trova adesso?
+                    Per poter raggiungere o superare la Tartaruga, concordi che Achille debba <i>necessariamente</i> raggiungere la posizione T₀ dove la Tartaruga si trova adesso?
                 </div>
             </div>
         </div>
@@ -429,7 +429,7 @@ with col_athena:
             <div class="cognitive-conflict-box">
                 <h4>🧠 Quesito:</h4>
                 <div class="conflict-text">
-                    La distanza residua Δs{c_sub} = {delta_str} è strettamente positiva (Δs{c_sub} &gt; 0).<br>
+                    La distanza residua Δs{c_sub} = {delta_str} è positiva (Δs{c_sub} &gt; 0).<br>
                     Per colmare questo nuovo divario, Achille non dovrà compiere un ulteriore spostamento d{n_sub} = {delta_str} per raggiungere T{c_sub}? Se questo processo continua all'infinito, come potrà mai Achille azzerare il distacco?
                 </div>
             </div>
@@ -474,7 +474,7 @@ st.dataframe(df_display.style.apply(highlight_row, axis=1), use_container_width=
 st.markdown(
     """
 <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-left: 6px solid #ef4444; padding: 14px 18px; border-radius: 8px; margin-top: 16px;">
-    <h4 style="color: #991b1b; margin-top:0; font-weight: 800;">⚡ Il Nodo Concettuale della Fase 1:</h4>
+    <h4 style="color: #991b1b; margin-top:0; font-weight: 800;">⚡ Riflessione:</h4>
     <p style="color: #7f1d1d; font-weight: 600; margin-bottom: 0; line-height: 1.5;">
         La scomposizione discreta di Zenone dimostra che per qualsiasi n finito si ha sempre Δsₙ &gt; 0. 
         L'illusione nasce dal confondere il <i>numero infinito di suddivisioni spaziali discrete</i> con la <i>durata del processo continuo</i>. 
