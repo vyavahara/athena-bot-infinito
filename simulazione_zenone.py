@@ -187,20 +187,52 @@ st.markdown(
 st.markdown(
     """
 <div class="math-model-card">
-    <h4>📐 Modello Matematico del Paradosso</h4>
+    <h4>📐 Modello geometrico della simulazione</h4>
+
     <p style="margin-bottom: 6px; color: #334155;">
-        Questa simulazione rappresenta il procedimento geometrico alla base del Paradosso di Achille e la tartaruga
-        formulato da Zenone di Elea.
-        La pista è modellata come una semiretta orientata: ogni posizione occupata da Achille e dalla tartaruga è 
-        rappresentata da un punto della semiretta, individuato dalla propria coordinata.
-        Il parametro n indica il passo della costruzione logica iterativa e non rappresenta un istante di tempo. 
-        La simulazione non descrive quindi un moto continuo, ma la successione delle configurazioni geometriche 
-        generate dal ragionamento di Zenone. 
-        Ad ogni passo Achille raggiunge il punto precedentemente occupato dalla tartaruga; tuttavia la tartaruga
-        ha già generato un nuovo vantaggio, determinando un ulteriore segmento residuo.
-        La domanda posta dal paradosso è:
-        Se ogni passo lascia sempre un nuovo distacco positivo, come può la costruzione geometrica arrivare al raggiungimento? 
+    La pista è rappresentata come una <b>semiretta orientata</b> con origine O.
+    Ogni posizione occupata dai protagonisti è rappresentata da un punto della
+    semiretta e identificata dalla sua coordinata.
     </p>
+
+    <p style="margin-bottom: 6px; color: #334155;">
+    La simulazione non descrive un moto nel tempo, ma una successione di
+    <b>configurazioni geometriche successive</b> generate passo dopo passo
+    secondo il ragionamento attribuito a Zenone.
+    </p>
+
+    <p style="margin-bottom: 6px; color: #334155;">
+    Indichiamo con <b>n</b> il numero del passo della costruzione:
+    </p>
+
+    <ul style="color:#334155;">
+        <li><b>n = 0</b>: configurazione iniziale;</li>
+        <li><b>n = 1,2,3,...</b>: configurazioni successive ottenute applicando
+        la regola del paradosso.</li>
+    </ul>
+
+    <p style="margin-bottom: 6px; color: #334155;">
+    Le posizioni occupate dai due protagonisti al passo n sono indicate con:
+    </p>
+
+    <p style="text-align:center; font-size:1.1rem;">
+    <b>Aₙ</b> = posizione di Achille &nbsp;&nbsp;&nbsp;
+    <b>Tₙ</b> = posizione della tartaruga
+    </p>
+
+    <p style="margin-bottom: 6px; color:#334155;">
+    La distanza residua tra le due posizioni è indicata con:
+    </p>
+
+    <p style="text-align:center; font-size:1.1rem;">
+    <b>Δsₙ</b> = distanza tra Aₙ e Tₙ
+    </p>
+
+    <p style="margin-bottom: 0; color:#334155;">
+    Nella configurazione iniziale Achille parte dall'origine mentre la tartaruga
+    possiede un vantaggio iniziale assegnato.
+    </p>
+
 </div>
 """,
     unsafe_allow_html=True,
