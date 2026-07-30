@@ -4,10 +4,10 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # ------------------------------------------------------------------------------
-# 1. CONFIGURAZIONE PAGINA E CSS CUSTOM
+# 1. CONFIGURAZIONE PAGINA ED ELEMENTI VISIVI (CSS)
 # ------------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Fase 1: Conflitto Cognitivo - Il Paradosso di Zenone",
+    page_title="Fase 1: Simulazione Discreta - Paradosso di Zenone",
     page_icon="📐",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -22,7 +22,7 @@ st.markdown(
     .hero-banner {
         background: linear-gradient(135deg, #0f172a 0%, #1e3c72 50%, #2a5298 100%);
         color: #ffffff; 
-        padding: 20px 24px; 
+        padding: 18px 24px; 
         border-radius: 12px;
         text-align: center; 
         margin-bottom: 16px;
@@ -31,7 +31,7 @@ st.markdown(
     .hero-banner h1 { 
         color: #ffffff !important; 
         font-weight: 800 !important; 
-        font-size: 1.8rem !important; 
+        font-size: 1.75rem !important; 
         margin: 0 !important; 
     }
     
@@ -40,14 +40,14 @@ st.markdown(
         border: 1px solid #cbd5e1;
         border-left: 6px solid #0284c7; 
         border-radius: 8px;
-        padding: 14px 18px; 
+        padding: 12px 18px; 
         margin-bottom: 16px;
     }
     .epistemic-card h4 { 
         color: #0f172a; 
         margin-top: 0; 
-        margin-bottom: 8px; 
-        font-size: 1.1rem !important; 
+        margin-bottom: 6px; 
+        font-size: 1.05rem !important; 
         font-weight: 700; 
     }
     
@@ -61,7 +61,7 @@ st.markdown(
     }
     .socratic-card h3 { 
         color: #1e3c72; 
-        font-size: 1.2rem !important; 
+        font-size: 1.15rem !important; 
         margin-top: 0; 
         margin-bottom: 10px; 
         font-weight: 700;
@@ -85,8 +85,8 @@ st.markdown(
     .conflict-text { 
         color: #78350f; 
         font-weight: 600; 
-        font-size: 1rem !important; 
-        line-height: 1.5; 
+        font-size: 0.98rem !important; 
+        line-height: 1.48; 
     }
 </style>
 """,
@@ -97,16 +97,18 @@ st.markdown(
 # 2. HELPER UTILITIES
 # ------------------------------------------------------------------------------
 def to_subscript(text: str) -> str:
+    """Converte stringhe numeriche in pedici Unicode ufficiali (es. A₀, T₁, T₂)."""
     sub_map = str.maketrans("0123456789n", "₀₁₂₃₄₅₆₇₈₉ₙ")
     return str(text).translate(sub_map)
 
 def format_frac(f: Fraction) -> str:
+    """Restituisce la rappresentazione in frazione esatta per la tabella e le metriche."""
     if f.denominator == 1:
         return f"{f.numerator}"
     return f"{f.numerator}/{f.denominator}"
 
 # ------------------------------------------------------------------------------
-# 3. MODELLO MATEMATICO DEDUTTIVO
+# 3. MODELLO MATEMATICO DEDUTTIVO (DOMINIO IN Q)
 # ------------------------------------------------------------------------------
 def compute_zeno_sequence(delta_s0: int, contraction_ratio: int, max_steps: int) -> pd.DataFrame:
     delta_s0_frac = Fraction(delta_s0, 1)
@@ -167,7 +169,7 @@ k_input = st.sidebar.number_input(
 )
 max_steps_input = st.sidebar.slider(
     "Numero di suddivisioni logiche da calcolare (n):",
-    min_value=1, max_value=15, value=8
+    min_value=1, max_value=12, value=6
 )
 
 if "step" not in st.session_state:
@@ -197,15 +199,14 @@ st.markdown(
 <div class="epistemic-card">
 <h4>📐 Inquadramento Assiomatico della Simulazione</h4>
 <p>
-Consideriamo la retta orientata ℝ come supporto spaziale. La simulazione modella una <b>successione discreta di configurazioni geometriche</b> (Aₙ, Tₙ). 
-Non stiamo misurando la durata temporale del movimento, ma l'evoluzione delle posizioni ad ogni passo logico n.
+La pista è descritta sulla semiretta orientata ℝ. La simulazione genera la <b>successione delle configurazioni geometriche</b> (Aₙ, Tₙ).
+Nessun riferimento al tempo <i>t</i>: analizziamo la paradossalità del conteggio discreto passo dopo passo.
 </p>
 </div>
 """,
 unsafe_allow_html=True
 )
 
-# Metric Banner
 m1, m2, m3, m4 = st.columns(4)
 m1.metric("Passo Logico (n)", f"{curr_step}")
 m2.metric("Punto Aₙ (Achille)", f"{format_frac(current_row['A'])} m")
@@ -213,51 +214,102 @@ m3.metric("Punto Tₙ (Tartaruga)", f"{format_frac(current_row['T'])} m")
 m4.metric("Distacco Residuo Δsₙ", f"{format_frac(current_row['delta_s'])} m")
 
 # ------------------------------------------------------------------------------
-# 6. VISUALIZZAZIONE GRAFICA ADATTIVA (PLOTLY)
+# 6. VISUALIZZAZIONE GRAFICA PLOTLY (MULTI-LINEA CON MEMORIA STORICA ED AUTO-ZOOM)
 # ------------------------------------------------------------------------------
-col_graph, col_athena = st.columns([1.2, 1.0])
+col_graph, col_athena = st.columns([1.35, 1.0])
 
 with col_graph:
-    st.markdown(f"##### 📍 Configurazione Spaziale al Passo n = {curr_step}")
+    st.markdown(f"##### 📍 Diagramma a Cascata delle Posizioni (fino al passo n = {curr_step})")
     
     fig_track = go.Figure()
     
-    A_val = current_row["A_float"]
-    T_val = current_row["T_float"]
+    # Calcolo dell'auto-zoom dinamico per evitare accavallamenti
+    current_A = current_row["A_float"]
+    current_T = current_row["T_float"]
     delta_val = current_row["delta_s_float"]
     
-    margin_x = max(delta_val * 2.5, 0.5) if curr_step > 0 else delta_s0_input * 0.2
-    min_x = max(-2.0, A_val - margin_x)
-    max_x = T_val + margin_x
-    
-    fig_track.add_shape(type="line", x0=min_x, y0=1, x1=max_x, y1=1, line=dict(color="#86efac", width=4))
-    fig_track.add_shape(type="line", x0=min_x, y0=0, x1=max_x, y1=0, line=dict(color="#93c5fd", width=4))
-    
-    fig_track.add_shape(
-        type="line", x0=A_val, y0=0.5, x1=T_val, y1=0.5,
-        line=dict(color="#ef4444", width=3, dash="dash")
-    )
-    
-    fig_track.add_trace(go.Scatter(
-        x=[A_val], y=[0], mode="markers+text",
-        marker=dict(symbol="circle", size=16, color="#1e3c72"),
-        text=[f"🏃 <b>A{to_subscript(str(curr_step))}</b>"],
-        textposition="top center", textfont=dict(size=14, color="#1e3c72"),
-        hoverinfo="none", showlegend=False
-    ))
-    
-    fig_track.add_trace(go.Scatter(
-        x=[T_val], y=[1], mode="markers+text",
-        marker=dict(symbol="circle", size=14, color="#15803d"),
-        text=[f"🐢 <b>T{to_subscript(str(curr_step))}</b>"],
-        textposition="top center", textfont=dict(size=14, color="#15803d"),
-        hoverinfo="none", showlegend=False
-    ))
-    
+    # Se il distacco residuo è molto piccolo, attiviamo la focale d'ingrandimento
+    if curr_step >= 3 and delta_val < (delta_s0_input * 0.05):
+        zoom_margin = max(delta_val * 4.0, 0.05)
+        x_range_min = current_A - (zoom_margin * 0.5)
+        x_range_max = current_T + zoom_margin
+    else:
+        x_range_min = - (delta_s0_input * 0.08)
+        x_range_max = current_T + (delta_s0_input * 0.25)
+
+    # Costruzione delle linee a cascata dal passo 0 fino al passo corrente curr_step
+    for step_idx in range(curr_step + 1):
+        # Coordinata Y decrescente per rispecchiare l'ordine dall'alto verso il basso (0 in cima, curr_step in basso)
+        y_level = curr_step - step_idx
+        
+        row_step = df.iloc[step_idx]
+        a_pos = row_step["A_float"]
+        t_pos = row_step["T_float"]
+        
+        # 1. Linea di riferimento per il passo step_idx
+        fig_track.add_shape(
+            type="line",
+            x0=x_range_min, y0=y_level, x1=x_range_max, y1=y_level,
+            line=dict(color="#cbd5e1", width=2)
+        )
+
+        # 2. Marcatori storici sotto la linea (Tacche e Nomi punti geometrici A₀, T₀, T₁, T₂...)
+        # Posizione fissa originaria A₀
+        fig_track.add_trace(go.Scatter(
+            x=[0], y=[y_level], mode="markers+text",
+            marker=dict(symbol="line-ns", size=10, color="#64748b", stroke_width=2),
+            text=["A₀"], textposition="bottom center",
+            textfont=dict(size=12, color="#475569"), hoverinfo="none", showlegend=False
+        ))
+        
+        # Posizioni storiche delle tartarughe T_k per k <= step_idx
+        for k in range(step_idx + 1):
+            tk_pos = df.iloc[k]["T_float"]
+            label_tk = f"T{to_subscript(str(k))}"
+            
+            fig_track.add_trace(go.Scatter(
+                x=[tk_pos], y=[y_level], mode="markers+text",
+                marker=dict(symbol="line-ns", size=10, color="#64748b", stroke_width=2),
+                text=[label_tk], textposition="bottom center",
+                textfont=dict(size=12, color="#475569"), hoverinfo="none", showlegend=False
+            ))
+            
+        # 3. Attori sopra la linea (Solo per la configurazione attiva del passo)
+        # Achille sopra la linea
+        fig_track.add_trace(go.Scatter(
+            x=[a_pos], y=[y_level + 0.18], mode="text+markers",
+            marker=dict(symbol="circle", size=10, color="#1e3c72"),
+            text=["🏃 <b>Achille</b>"], textposition="top center",
+            textfont=dict(size=13, color="#1e3c72"), hoverinfo="none", showlegend=False
+        ))
+        
+        # Tartaruga sopra la linea
+        fig_track.add_trace(go.Scatter(
+            x=[t_pos], y=[y_level + 0.18], mode="text+markers",
+            marker=dict(symbol="circle", size=8, color="#15803d"),
+            text=["🐢 <b>Tartaruga</b>"], textposition="top center",
+            textfont=dict(size=13, color="#15803d"), hoverinfo="none", showlegend=False
+        ))
+
+    # Definizione etichette asse Y (Passo 0, Passo 1, ...)
+    y_tick_vals = list(range(curr_step + 1))
+    y_tick_texts = [f"Passo {curr_step - y}" for y in y_tick_vals]
+
     fig_track.update_layout(
-        xaxis=dict(title="Coordinata sulla Retta (m)", range=[min_x, max_x], tickfont=dict(size=12)),
-        yaxis=dict(tickvals=[0, 1], ticktext=["Corsia Achille", "Corsia Tartaruga"], range=[-0.5, 1.8]),
-        height=300, margin=dict(l=10, r=20, t=20, b=10), template="plotly_white"
+        xaxis=dict(
+            title="Coordinata sulla Retta Orientata (m)",
+            range=[x_range_min, x_range_max],
+            tickfont=dict(size=12, color="#334155")
+        ),
+        yaxis=dict(
+            tickvals=y_tick_vals,
+            ticktext=y_tick_texts,
+            range=[-0.5, curr_step + 0.7],
+            tickfont=dict(size=12, color="#0f172a")
+        ),
+        height=max(320, 120 + curr_step * 65),
+        margin=dict(l=20, r=20, t=20, b=20),
+        template="plotly_white"
     )
     
     st.plotly_chart(fig_track, use_container_width=True)
@@ -283,7 +335,7 @@ with col_athena:
             <div class="cognitive-conflict-box">
                 <h4>🧠 Domanda Socratica:</h4>
                 <div class="conflict-text">
-                    Per poter raggiungere o superare la Tartaruga, concordi che Achille debba <i>necessariamente</i> occupare prima il punto geometrico T₀ in cui la Tartaruga si trova adesso?
+                    Per poter raggiungere o superare la Tartaruga, concordi che Achille debba <i>necessariamente</i> occupare prima il punto geometrico T₀ dove la Tartaruga si trova adesso?
                 </div>
             </div>
         </div>
@@ -299,7 +351,7 @@ with col_athena:
                 <h4>🧠 Cortocircuito Cognitivo:</h4>
                 <div class="conflict-text">
                     La distanza residua Δs{c_sub} = {delta_str} m è strettamente positiva (Δs{c_sub} &gt; 0).<br>
-                    Per colmare questo nuovo divario, Achille non dovrà compiere un ulteriore spostamento d{n_sub} = {delta_str} m per raggiungere T{c_sub}? Se questo schema si ripetesse all'infinito, come potrebbe Achille azzerare il distacco?
+                    Per colmare questo nuovo divario, Achille non dovrà compiere un ulteriore spostamento d{n_sub} = {delta_str} m per raggiungere T{c_sub}? Se questo processo continua all'infinito, come potrà mai Achille azzerare il distacco?
                 </div>
             </div>
         </div>
