@@ -111,25 +111,41 @@ def format_frac(f: Fraction) -> str:
 # 3. MODELLO MATEMATICO DEDUTTIVO (DOMINIO IN Q)
 # ------------------------------------------------------------------------------
 def compute_zeno_sequence(delta_s0: int, contraction_ratio: int, max_steps: int) -> pd.DataFrame:
+    """
+    Calcola le posizioni esatte in Q per Achille (A_n), Tartaruga (T_n) e il distacco (delta_s_n).
+    
+    Parametri:
+    - delta_s0: Vantaggio iniziale in metri
+    - contraction_ratio (k): Rapporto delle velocita v_A / v_T
+    - max_steps: Numero di passi da calcolare
+    """
     delta_s0_frac = Fraction(delta_s0, 1)
     k_frac = Fraction(contraction_ratio, 1)
+    r_frac = Fraction(1, contraction_ratio)  # ragione r = 1/k
     
     records = []
-    A_frac = Fraction(0, 1)
-    T_frac = delta_s0_frac
     
     for n in range(max_steps + 1):
         if n == 0:
             d_frac = Fraction(0, 1)
             t_frac = Fraction(0, 1)
+            A_frac = Fraction(0, 1)
+            T_frac = delta_s0_frac
             delta_s_frac = delta_s0_frac
         else:
-            prev_delta_s = records[n - 1]["delta_s"]
+            # Distacco al passo precedente
+            prev_delta_s = delta_s0_frac * (r_frac ** (n - 1))
+            
             d_frac = prev_delta_s
-            t_frac = prev_delta_s / k_frac
-            A_frac += d_frac
-            T_frac += t_frac
-            delta_s_frac = T_frac - A_frac
+            t_frac = prev_delta_s * r_frac
+            
+            # Formule in forma chiusa per evitare accumulo di imprecisioni
+            # A_n = delta_s0 * (1 - r^n) / (1 - r)
+            A_frac = delta_s0_frac * (Fraction(1, 1) - (r_frac ** n)) / (Fraction(1, 1) - r_frac)
+            
+            # T_n = A_n + delta_s_n
+            delta_s_frac = delta_s0_frac * (r_frac ** n)
+            T_frac = A_frac + delta_s_frac
 
         records.append({
             "n": n,
@@ -144,6 +160,7 @@ def compute_zeno_sequence(delta_s0: int, contraction_ratio: int, max_steps: int)
             "t_float": float(t_frac),
             "delta_s_float": float(delta_s_frac),
         })
+        
     return pd.DataFrame(records)
 
 # ------------------------------------------------------------------------------
@@ -172,10 +189,14 @@ max_steps_input = st.sidebar.slider(
     min_value=1, max_value=12, value=6
 )
 
+# Gestione dello stato e sincronizzazione dei limiti
 if "step" not in st.session_state:
     st.session_state.step = 0
 
-def set_step(new_step):
+if st.session_state.step > max_steps_input:
+    st.session_state.step = max_steps_input
+
+def set_step(new_step: int):
     st.session_state.step = max(0, min(new_step, max_steps_input))
 
 col_b1, col_b2, col_b3, _ = st.columns([1, 1, 1, 2])
@@ -195,7 +216,7 @@ current_row = df.iloc[curr_step]
 # 5. PREMESSA EPISTEMOLOGICA E BANNER METRICHE UNIFORMATE
 # ------------------------------------------------------------------------------
 st.markdown(
-"""
+    """
 <div class="epistemic-card">
 <h4>📐 Inquadramento Assiomatico della Simulazione</h4>
 <p>
@@ -204,7 +225,7 @@ Nessun riferimento al tempo <i>t</i>: analizziamo la paradossalità del conteggi
 </p>
 </div>
 """,
-unsafe_allow_html=True
+    unsafe_allow_html=True
 )
 
 m1, m2, m3, m4 = st.columns(4)
@@ -214,7 +235,7 @@ m3.metric("Posizione Tₙ (Tartaruga)", f"{format_frac(current_row['T'])} m")
 m4.metric("Distacco Residuo Δsₙ", f"{format_frac(current_row['delta_s'])} m")
 
 # ------------------------------------------------------------------------------
-# 6. VISUALIZZAZIONE GRAFICA PLOTLY (MULTI-LINEA CON AUTO-ZOOM ADATTIVO ED ANTI-SOVRAPPOSIZIONE)
+# 6. VISUALIZZAZIONE GRAFICA PLOTLY
 # ------------------------------------------------------------------------------
 col_graph, col_athena = st.columns([1.35, 1.0])
 
@@ -227,15 +248,11 @@ with col_graph:
     current_T = current_row["T_float"]
     delta_val = current_row["delta_s_float"]
     
-    # --------------------------------------------------------------------------
-    # ALGORITMO DI AUTO-ZOOM ADATTIVO DINAMICO
-    # Ricalcola la focale visiva in proporzione diretta al distacco Δs_n corrente
-    # --------------------------------------------------------------------------
+    # Algoritmo di zoom adattivo dinamico
     if curr_step == 0:
-        x_range_min = - (delta_s0_input * 0.10)
+        x_range_min = -(delta_s0_input * 0.10)
         x_range_max = delta_s0_input * 1.25
     else:
-        # Focale calibrata sull'intervallo attivo tra A_n e T_n
         span = max(delta_val * 6.0, 0.00005)
         center = (current_A + current_T) / 2.0
         x_range_min = center - (span * 0.55)
@@ -243,7 +260,7 @@ with col_graph:
 
     visible_width = x_range_max - x_range_min
 
-    # Costruzione delle linee a cascata dal passo 0 fino a curr_step
+    # Renderizziamo le linee a cascata dal passo 0 a curr_step
     for step_idx in range(curr_step + 1):
         y_level = curr_step - step_idx
         
@@ -251,15 +268,14 @@ with col_graph:
         a_pos = row_step["A_float"]
         t_pos = row_step["T_float"]
         
-        # 1. Linea di riferimento orizzontale
+        # Linea orizzontale di riferimento
         fig_track.add_shape(
             type="line",
             x0=x_range_min, y0=y_level, x1=x_range_max, y1=y_level,
             line=dict(color="#cbd5e1", width=2)
         )
 
-        # 2. Marcatori storici SOTTO la linea con filtraggio anti-accavallamento
-        # Tacca fissa A0 (se visibile nel range attivo)
+        # Tacca origine A0 se visibile
         if x_range_min <= 0 <= x_range_max:
             fig_track.add_trace(go.Scatter(
                 x=[0], y=[y_level], mode="markers+text",
@@ -268,13 +284,12 @@ with col_graph:
                 textfont=dict(size=11, color="#475569"), hoverinfo="none", showlegend=False
             ))
         
-        # Tacche storiche delle posizioni T_k
+        # Tacche storiche T_k
         last_rendered_x = -1e9
         for k in range(step_idx + 1):
             tk_pos = df.iloc[k]["T_float"]
             label_tk = f"T{to_subscript(str(k))}"
             
-            # Rendering della scritta solo se sufficientemente distante dalla precedente nel viewport
             if x_range_min <= tk_pos <= x_range_max:
                 pixel_dist_ratio = (tk_pos - last_rendered_x) / visible_width
                 show_text = (pixel_dist_ratio > 0.08) or (k == step_idx)
@@ -288,8 +303,7 @@ with col_graph:
                 if show_text:
                     last_rendered_x = tk_pos
             
-        # 3. Attori SOPRA la linea (Senza icone e con sfalsamento verticale dei testi)
-        # Achille (testo sfalsato in alto y + 0.35)
+        # Posizionamento di Achille e Tartaruga sopra la linea
         fig_track.add_trace(go.Scatter(
             x=[a_pos], y=[y_level], mode="markers",
             marker=dict(symbol="circle", size=10, color="#1e3c72"),
@@ -301,7 +315,6 @@ with col_graph:
             textfont=dict(size=12, color="#1e3c72"), hoverinfo="none", showlegend=False
         ))
         
-        # Tartaruga (testo sfalsato in alto y + 0.15 per evitare sormonti)
         fig_track.add_trace(go.Scatter(
             x=[t_pos], y=[y_level], mode="markers",
             marker=dict(symbol="circle", size=8, color="#15803d"),
