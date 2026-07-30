@@ -205,7 +205,7 @@ Nessun riferimento al tempo <i>t</i>: analizziamo la paradossalità del conteggi
     unsafe_allow_html=True
 )
 
-# Pulsanti spostati sotto l'Inquadramento Assiomatico
+# Pulsanti di navigazione collocati sotto l'Inquadramento Assiomatico
 col_b1, col_b2, col_b3, _ = st.columns([1, 1, 1, 2])
 with col_b1:
     st.button("⏮️ Reset (n = 0)", on_click=set_step, args=(0,), use_container_width=True)
@@ -216,14 +216,15 @@ with col_b3:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
+# Banner metriche uniformate (senza "m" e con etichette aggiornate)
 m1, m2, m3, m4 = st.columns(4)
 m1.metric("Passo Logico (n)", f"{curr_step}")
-m2.metric("Posizione Aₙ (Achille)", f"{format_frac(current_row['A'])} m")
-m3.metric("Posizione Tₙ (Tartaruga)", f"{format_frac(current_row['T'])} m")
-m4.metric("Distacco Residuo Δsₙ", f"{format_frac(current_row['delta_s'])} m")
+m2.metric("Posizione Achille", f"{format_frac(current_row['A'])}")
+m3.metric("Posizione Tartaruga", f"{format_frac(current_row['T'])}")
+m4.metric("Distacco Residuo", f"{format_frac(current_row['delta_s'])}")
 
 # ------------------------------------------------------------------------------
-# 6. VISUALIZZAZIONE GRAFICA PLOTLY
+# 6. VISUALIZZAZIONE GRAFICA PLOTLY (ASSETTO STORICO COMPLETO A CASCATA)
 # ------------------------------------------------------------------------------
 col_graph, col_athena = st.columns([1.35, 1.0])
 
@@ -236,6 +237,7 @@ with col_graph:
     current_T = current_row["T_float"]
     delta_val = current_row["delta_s_float"]
     
+    # Zoom Adattivo Dinamico impostato sull'ultimo passo corrente
     if curr_step == 0:
         x_range_min = -(delta_s0_input * 0.10)
         x_range_max = delta_s0_input * 1.25
@@ -247,6 +249,7 @@ with col_graph:
 
     visible_width = x_range_max - x_range_min
 
+    # Disegno a cascata: ogni riga step_idx conserva il proprio assetto (Achille e Tartaruga al rispettivo passo)
     for step_idx in range(curr_step + 1):
         y_level = curr_step - step_idx
         
@@ -254,12 +257,14 @@ with col_graph:
         a_pos = row_step["A_float"]
         t_pos = row_step["T_float"]
         
+        # Linea di riferimento orizzontale
         fig_track.add_shape(
             type="line",
             x0=x_range_min, y0=y_level, x1=x_range_max, y1=y_level,
             line=dict(color="#cbd5e1", width=2)
         )
 
+        # Tacca origine A0 se visibile nel range attivo
         if x_range_min <= 0 <= x_range_max:
             fig_track.add_trace(go.Scatter(
                 x=[0], y=[y_level], mode="markers+text",
@@ -268,6 +273,7 @@ with col_graph:
                 textfont=dict(size=11, color="#475569"), hoverinfo="none", showlegend=False
             ))
         
+        # Marcatori storici T_k per la specifica linea
         last_rendered_x = -1e9
         for k in range(step_idx + 1):
             tk_pos = df.iloc[k]["T_float"]
@@ -286,6 +292,7 @@ with col_graph:
                 if show_text:
                     last_rendered_x = tk_pos
             
+        # Posizione e etichetta di Achille al livello step_idx
         fig_track.add_trace(go.Scatter(
             x=[a_pos], y=[y_level], mode="markers",
             marker=dict(symbol="circle", size=10, color="#1e3c72"),
@@ -297,6 +304,7 @@ with col_graph:
             textfont=dict(size=12, color="#1e3c72"), hoverinfo="none", showlegend=False
         ))
         
+        # Posizione e etichetta della Tartaruga al livello step_idx
         fig_track.add_trace(go.Scatter(
             x=[t_pos], y=[y_level], mode="markers",
             marker=dict(symbol="circle", size=8, color="#15803d"),
@@ -313,7 +321,7 @@ with col_graph:
 
     fig_track.update_layout(
         xaxis=dict(
-            title="Coordinata sulla Retta Orientata (m)",
+            title="Coordinata sulla Retta Orientata",
             range=[x_range_min, x_range_max],
             tickfont=dict(size=12, color="#334155")
         ),
@@ -346,8 +354,8 @@ with col_athena:
         socratic_html = f"""
         <div class="socratic-card">
             <h3>🏛️ Athena: Stato Iniziale (n = 0)</h3>
-            <p><b>Configurazione:</b> Achille si trova nell'origine A₀ = 0, la Tartaruga occupa T₀ = {delta_s0_input} m.</p>
-            <p><b>Distacco Iniziale:</b> Δs₀ = {delta_s0_input} m.</p>
+            <p><b>Configurazione:</b> Achille occupa la posizione A₀ coincidente con l'origine del sistema di riferimento e la tartaruga occupa la posizione T₀ a distanza di {delta_s0_input} m dall'origine.</p>
+            <p><b>Distacco Iniziale:</b> Δs₀ = {delta_s0_input}.</p>
             <div class="cognitive-conflict-box">
                 <h4>🧠 Domanda Socratica:</h4>
                 <div class="conflict-text">
@@ -360,14 +368,14 @@ with col_athena:
         socratic_html = f"""
         <div class="socratic-card">
             <h3>🏛️ Athena: Analisi al Passo n = {curr_step}</h3>
-            <p>1. <b>Spostamento di Achille:</b> d{c_sub} = {d_str} m, raggiungendo A{c_sub} = T{p_sub}.</p>
-            <p>2. <b>Spostamento Tartaruga:</b> t{c_sub} = {t_str} m, raggiungendo T{c_sub}.</p>
-            <p>3. <b>Distacco Residuo:</b> Δs{c_sub} = m(A{c_sub}T{c_sub}) = <b>{delta_str} m</b>.</p>
+            <p>1. <b>Spostamento di Achille:</b> d{c_sub} = {d_str}, raggiungendo A{c_sub} = T{p_sub}.</p>
+            <p>2. <b>Spostamento Tartaruga:</b> t{c_sub} = {t_str}, raggiungendo T{c_sub}.</p>
+            <p>3. <b>Distacco Residuo:</b> Δs{c_sub} = m(A{c_sub}T{c_sub}) = <b>{delta_str}</b>.</p>
             <div class="cognitive-conflict-box">
                 <h4>🧠 Cortocircuito Cognitivo:</h4>
                 <div class="conflict-text">
-                    La distanza residua Δs{c_sub} = {delta_str} m è strettamente positiva (Δs{c_sub} &gt; 0).<br>
-                    Per colmare questo nuovo divario, Achille non dovrà compiere un ulteriore spostamento d{n_sub} = {delta_str} m per raggiungere T{c_sub}? Se questo processo continua all'infinito, come potrà mai Achille azzerare il distacco?
+                    La distanza residua Δs{c_sub} = {delta_str} è strettamente positiva (Δs{c_sub} &gt; 0).<br>
+                    Per colmare questo nuovo divario, Achille non dovrà compiere un ulteriore spostamento d{n_sub} = {delta_str} per raggiungere T{c_sub}? Se questo processo continua all'infinito, come potrà mai Achille azzerare il distacco?
                 </div>
             </div>
         </div>
@@ -375,7 +383,7 @@ with col_athena:
     st.markdown(socratic_html, unsafe_allow_html=True)
 
 # ------------------------------------------------------------------------------
-# 8. TABELLA ANALITICA CON FRAZIONI ESATTE (COLONNE INVERTITE)
+# 8. TABELLA ANALITICA CON FRAZIONI ESATTE (SENZA "m" E CON COLONNE INVERTITE)
 # ------------------------------------------------------------------------------
 st.markdown("##### 📊 Tabella Analitica delle Frazioni Esatte")
 
@@ -383,11 +391,11 @@ display_rows = []
 for idx, row in df.iterrows():
     display_rows.append({
         "Passo (n)": row["n"],
-        "Spostamento Achille (dₙ)": f"{format_frac(row['d'])} m",
-        "Posizione Achille (Aₙ)": f"{format_frac(row['A'])} m",
-        "Spostamento Tartaruga (tₙ)": f"{format_frac(row['t'])} m",
-        "Posizione Tartaruga (Tₙ)": f"{format_frac(row['T'])} m",
-        "Distacco Residuo (Δsₙ)": f"{format_frac(row['delta_s'])} m",
+        "Spostamento Achille (dₙ)": f"{format_frac(row['d'])}",
+        "Posizione Achille (Aₙ)": f"{format_frac(row['A'])}",
+        "Spostamento Tartaruga (tₙ)": f"{format_frac(row['t'])}",
+        "Posizione Tartaruga (Tₙ)": f"{format_frac(row['T'])}",
+        "Distacco Residuo (Δsₙ)": f"{format_frac(row['delta_s'])}",
     })
 
 df_display = pd.DataFrame(display_rows)
