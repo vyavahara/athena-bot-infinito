@@ -175,6 +175,13 @@ max_steps_input = st.sidebar.slider(
     min_value=1, max_value=12, value=6
 )
 
+st.sidebar.markdown("---")
+zoom_mode = st.sidebar.checkbox(
+    "🔍 Lente di Ingrandimento (Zoom Locale)", 
+    value=False,
+    help="Attiva per ingrandire micro-spazialmente il distacco residuo al passo corrente."
+)
+
 if "step" not in st.session_state:
     st.session_state.step = 0
 
@@ -224,7 +231,7 @@ m3.metric("Posizione Tartaruga", f"{format_frac(current_row['T'])}")
 m4.metric("Distacco Residuo", f"{format_frac(current_row['delta_s'])}")
 
 # ------------------------------------------------------------------------------
-# 6. VISUALIZZAZIONE GRAFICA PLOTLY (ASSETTO STORICO COMPLETO A CASCATA)
+# 6. VISUALIZZAZIONE GRAFICA PLOTLY (ASSETTO STORICO COMPLETO E VISTA ADATTIVA)
 # ------------------------------------------------------------------------------
 col_graph, col_athena = st.columns([1.35, 1.0])
 
@@ -237,19 +244,19 @@ with col_graph:
     current_T = current_row["T_float"]
     delta_val = current_row["delta_s_float"]
     
-    # Zoom Adattivo Dinamico impostato sull'ultimo passo corrente
-    if curr_step == 0:
-        x_range_min = -(delta_s0_input * 0.10)
-        x_range_max = delta_s0_input * 1.25
-    else:
+    # LOGICA ASSE X: Default (da 0 a T_n) vs Zoom Lente (Ispezione micro-spaziale)
+    if zoom_mode and curr_step > 0:
         span = max(delta_val * 6.0, 0.00005)
         center = (current_A + current_T) / 2.0
         x_range_min = center - (span * 0.55)
         x_range_max = center + (span * 0.55)
+    else:
+        x_range_min = -(delta_s0_input * 0.05)
+        x_range_max = max(delta_s0_input * 1.15, current_T + (delta_s0_input * 0.1))
 
     visible_width = x_range_max - x_range_min
 
-    # Disegno a cascata: ogni riga step_idx conserva il proprio assetto (Achille e Tartaruga al rispettivo passo)
+    # Disegno a cascata storicamente coerente (Passo 0 -> curr_step)
     for step_idx in range(curr_step + 1):
         y_level = curr_step - step_idx
         
@@ -257,14 +264,14 @@ with col_graph:
         a_pos = row_step["A_float"]
         t_pos = row_step["T_float"]
         
-        # Linea di riferimento orizzontale
+        # Linea orizzontale di riferimento
         fig_track.add_shape(
             type="line",
             x0=x_range_min, y0=y_level, x1=x_range_max, y1=y_level,
             line=dict(color="#cbd5e1", width=2)
         )
 
-        # Tacca origine A0 se visibile nel range attivo
+        # Tacca origine A0 su tutti i livelli visibili
         if x_range_min <= 0 <= x_range_max:
             fig_track.add_trace(go.Scatter(
                 x=[0], y=[y_level], mode="markers+text",
@@ -273,7 +280,7 @@ with col_graph:
                 textfont=dict(size=11, color="#475569"), hoverinfo="none", showlegend=False
             ))
         
-        # Marcatori storici T_k per la specifica linea
+        # Tacche storiche delle posizioni T_k per la specifica riga
         last_rendered_x = -1e9
         for k in range(step_idx + 1):
             tk_pos = df.iloc[k]["T_float"]
@@ -281,7 +288,7 @@ with col_graph:
             
             if x_range_min <= tk_pos <= x_range_max:
                 pixel_dist_ratio = (tk_pos - last_rendered_x) / visible_width
-                show_text = (pixel_dist_ratio > 0.08) or (k == step_idx)
+                show_text = (pixel_dist_ratio > 0.06) or (k == step_idx)
                 
                 fig_track.add_trace(go.Scatter(
                     x=[tk_pos], y=[y_level], mode="markers+text" if show_text else "markers",
@@ -293,28 +300,30 @@ with col_graph:
                     last_rendered_x = tk_pos
             
         # Posizione e etichetta di Achille al livello step_idx
-        fig_track.add_trace(go.Scatter(
-            x=[a_pos], y=[y_level], mode="markers",
-            marker=dict(symbol="circle", size=10, color="#1e3c72"),
-            hoverinfo="none", showlegend=False
-        ))
-        fig_track.add_trace(go.Scatter(
-            x=[a_pos], y=[y_level + 0.35], mode="text",
-            text=["<b>Achille</b>"], textposition="top center",
-            textfont=dict(size=12, color="#1e3c72"), hoverinfo="none", showlegend=False
-        ))
+        if x_range_min <= a_pos <= x_range_max:
+            fig_track.add_trace(go.Scatter(
+                x=[a_pos], y=[y_level], mode="markers",
+                marker=dict(symbol="circle", size=10, color="#1e3c72"),
+                hoverinfo="none", showlegend=False
+            ))
+            fig_track.add_trace(go.Scatter(
+                x=[a_pos], y=[y_level + 0.35], mode="text",
+                text=["<b>Achille</b>"], textposition="top center",
+                textfont=dict(size=12, color="#1e3c72"), hoverinfo="none", showlegend=False
+            ))
         
         # Posizione e etichetta della Tartaruga al livello step_idx
-        fig_track.add_trace(go.Scatter(
-            x=[t_pos], y=[y_level], mode="markers",
-            marker=dict(symbol="circle", size=8, color="#15803d"),
-            hoverinfo="none", showlegend=False
-        ))
-        fig_track.add_trace(go.Scatter(
-            x=[t_pos], y=[y_level + 0.15], mode="text",
-            text=["<b>Tartaruga</b>"], textposition="top center",
-            textfont=dict(size=12, color="#15803d"), hoverinfo="none", showlegend=False
-        ))
+        if x_range_min <= t_pos <= x_range_max:
+            fig_track.add_trace(go.Scatter(
+                x=[t_pos], y=[y_level], mode="markers",
+                marker=dict(symbol="circle", size=8, color="#15803d"),
+                hoverinfo="none", showlegend=False
+            ))
+            fig_track.add_trace(go.Scatter(
+                x=[t_pos], y=[y_level + 0.15], mode="text",
+                text=["<b>Tartaruga</b>"], textposition="top center",
+                textfont=dict(size=12, color="#15803d"), hoverinfo="none", showlegend=False
+            ))
 
     y_tick_vals = list(range(curr_step + 1))
     y_tick_texts = [f"Passo {curr_step - y}" for y in y_tick_vals]
