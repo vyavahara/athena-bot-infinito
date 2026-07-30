@@ -231,7 +231,7 @@ m3.metric("Posizione Tartaruga", f"{format_frac(current_row['T'])}")
 m4.metric("Distacco Residuo", f"{format_frac(current_row['delta_s'])}")
 
 # ------------------------------------------------------------------------------
-# 6. VISUALIZZAZIONE GRAFICA PLOTLY (ASSETTO STORICO COMPLETO E VISTA ADATTIVA)
+# 6. VISUALIZZAZIONE GRAFICA PLOTLY (ASSETTO STORICO COMPLETO + INTERATTIVITÀ ZOOM)
 # ------------------------------------------------------------------------------
 col_graph, col_athena = st.columns([1.35, 1.0])
 
@@ -345,7 +345,15 @@ with col_graph:
         template="plotly_white"
     )
     
-    st.plotly_chart(fig_track, use_container_width=True)
+    # Abilitazione dello Zoom tramite mousewheel e mantenimento della barra strumenti
+    st.plotly_chart(
+        fig_track, 
+        use_container_width=True,
+        config={
+            'scrollZoom': True,
+            'displayModeBar': True,
+        }
+    )
 
 # ------------------------------------------------------------------------------
 # 7. MAIEUTICA SOCRATICA (ATHENA)
