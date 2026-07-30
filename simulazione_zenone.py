@@ -88,43 +88,27 @@ st.markdown(
         font-size: 1rem !important; 
         line-height: 1.5; 
     }
-    
-    .fraction-badge {
-        background-color: #e2e8f0; 
-        border: 1px solid #94a3b8;
-        padding: 2px 6px; 
-        border-radius: 4px; 
-        font-family: monospace;
-        font-weight: bold; 
-        color: #0f172a;
-    }
 </style>
 """,
     unsafe_allow_html=True,
 )
 
 # ------------------------------------------------------------------------------
-# 2. HELPER UTILITIES (FUNZIONI PURE)
+# 2. HELPER UTILITIES
 # ------------------------------------------------------------------------------
 def to_subscript(text: str) -> str:
-    """Converte cifre e caratteri in pedici Unicode ufficiali (es. ₀, ₁, ₂, ₙ)."""
     sub_map = str.maketrans("0123456789n", "₀₁₂₃₄₅₆₇₈₉ₙ")
     return str(text).translate(sub_map)
 
 def format_frac(f: Fraction) -> str:
-    """Rende una frazione in formato stringa esatto (es. 100/9)."""
     if f.denominator == 1:
         return f"{f.numerator}"
     return f"{f.numerator}/{f.denominator}"
 
 # ------------------------------------------------------------------------------
-# 3. MODELLO MATEMATICO DEDUTTIVO (DOMINIO)
+# 3. MODELLO MATEMATICO DEDUTTIVO
 # ------------------------------------------------------------------------------
 def compute_zeno_sequence(delta_s0: int, contraction_ratio: int, max_steps: int) -> pd.DataFrame:
-    """
-    Costruisce la successione geometrica delle configurazioni discrete.
-    Nessuna variabile temporale: solo relazioni di incidenza spaziale su R.
-    """
     delta_s0_frac = Fraction(delta_s0, 1)
     k_frac = Fraction(contraction_ratio, 1)
     
@@ -139,8 +123,8 @@ def compute_zeno_sequence(delta_s0: int, contraction_ratio: int, max_steps: int)
             delta_s_frac = delta_s0_frac
         else:
             prev_delta_s = records[n - 1]["delta_s"]
-            d_frac = prev_delta_s                # Achille raggiunge T_(n-1)
-            t_frac = prev_delta_s / k_frac       # La tartaruga avanza di 1/k del divario
+            d_frac = prev_delta_s
+            t_frac = prev_delta_s / k_frac
             A_frac += d_frac
             T_frac += t_frac
             delta_s_frac = T_frac - A_frac
@@ -186,11 +170,9 @@ max_steps_input = st.sidebar.slider(
     min_value=1, max_value=15, value=8
 )
 
-# Inizializzazione Session State
 if "step" not in st.session_state:
     st.session_state.step = 0
 
-# Callback per gestione pulita dello stato senza desincronizzazioni
 def set_step(new_step):
     st.session_state.step = max(0, min(new_step, max_steps_input))
 
@@ -204,7 +186,6 @@ with col_b3:
 
 curr_step = st.session_state.step
 
-# Esecuzione modello interno
 df = compute_zeno_sequence(delta_s0_input, k_input, max_steps_input)
 current_row = df.iloc[curr_step]
 
@@ -216,8 +197,8 @@ st.markdown(
 <div class="epistemic-card">
 <h4>📐 Inquadramento Assiomatico della Simulazione</h4>
 <p>
-Consideriamo la retta orientata ℝ come supporto spaziale. La simulazione modella una <b>successione discreta di configurazioni geometriche</b> $(A_n, T_n)_{n \in \mathbb{N}}$. 
-Non stiamo misurando la durata temporale del movimento, ma l'evoluzione delle posizioni ad ogni passo logico $n$.
+Consideriamo la retta orientata ℝ come supporto spaziale. La simulazione modella una <b>successione discreta di configurazioni geometriche</b> (Aₙ, Tₙ). 
+Non stiamo misurando la durata temporale del movimento, ma l'evoluzione delle posizioni ad ogni passo logico n.
 </p>
 </div>
 """,
@@ -245,22 +226,18 @@ with col_graph:
     T_val = current_row["T_float"]
     delta_val = current_row["delta_s_float"]
     
-    # Zoom adattivo: evita che i punti collassino visivamente ad alti passi n
     margin_x = max(delta_val * 2.5, 0.5) if curr_step > 0 else delta_s0_input * 0.2
     min_x = max(-2.0, A_val - margin_x)
     max_x = T_val + margin_x
     
-    # Corsie
     fig_track.add_shape(type="line", x0=min_x, y0=1, x1=max_x, y1=1, line=dict(color="#86efac", width=4))
     fig_track.add_shape(type="line", x0=min_x, y0=0, x1=max_x, y1=0, line=dict(color="#93c5fd", width=4))
     
-    # Segmento distacco residuo Δs_n
     fig_track.add_shape(
         type="line", x0=A_val, y0=0.5, x1=T_val, y1=0.5,
         line=dict(color="#ef4444", width=3, dash="dash")
     )
     
-    # Marker Achille
     fig_track.add_trace(go.Scatter(
         x=[A_val], y=[0], mode="markers+text",
         marker=dict(symbol="circle", size=16, color="#1e3c72"),
@@ -269,7 +246,6 @@ with col_graph:
         hoverinfo="none", showlegend=False
     ))
     
-    # Marker Tartaruga
     fig_track.add_trace(go.Scatter(
         x=[T_val], y=[1], mode="markers+text",
         marker=dict(symbol="circle", size=14, color="#15803d"),
@@ -299,36 +275,36 @@ with col_athena:
     delta_str = format_frac(current_row["delta_s"])
     
     if curr_step == 0:
-        socratic_text = f"""
+        socratic_html = f"""
         <div class="socratic-card">
             <h3>🏛️ Athena: Stato Iniziale (n = 0)</h3>
-            <p><b>Configurazione:</b> Achille si trova nell'origine $A_0 = 0$, la Tartaruga occupa $T_0 = {delta_s0_input}\text{ m}$.</p>
-            <p><b>Distacco Iniziale:</b> $\Delta s_0 = {delta_s0_input}\text{ m}$.</p>
+            <p><b>Configurazione:</b> Achille si trova nell'origine A₀ = 0, la Tartaruga occupa T₀ = {delta_s0_input} m.</p>
+            <p><b>Distacco Iniziale:</b> Δs₀ = {delta_s0_input} m.</p>
             <div class="cognitive-conflict-box">
                 <h4>🧠 Domanda Socratica:</h4>
                 <div class="conflict-text">
-                    Per poter raggiungere o superare la Tartaruga, concordi che Achille debba <i>necessariamente</i> occupare prima il punto geometrico $T_0$ in cui la Tartaruga si trova adesso?
+                    Per poter raggiungere o superare la Tartaruga, concordi che Achille debba <i>necessariamente</i> occupare prima il punto geometrico T₀ in cui la Tartaruga si trova adesso?
                 </div>
             </div>
         </div>
         """
     else:
-        socratic_text = f"""
+        socratic_html = f"""
         <div class="socratic-card">
             <h3>🏛️ Athena: Analisi al Passo n = {curr_step}</h3>
-            <p>1. <b>Spostamento di Achille:</b> $d_{c_sub} = {d_str}\text{ m}$, raggiungendo $A_{c_sub} = T_{p_sub}$.</p>
-            <p>2. <b>Spostamento Tartaruga:</b> $t_{c_sub} = {t_str}\text{ m}$, raggiungendo $T_{c_sub}$.</p>
-            <p>3. <b>Distacco Residuo:</b> $\Delta s_{c_sub} = m(A_{c_sub}T_{c_sub}) = \mathbf{{{delta_str}\text{{ m}}}}$.</p>
+            <p>1. <b>Spostamento di Achille:</b> d{c_sub} = {d_str} m, raggiungendo A{c_sub} = T{p_sub}.</p>
+            <p>2. <b>Spostamento Tartaruga:</b> t{c_sub} = {t_str} m, raggiungendo T{c_sub}.</p>
+            <p>3. <b>Distacco Residuo:</b> Δs{c_sub} = m(A{c_sub}T{c_sub}) = <b>{delta_str} m</b>.</p>
             <div class="cognitive-conflict-box">
                 <h4>🧠 Cortocircuito Cognitivo:</h4>
                 <div class="conflict-text">
-                    La distanza residua $\Delta s_{c_sub} = {delta_str}\text{ m}$ è strettamente positiva ($\Delta s_{c_sub} > 0$).<br>
-                    Per colmare questo nuovo divario, Achille non dovrà compiere un ulteriore spostamento $d_{n_sub} = {delta_str}\text{ m}$ per raggiungere $T_{c_sub}$? Se questo schema si ripetesse all'infinito, come potrebbe Achille azzerare il distacco?
+                    La distanza residua Δs{c_sub} = {delta_str} m è strettamente positiva (Δs{c_sub} &gt; 0).<br>
+                    Per colmare questo nuovo divario, Achille non dovrà compiere un ulteriore spostamento d{n_sub} = {delta_str} m per raggiungere T{c_sub}? Se questo schema si ripetesse all'infinito, come potrebbe Achille azzerare il distacco?
                 </div>
             </div>
         </div>
         """
-    st.markdown(socratic_text, unsafe_allow_html=True)
+    st.markdown(socratic_html, unsafe_allow_html=True)
 
 # ------------------------------------------------------------------------------
 # 8. TABELLA ANALITICA CON FRAZIONI ESATTE
@@ -356,16 +332,16 @@ def highlight_row(row):
 st.dataframe(df_display.style.apply(highlight_row, axis=1), use_container_width=True)
 
 # ------------------------------------------------------------------------------
-# 9. CHIUSURA DIDATTICA E TRANSIZIONE ALLA FASE 2
+# 9. CHIUSURA DIDATTICA
 # ------------------------------------------------------------------------------
 st.markdown(
     """
 <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-left: 6px solid #ef4444; padding: 14px 18px; border-radius: 8px; margin-top: 16px;">
     <h4 style="color: #991b1b; margin-top:0; font-weight: 800;">⚡ Il Nodo Concettuale della Fase 1:</h4>
     <p style="color: #7f1d1d; font-weight: 600; margin-bottom: 0; line-height: 1.5;">
-        La scomposizione discreta di Zenone dimostra che per qualsiasi $n \in \mathbb{N}$ finito si ha sempre $\Delta s_n > 0$. 
+        La scomposizione discreta di Zenone dimostra che per qualsiasi n finito si ha sempre Δsₙ &gt; 0. 
         L'illusione nasce dal confondere il <i>numero infinito di suddivisioni spaziali discrete</i> con la <i>durata del processo continuo</i>. 
-        Per risolvere il paradosso occorre abbandonare la scansione passo-passo e passare alla <b>Fase 2 (Simulazione Cinematica Continua)</b> introducendo le equazioni orarie $s(t)$.
+        Per risolvere il paradosso occorre abbandonare la scansione passo-passo e passare alla <b>Fase 2 (Simulazione Cinematica Continua)</b> introducendo le equazioni orarie s(t).
     </p>
 </div>
 """,
