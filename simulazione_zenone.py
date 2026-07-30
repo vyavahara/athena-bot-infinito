@@ -4,124 +4,69 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # ------------------------------------------------------------------------------
-# CONFIGURAZIONE PAGINA
+# 1. CONFIGURAZIONE PAGINA E CSS CUSTOM
 # ------------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Simulazione del Paradosso di Achille e la Tartaruga",
+    page_title="Fase 1: Conflitto Cognitivo - Il Paradosso di Zenone",
     page_icon="📐",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# ------------------------------------------------------------------------------
-# CSS PERSONALIZZATO (Stile Moderno, Contrasto Elevato e Font Maggiorati)
-# ------------------------------------------------------------------------------
 st.markdown(
     """
 <style>
     .main { background-color: #f8fafc; }
-    .stApp { font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+    .stApp { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
     
-    .block-container { padding-top: 1rem !important; padding-bottom: 1.2rem !important; }
-    div[data-testid="stVerticalBlock"] { gap: 0.8rem !important; }
-    p { margin-bottom: 0.4rem !important; line-height: 1.5; font-size: 1.05rem !important; }
-    
-    /* Hero Banner */
     .hero-banner {
         background: linear-gradient(135deg, #0f172a 0%, #1e3c72 50%, #2a5298 100%);
         color: #ffffff; 
         padding: 20px 24px; 
         border-radius: 12px;
         text-align: center; 
-        margin-bottom: 14px;
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 80px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
     }
     .hero-banner h1 { 
         color: #ffffff !important; 
         font-weight: 800 !important; 
-        font-size: 1.85rem !important; 
+        font-size: 1.8rem !important; 
         margin: 0 !important; 
-        line-height: 1.25;
     }
     
-    /* Condizioni Iniziali e Modello Matematico */
-    .init-conditions-card, .math-model-card {
+    .epistemic-card {
         background-color: #ffffff; 
         border: 1px solid #cbd5e1;
         border-left: 6px solid #0284c7; 
         border-radius: 8px;
-        padding: 12px 18px; 
-        margin-bottom: 14px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        padding: 14px 18px; 
+        margin-bottom: 16px;
     }
-    .init-conditions-card h4, .math-model-card h4 { 
+    .epistemic-card h4 { 
         color: #0f172a; 
         margin-top: 0; 
-        margin-bottom: 6px; 
+        margin-bottom: 8px; 
         font-size: 1.1rem !important; 
         font-weight: 700; 
     }
-    .init-conditions-text {
-        display: flex; 
-        justify-content: space-around; 
-        align-items: center; 
-        flex-wrap: wrap; 
-        gap: 12px; 
-        font-size: 1.05rem !important;
-        color: #334155;
-    }
     
-    /* Card Athena */
-    .athena-socratic-card {
+    .socratic-card {
         background-color: #ffffff; 
         border: 1px solid #cbd5e1;
         border-left: 6px solid #1e3c72; 
         border-radius: 8px;
         padding: 16px 18px; 
-        height: 100%;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.04);
+        min-height: 280px;
     }
-    .athena-socratic-card h3 { 
+    .socratic-card h3 { 
         color: #1e3c72; 
-        font-size: 1.22rem !important; 
+        font-size: 1.2rem !important; 
         margin-top: 0; 
-        margin-bottom: 8px; 
+        margin-bottom: 10px; 
         font-weight: 700;
     }
     
-    /* Sezioni Titoli */
-    .section-title {
-        color: #0f172a; 
-        font-weight: 800; 
-        font-size: 1.25rem !important;
-        margin-top: 16px; 
-        margin-bottom: 6px;
-    }
-    .section-subtitle {
-        color: #475569; 
-        font-weight: 600; 
-        font-size: 1.05rem !important;
-        margin-top: 0px; 
-        margin-bottom: 12px;
-    }
-    
-    /* Frazioni Badge */
-    .fraction-badge {
-        background-color: #e2e8f0; 
-        border: 1px solid #94a3b8;
-        padding: 2px 7px; 
-        border-radius: 5px; 
-        font-family: monospace;
-        font-size: 1rem !important; 
-        font-weight: bold; 
-        color: #0f172a;
-    }
-    
-    /* Focus Box */
     .cognitive-conflict-box {
         background-color: #fffbeb; 
         border: 1px solid #fde68a;
@@ -129,537 +74,298 @@ st.markdown(
         padding: 12px 16px;
         border-radius: 8px; 
         margin-top: 14px;
-        box-shadow: 0 2px 5px rgba(245, 158, 11, 0.08);
     }
     .cognitive-conflict-box h4 { 
         color: #b45309; 
         margin-top: 0; 
         margin-bottom: 4px; 
-        font-size: 1.08rem !important; 
+        font-size: 1.05rem !important; 
         font-weight: 800; 
     }
     .conflict-text { 
         color: #78350f; 
         font-weight: 600; 
-        font-size: 1.05rem !important; 
-        line-height: 1.48; 
+        font-size: 1rem !important; 
+        line-height: 1.5; 
     }
-
-    div[data-testid="stDataFrame"] { font-size: 0.98rem !important; }
-    [data-testid="stMetricValue"] { font-size: 1.4rem !important; font-weight: 800 !important; color: #0f172a; }
-    [data-testid="stMetricLabel"] { font-size: 1rem !important; font-weight: 600 !important; color: #475569; }
+    
+    .fraction-badge {
+        background-color: #e2e8f0; 
+        border: 1px solid #94a3b8;
+        padding: 2px 6px; 
+        border-radius: 4px; 
+        font-family: monospace;
+        font-weight: bold; 
+        color: #0f172a;
+    }
 </style>
 """,
     unsafe_allow_html=True,
 )
 
 # ------------------------------------------------------------------------------
-# FUNZIONE HELPER PER CONVERTIRE CIFRE IN PEDICI UNICODE CORRETTI
+# 2. HELPER UTILITIES (FUNZIONI PURE)
 # ------------------------------------------------------------------------------
 def to_subscript(text: str) -> str:
-    """Converte cifre e indicatori in pedici Unicode ufficiali puliti (es. ₀, ₁, ₂, ₙ)."""
+    """Converte cifre e caratteri in pedici Unicode ufficiali (es. ₀, ₁, ₂, ₙ)."""
     sub_map = str.maketrans("0123456789n", "₀₁₂₃₄₅₆₇₈₉ₙ")
     return str(text).translate(sub_map)
 
-
-def format_frac_html(f: Fraction) -> str:
-    """Rende le frazioni esatte in modo chiaro e leggibile."""
+def format_frac(f: Fraction) -> str:
+    """Rende una frazione in formato stringa esatto (es. 100/9)."""
     if f.denominator == 1:
         return f"{f.numerator}"
     return f"{f.numerator}/{f.denominator}"
 
+# ------------------------------------------------------------------------------
+# 3. MODELLO MATEMATICO DEDUTTIVO (DOMINIO)
+# ------------------------------------------------------------------------------
+def compute_zeno_sequence(delta_s0: int, contraction_ratio: int, max_steps: int) -> pd.DataFrame:
+    """
+    Costruisce la successione geometrica delle configurazioni discrete.
+    Nessuna variabile temporale: solo relazioni di incidenza spaziale su R.
+    """
+    delta_s0_frac = Fraction(delta_s0, 1)
+    k_frac = Fraction(contraction_ratio, 1)
+    
+    records = []
+    A_frac = Fraction(0, 1)
+    T_frac = delta_s0_frac
+    
+    for n in range(max_steps + 1):
+        if n == 0:
+            d_frac = Fraction(0, 1)
+            t_frac = Fraction(0, 1)
+            delta_s_frac = delta_s0_frac
+        else:
+            prev_delta_s = records[n - 1]["delta_s"]
+            d_frac = prev_delta_s                # Achille raggiunge T_(n-1)
+            t_frac = prev_delta_s / k_frac       # La tartaruga avanza di 1/k del divario
+            A_frac += d_frac
+            T_frac += t_frac
+            delta_s_frac = T_frac - A_frac
+
+        records.append({
+            "n": n,
+            "A": A_frac,
+            "d": d_frac,
+            "T": T_frac,
+            "t": t_frac,
+            "delta_s": delta_s_frac,
+            "A_float": float(A_frac),
+            "T_float": float(T_frac),
+            "d_float": float(d_frac),
+            "t_float": float(t_frac),
+            "delta_s_float": float(delta_s_frac),
+        })
+    return pd.DataFrame(records)
 
 # ------------------------------------------------------------------------------
-# INTESTAZIONE
+# 4. CONTROLLO DI STATO E SIDEBAR
 # ------------------------------------------------------------------------------
 st.markdown(
     """
 <div class="hero-banner">
-    <h1>🏃 🐢 Simulazione del Paradosso di Achille e la Tartaruga</h1>
+    <h1>🏃 🐢 Fase 1: Simulazione Discreta & Conflitto Cognitivo</h1>
 </div>
 """,
     unsafe_allow_html=True,
 )
 
+st.sidebar.header("⚙️ Parametri del Modello Geometrico")
+delta_s0_input = st.sidebar.number_input(
+    "Distacco Iniziale Δs₀ = m(A₀T₀) [metri]:",
+    value=100, min_value=1, step=10
+)
+k_input = st.sidebar.number_input(
+    "Fattore di contrazione spaziale (k):",
+    value=10, min_value=2, max_value=100, step=1
+)
+max_steps_input = st.sidebar.slider(
+    "Numero di suddivisioni logiche da calcolare (n):",
+    min_value=1, max_value=15, value=8
+)
+
+# Inizializzazione Session State
+if "step" not in st.session_state:
+    st.session_state.step = 0
+
+# Callback per gestione pulita dello stato senza desincronizzazioni
+def set_step(new_step):
+    st.session_state.step = max(0, min(new_step, max_steps_input))
+
+col_b1, col_b2, col_b3, _ = st.columns([1, 1, 1, 2])
+with col_b1:
+    st.button("⏮️ Reset (n = 0)", on_click=set_step, args=(0,), use_container_width=True)
+with col_b2:
+    st.button("◀️ Precedente", on_click=set_step, args=(st.session_state.step - 1,), use_container_width=True)
+with col_b3:
+    st.button("▶️ Successivo", on_click=set_step, args=(st.session_state.step + 1,), use_container_width=True)
+
+curr_step = st.session_state.step
+
+# Esecuzione modello interno
+df = compute_zeno_sequence(delta_s0_input, k_input, max_steps_input)
+current_row = df.iloc[curr_step]
+
 # ------------------------------------------------------------------------------
-# DEFINIZIONE FORMALE DEL MODELLO MATEMATICO (Riquadro Introduttivo)
+# 5. PREMESSA EPISTEMOLOGICA
 # ------------------------------------------------------------------------------
 st.markdown(
 """
-<div class="math-model-card">
-
-<h4>📐 Premessa al modello geometrico</h4>
-
+<div class="epistemic-card">
+<h4>📐 Inquadramento Assiomatico della Simulazione</h4>
 <p>
-La pista è rappresentata da una <b>semiretta orientata</b> con origine O.
-Ogni posizione dei protagonisti è rappresentata da un punto della semiretta
-e identificata dalla sua coordinata.
+Consideriamo la retta orientata ℝ come supporto spaziale. La simulazione modella una <b>successione discreta di configurazioni geometriche</b> $(A_n, T_n)_{n \in \mathbb{N}}$. 
+Non stiamo misurando la durata temporale del movimento, ma l'evoluzione delle posizioni ad ogni passo logico $n$.
 </p>
-
-<p>
-La simulazione non descrive un moto nel tempo, ma una successione di
-<b>configurazioni geometriche</b> costruite passo dopo passo secondo il
-ragionamento di Zenone.
-</p>
-
-<p>
-Indichiamo con <b>n</b> il numero del passo della costruzione:
-</p>
-
-<ul>
-<li><b>n = 0</b>: configurazione iniziale;</li>
-<li><b>n = 1,2,3,...</b>: configurazioni successive.</li>
-</ul>
-
-<p>
-Al passo n le posizioni sono indicate con:
-</p>
-
-<p style="text-align:center;">
-<b>Aₙ</b> = posizione di Achille
-&nbsp;&nbsp;&nbsp;
-<b>Tₙ</b> = posizione della tartaruga
-</p>
-
-<p>
-La distanza residua tra le due posizioni è indicata con:
-</p>
-
-<p style="text-align:center;">
-<b>Δsₙ</b> = misura del segmento AₙTₙ
-</p>
-
-<p>
-All'inizio Achille si trova nell'origine:
-<b>A₀ = 0</b>,
-mentre la tartaruga possiede un vantaggio iniziale:
-<b>T₀ = Δs₀</b>.
-</p>
-
 </div>
 """,
 unsafe_allow_html=True
 )
 
-# ------------------------------------------------------------------------------
-# SIDEBAR - PARAMETRI GEOMETRICI
-# ------------------------------------------------------------------------------
-st.sidebar.header("⚙️ Impostazione della Pista")
-delta_s0_val = st.sidebar.number_input(
-    "Misura del distacco iniziale Δs₀ = m(A₀T₀) [metri]:",
-    value=100,
-    step=10,
-    min_value=1,
-)
-r_denom = st.sidebar.number_input(
-    "Rapporto di contrazione relazionale (1/k):",
-    value=10,
-    min_value=2,
-    max_value=100,
-    step=1,
-)
-max_steps = st.sidebar.slider(
-    "Numero di suddivisioni logiche da esplorare (n):",
-    min_value=1,
-    max_value=15,
-    value=10,
-)
-
-# Gestione Stato Navigazione
-if "step" not in st.session_state:
-    st.session_state.step = 0
-
-col_btn1, col_btn2, col_btn3, _ = st.columns([1.2, 1.2, 1.2, 2.4])
-with col_btn1:
-    if st.button("⏮️ Stato Iniziale (n = 0)"):
-        st.session_state.step = 0
-with col_btn2:
-    if st.button("◀️ Passo Precedente") and st.session_state.step > 0:
-        st.session_state.step -= 1
-with col_btn3:
-    if st.button("▶️ Passo Successivo") and st.session_state.step < max_steps:
-        st.session_state.step += 1
-
-st.sidebar.markdown("---")
-st.sidebar.markdown(f"**Passo Selezionato:** n = {st.session_state.step}")
-
-# ------------------------------------------------------------------------------
-# MODELLO MATEMATICO INTERNO E CALCOLI CON FRAZIONI ESATTE
-# ------------------------------------------------------------------------------
-delta_s0_frac = Fraction(delta_s0_val, 1)
-contraction_frac = Fraction(1, r_denom)
-
-steps_data = []
-
-# Relazioni matematiche formali iniziali:
-# A₀ = 0
-# T₀ = Δs₀ (dinamico)
-A_frac = Fraction(0, 1)
-T_frac = delta_s0_frac
-
-for n in range(max_steps + 1):
-    if n == 0:
-        d_frac = Fraction(0, 1)
-        t_frac = Fraction(0, 1)
-        delta_s_frac = delta_s0_frac
-    else:
-        # Relazioni matematiche formali iterative per ogni step n:
-        # Δsₙ = Tₙ - Aₙ
-        # dₙ = Δsₙ₋₁
-        # tₙ = Δsₙ₋₁ / k
-        # Aₙ = Aₙ₋₁ + dₙ
-        # Tₙ = Tₙ₋₁ + tₙ
-        delta_s_precedente = steps_data[n - 1]["delta_s"]
-        d_frac = delta_s_precedente
-        t_frac = delta_s_precedente / Fraction(r_denom, 1)
-        A_frac += d_frac
-        T_frac += t_frac
-        delta_s_frac = T_frac - A_frac
-
-    # Struttura interna contenente solo dati matematici grezzi
-    steps_data.append({
-        "n": n,
-        "A": A_frac,
-        "d": d_frac,
-        "T": T_frac,
-        "t": t_frac,
-        "delta_s": delta_s_frac,
-        "A_float": float(A_frac),
-        "T_float": float(T_frac),
-        "d_float": float(d_frac),
-        "t_float": float(t_frac),
-        "delta_s_float": float(delta_s_frac),
-    })
-
-df = pd.DataFrame(steps_data)
-curr_step = st.session_state.step
-current_data = df.iloc[curr_step]
-
-# ------------------------------------------------------------------------------
-# 1. CONDIZIONI INIZIALI
-# ------------------------------------------------------------------------------
-st.markdown(
-    f"""
-<div class="init-conditions-card">
-    <h4>📋 Condizioni Iniziali del Modello Geometrico (Passo n = 0)</h4>
-    <div class="init-conditions-text">
-        <span>🏃 <b>Punto A₀ (Coordinata di Achille):</b> 0 m</span>
-        <span>🐢 <b>Punto T₀ (Coordinata della Tartaruga):</b> {delta_s0_val} m</span>
-        <span>📏 <b>Distacco iniziale Δs₀ = m(A₀T₀):</b> {delta_s0_val} m</span>
-        <span>⚡ <b>Rapporto degli spostamenti:</b> dₙ = {r_denom} · tₙ</span>
-    </div>
-</div>
-""",
-    unsafe_allow_html=True,
-)
-
-# Metric Banner con etichette geometriche rigorose aggiornate
+# Metric Banner
 m1, m2, m3, m4 = st.columns(4)
-with m1:
-    st.metric("Passo Logico (n)", f"{int(current_data['n'])}")
-with m2:
-    st.metric("Punto Aₙ - coordinata sulla retta", f"{format_frac_html(current_data['A'])} m")
-with m3:
-    st.metric("Punto Tₙ - coordinata sulla retta", f"{format_frac_html(current_data['T'])} m")
-with m4:
-    st.metric("Distacco residuo Δsₙ", f"{format_frac_html(current_data['delta_s'])} m")
+m1.metric("Passo Logico (n)", f"{curr_step}")
+m2.metric("Punto Aₙ (Achille)", f"{format_frac(current_row['A'])} m")
+m3.metric("Punto Tₙ (Tartaruga)", f"{format_frac(current_row['T'])} m")
+m4.metric("Distacco Residuo Δsₙ", f"{format_frac(current_row['delta_s'])} m")
 
 # ------------------------------------------------------------------------------
-# 2. VISUALIZZAZIONE PRINCIPALE
+# 6. VISUALIZZAZIONE GRAFICA ADATTIVA (PLOTLY)
 # ------------------------------------------------------------------------------
-col_left, col_right = st.columns([1.15, 1.0])
+col_graph, col_athena = st.columns([1.2, 1.0])
 
-with col_left:
-    st.markdown(
-        f"<div class='section-title'>🏃 🐢 Piste Parallele e Rappresentazione Spaziale (n = {curr_step})</div>",
-        unsafe_allow_html=True,
-    )
-
-    fig_track = go.Figure()
-
-    A_val = current_data["A_float"]
-    T_val = current_data["T_float"]
+with col_graph:
+    st.markdown(f"##### 📍 Configurazione Spaziale al Passo n = {curr_step}")
     
-    # Range ampio per evitare tagli del testo sul lato destro dell'asse X
-    max_x = max(delta_s0_val * 1.40, T_val * 1.30 + 40)
-
-    # Corsia Tartaruga (y = 1)
+    fig_track = go.Figure()
+    
+    A_val = current_row["A_float"]
+    T_val = current_row["T_float"]
+    delta_val = current_row["delta_s_float"]
+    
+    # Zoom adattivo: evita che i punti collassino visivamente ad alti passi n
+    margin_x = max(delta_val * 2.5, 0.5) if curr_step > 0 else delta_s0_input * 0.2
+    min_x = max(-2.0, A_val - margin_x)
+    max_x = T_val + margin_x
+    
+    # Corsie
+    fig_track.add_shape(type="line", x0=min_x, y0=1, x1=max_x, y1=1, line=dict(color="#86efac", width=4))
+    fig_track.add_shape(type="line", x0=min_x, y0=0, x1=max_x, y1=0, line=dict(color="#93c5fd", width=4))
+    
+    # Segmento distacco residuo Δs_n
     fig_track.add_shape(
-        type="line",
-        x0=0, y0=1, x1=max_x, y1=1,
-        line=dict(color="#86efac", width=5),
+        type="line", x0=A_val, y0=0.5, x1=T_val, y1=0.5,
+        line=dict(color="#ef4444", width=3, dash="dash")
     )
-    # Corsia Achille (y = 0)
-    fig_track.add_shape(
-        type="line",
-        x0=0, y0=0, x1=max_x, y1=0,
-        line=dict(color="#93c5fd", width=5),
-    )
-
-    # Marcatori dei punti geometrici A_k
-    for k in range(min(curr_step + 2, len(df))):
-        pos_ak = df.iloc[k]["A_float"]
-        show_label = (k == 0) or (k == curr_step and curr_step > 0)
-        label_k = "A₀ = 0" if k == 0 else f"A{to_subscript(str(k))} = T{to_subscript(str(k-1))}"
-
-        fig_track.add_trace(
-            go.Scatter(
-                x=[pos_ak], y=[0],
-                mode="markers+text" if show_label else "markers",
-                marker=dict(symbol="line-ns", size=14, color="#334155"),
-                text=[f"| {label_k}"] if show_label else None,
-                textposition="bottom center",
-                textfont=dict(size=14, color="#334155", family="Arial, sans-serif"),
-                hoverinfo="none",
-                showlegend=False,
-            )
-        )
-
-    # Segmento percorso da Achille nello step corrente
-    if curr_step > 0:
-        prev_A_val = df.iloc[curr_step - 1]["A_float"]
-        fig_track.add_shape(
-            type="line",
-            x0=prev_A_val, y0=0, x1=A_val, y1=0,
-            line=dict(color="#1d4ed8", width=7),
-        )
-
-    # Segmento rappresentante il distacco residuo Δsₙ
-    fig_track.add_shape(
-        type="line",
-        x0=A_val, y0=0.5, x1=T_val, y1=0.5,
-        line=dict(color="#b91c1c", width=4, dash="dash"),
-    )
-
-    # Marcatori di Achille e Tartaruga
-    fig_track.add_trace(
-        go.Scatter(
-            x=[A_val], y=[0],
-            mode="markers+text",
-            marker=dict(symbol="circle", size=16, color="#1e3c72"),
-            text=[f" 🏃 <b>Achille (A{to_subscript(str(curr_step))})</b>"],
-            textposition="top right",
-            textfont=dict(size=15, color="#1e3c72"),
-            hoverinfo="none",
-            showlegend=False,
-            cliponaxis=False,
-        )
-    )
-
-    fig_track.add_trace(
-        go.Scatter(
-            x=[T_val], y=[1],
-            mode="markers+text",
-            marker=dict(symbol="circle", size=14, color="#15803d"),
-            text=[f" 🐢 <b>Tartaruga (T{to_subscript(str(curr_step))})</b>"],
-            textposition="top right",
-            textfont=dict(size=15, color="#15803d"),
-            hoverinfo="none",
-            showlegend=False,
-            cliponaxis=False,
-        )
-    )
-
+    
+    # Marker Achille
+    fig_track.add_trace(go.Scatter(
+        x=[A_val], y=[0], mode="markers+text",
+        marker=dict(symbol="circle", size=16, color="#1e3c72"),
+        text=[f"🏃 <b>A{to_subscript(str(curr_step))}</b>"],
+        textposition="top center", textfont=dict(size=14, color="#1e3c72"),
+        hoverinfo="none", showlegend=False
+    ))
+    
+    # Marker Tartaruga
+    fig_track.add_trace(go.Scatter(
+        x=[T_val], y=[1], mode="markers+text",
+        marker=dict(symbol="circle", size=14, color="#15803d"),
+        text=[f"🐢 <b>T{to_subscript(str(curr_step))}</b>"],
+        textposition="top center", textfont=dict(size=14, color="#15803d"),
+        hoverinfo="none", showlegend=False
+    ))
+    
     fig_track.update_layout(
-        xaxis=dict(
-            title=dict(text="Coordinata sulla Retta Orientata (metri)", font=dict(size=15, color="#0f172a")),
-            range=[-5, max_x],
-            tickfont=dict(size=13, color="#334155")
-        ),
-        yaxis=dict(
-            tickvals=[0, 1],
-            ticktext=["Corsia Achille", "Corsia Tartaruga"],
-            range=[-0.5, 1.5],
-            tickfont=dict(size=14, color="#0f172a")
-        ),
-        height=290,
-        margin=dict(l=10, r=30, t=10, b=10),
-        template="plotly_white",
-        showlegend=False,
+        xaxis=dict(title="Coordinata sulla Retta (m)", range=[min_x, max_x], tickfont=dict(size=12)),
+        yaxis=dict(tickvals=[0, 1], ticktext=["Corsia Achille", "Corsia Tartaruga"], range=[-0.5, 1.8]),
+        height=300, margin=dict(l=10, r=20, t=20, b=10), template="plotly_white"
     )
-
+    
     st.plotly_chart(fig_track, use_container_width=True)
 
-with col_right:
-    c_step_sub = to_subscript(str(curr_step))
-    prev_step_sub = to_subscript(str(curr_step - 1)) if curr_step > 0 else "0"
-    next_step_sub = to_subscript(str(curr_step + 1))
-
+# ------------------------------------------------------------------------------
+# 7. MAIEUTICA SOCRATICA (ATHENA)
+# ------------------------------------------------------------------------------
+with col_athena:
+    c_sub = to_subscript(str(curr_step))
+    p_sub = to_subscript(str(curr_step - 1)) if curr_step > 0 else "0"
+    n_sub = to_subscript(str(curr_step + 1))
+    
+    d_str = format_frac(current_row["d"])
+    t_str = format_frac(current_row["t"])
+    delta_str = format_frac(current_row["delta_s"])
+    
     if curr_step == 0:
-        st.markdown(
-            f"""
-      <div class="athena-socratic-card">
-          <h3>🏛️ Osservazioni (n = 0)</h3>
-          <p><b>1. Configurazione Spaziale:</b> Achille occupa il punto geometrico A₀ = 0 m. La Tartaruga occupa il punto geometrico T₀ = {delta_s0_val} m, determinando il segmento di distacco iniziale A₀T₀.</p>
-          <p><b>2. Distacco Iniziale Δs₀:</b> La misura del segmento residuo iniziale è Δs₀ = m(A₀T₀) = {delta_s0_val} m.</p>
-          <p><b>3. Relazione geometrica iterativa:</b> Per ogni step n, lo spostamento della Tartaruga ha misura tₙ = Δsₙ₋₁ / {r_denom}.</p>
-          <div class="cognitive-conflict-box">
-              <h4>🧠 Focus:</h4>
-              <div class="conflict-text">
-                  Per raggiungere la Tartaruga, concordi con Zenone che Achille debba prima di tutto compiere lo spostamento d₁ = Δs₀ = {delta_s0_val} m per giungere nel punto T₀ dove si trova ora la Tartaruga?
-              </div>
-          </div>
-      </div>
-      """,
-            unsafe_allow_html=True,
-        )
+        socratic_text = f"""
+        <div class="socratic-card">
+            <h3>🏛️ Athena: Stato Iniziale (n = 0)</h3>
+            <p><b>Configurazione:</b> Achille si trova nell'origine $A_0 = 0$, la Tartaruga occupa $T_0 = {delta_s0_input}\text{ m}$.</p>
+            <p><b>Distacco Iniziale:</b> $\Delta s_0 = {delta_s0_input}\text{ m}$.</p>
+            <div class="cognitive-conflict-box">
+                <h4>🧠 Domanda Socratica:</h4>
+                <div class="conflict-text">
+                    Per poter raggiungere o superare la Tartaruga, concordi che Achille debba <i>necessariamente</i> occupare prima il punto geometrico $T_0$ in cui la Tartaruga si trova adesso?
+                </div>
+            </div>
+        </div>
+        """
     else:
-        d_str = format_frac_html(current_data["d"])
-        t_str = format_frac_html(current_data["t"])
-        delta_s_str = format_frac_html(current_data["delta_s"])
-
-        somma_frazioni_list = [
-            format_frac_html(df.iloc[k]["d"])
-            for k in range(1, curr_step + 1)
-        ]
-        somma_frazioni_str = " + ".join(somma_frazioni_list)
-
-        relazione_base = f"A₁ = T₀" if curr_step == 1 else f"A{c_step_sub} = T{to_subscript(str(curr_step - 1))}"
-
-        st.markdown(
-            f"""
-      <div class="athena-socratic-card">
-          <h3>🏛️ Athena: Guida Socratica - Passo n = {curr_step}</h3>
-          <p><b>1. Spostamento di Achille:</b> Achille compie lo spostamento d{c_step_sub} (misura del segmento A{prev_step_sub}A{c_step_sub}) pari a <span class="fraction-badge">d{c_step_sub} = {d_str} m</span>, raggiungendo il punto geometrico A{c_step_sub} (coincidente con la precedente posizione T{prev_step_sub} della Tartaruga, applicando la relazione fondamentale <b>{relazione_base}</b>).</p>
-          <p><b>2. Spostamento della Tartaruga:</b> Nello stesso step, la Tartaruga compie lo spostamento t{c_step_sub} (misura del segmento T{prev_step_sub}T{c_step_sub}) pari a <span class="fraction-badge">t{c_step_sub} = {t_str} m</span> (ottenuto come Δs{prev_step_sub} / {r_denom}), raggiungendo il punto geometrico T{c_step_sub}.</p>
-          <p><b>3. Posizione Aₙ:</b><br>
-          <div style="margin: 6px 0; padding: 8px 12px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; font-family: monospace; font-size: 0.98rem;">
-              <b>A{c_step_sub} = d₁ + ... + d{c_step_sub} = {somma_frazioni_str} = {format_frac_html(current_data['A'])} m</b>
-          </div>
-          </p>
-          <p><b>4. Distacco Residuo Δsₙ:</b> Il segmento A{c_step_sub}T{c_step_sub} ha misura pari a <span class="fraction-badge">Δs{c_step_sub} = {delta_s_str} m</span>.</p>
-          <div class="cognitive-conflict-box">
-              <h4>🧠 Focus:</h4>
-              <div class="conflict-text">
-                  Per azzerare il distacco residuo Δs{c_step_sub} = {delta_s_str} m, concordi con Zenone che Achille debba ora compiere lo spostamento d{next_step_sub} = Δs{c_step_sub} = {delta_s_str} m per giungere nel punto T{c_step_sub}?
-              </div>
-          </div>
-      </div>
-      """,
-            unsafe_allow_html=True,
-        )
+        socratic_text = f"""
+        <div class="socratic-card">
+            <h3>🏛️ Athena: Analisi al Passo n = {curr_step}</h3>
+            <p>1. <b>Spostamento di Achille:</b> $d_{c_sub} = {d_str}\text{ m}$, raggiungendo $A_{c_sub} = T_{p_sub}$.</p>
+            <p>2. <b>Spostamento Tartaruga:</b> $t_{c_sub} = {t_str}\text{ m}$, raggiungendo $T_{c_sub}$.</p>
+            <p>3. <b>Distacco Residuo:</b> $\Delta s_{c_sub} = m(A_{c_sub}T_{c_sub}) = \mathbf{{{delta_str}\text{{ m}}}}$.</p>
+            <div class="cognitive-conflict-box">
+                <h4>🧠 Cortocircuito Cognitivo:</h4>
+                <div class="conflict-text">
+                    La distanza residua $\Delta s_{c_sub} = {delta_str}\text{ m}$ è strettamente positiva ($\Delta s_{c_sub} > 0$).<br>
+                    Per colmare questo nuovo divario, Achille non dovrà compiere un ulteriore spostamento $d_{n_sub} = {delta_str}\text{ m}$ per raggiungere $T_{c_sub}$? Se questo schema si ripetesse all'infinito, come potrebbe Achille azzerare il distacco?
+                </div>
+            </div>
+        </div>
+        """
+    st.markdown(socratic_text, unsafe_allow_html=True)
 
 # ------------------------------------------------------------------------------
-# 3. SCOMPOSIZIONE CUMULATA DEGLI SPOSTAMENTI
+# 8. TABELLA ANALITICA CON FRAZIONI ESATTE
 # ------------------------------------------------------------------------------
-st.markdown(
-    f"<div class='section-title'>📏 Aₙ = d₁ + d₂ + ... + dₙ (fino al passo n = {curr_step})</div>",
-    unsafe_allow_html=True,
-)
-st.markdown(
-    "<div class='section-subtitle'>Posizione di Achille come somma dei segmenti percorsi: Aₙ = d₁ +"
-    " d₂ + ... + dₙ</div>",
-    unsafe_allow_html=True,
-)
+st.markdown("##### 📊 Tabella Analitica delle Frazioni Esatte")
 
-fig_segments = go.Figure()
-palette = [
-    "#2563eb", "#d97706", "#16a34a", "#dc2626", "#9333ea",
-    "#0891b2", "#db2777", "#ca8a04", "#0284c7"
-]
-
-for k in range(1, curr_step + 1):
-    d_val = df.iloc[k]["d_float"]
-    d_frac_label = format_frac_html(df.iloc[k]["d"])
-    color = palette[(k - 1) % len(palette)]
-    k_sub = to_subscript(str(k))
-    fig_segments.add_trace(
-        go.Bar(
-            y=["Spostamenti Achille"],
-            x=[d_val],
-            name=f"Spostamento d{k_sub} ({d_frac_label} m)",
-            orientation="h",
-            marker=dict(color=color),
-            hoverinfo="name+x",
-        )
-    )
-
-curr_step_sub = to_subscript(str(curr_step))
-
-fig_segments.add_trace(
-    go.Scatter(
-        x=[T_val],
-        y=["Spostamenti Achille"],
-        mode="markers+text",
-        marker=dict(symbol="circle", size=14, color="#15803d"),
-        text=[f" 🐢 <b>Tartaruga (T{curr_step_sub})</b>"],
-        textposition="top right",
-        textfont=dict(size=14, color="#15803d"),
-        hoverinfo="none",
-        showlegend=False,
-        cliponaxis=False,
-    )
-)
-
-fig_segments.update_layout(
-    barmode="stack",
-    xaxis=dict(
-        title=dict(text="Posizione Aₙ (metri)", font=dict(size=14, color="#0f172a")),
-        range=[0, max_x],
-        tickfont=dict(size=12, color="#334155")
-    ),
-    yaxis=dict(visible=False),
-    height=140,
-    margin=dict(l=10, r=30, t=10, b=10),
-    template="plotly_white",
-    showlegend=True,
-    legend=dict(font=dict(size=13))
-)
-
-st.plotly_chart(fig_segments, use_container_width=True)
-
-# ------------------------------------------------------------------------------
-# 4. TABELLA ANALITICA
-# ------------------------------------------------------------------------------
-st.markdown(
-    "<div class='section-title'>📊 Tabella Analitica del Modello Geometrico</div>",
-    unsafe_allow_html=True,
-)
-
-def highlight_current(row):
-    if row["Passo n"] == st.session_state.step:
-        return ["background-color: #dbeafe; font-weight: bold; color: #1e40af"] * len(
-            row
-        )
-    return [""] * len(row)
-
-# Formattazione formale della tabella a partire dai dati grezzi
-display_data = []
+display_rows = []
 for idx, row in df.iterrows():
-    display_data.append({
-        "Passo n": row["n"],
-        "Punto Aₙ - coordinata sulla retta": f"{format_frac_html(row['A'])} m",
-        "Misura dello spostamento dₙ": f"{format_frac_html(row['d'])} m",
-        "Punto Tₙ - coordinata sulla retta": f"{format_frac_html(row['T'])} m",
-        "Misura dello spostamento tₙ": f"{format_frac_html(row['t'])} m",
-        "Distacco residuo Δsₙ": f"{format_frac_html(row['delta_s'])} m",
+    display_rows.append({
+        "Passo (n)": row["n"],
+        "Posizione Achille (Aₙ)": f"{format_frac(row['A'])} m",
+        "Spostamento Achille (dₙ)": f"{format_frac(row['d'])} m",
+        "Posizione Tartaruga (Tₙ)": f"{format_frac(row['T'])} m",
+        "Spostamento Tartaruga (tₙ)": f"{format_frac(row['t'])} m",
+        "Distacco Residuo (Δsₙ)": f"{format_frac(row['delta_s'])} m",
     })
 
-df_display = pd.DataFrame(display_data)
+df_display = pd.DataFrame(display_rows)
 
-columns_requested = [
-    "Passo n",
-    "Punto Aₙ - coordinata sulla retta",
-    "Misura dello spostamento dₙ",
-    "Punto Tₙ - coordinata sulla retta",
-    "Misura dello spostamento tₙ",
-    "Distacco residuo Δsₙ",
-]
+def highlight_row(row):
+    if row["Passo (n)"] == curr_step:
+        return ["background-color: #dbeafe; font-weight: bold; color: #1e40af"] * len(row)
+    return [""] * len(row)
 
-st.dataframe(
-    df_display[columns_requested].style.apply(highlight_current, axis=1),
-    use_container_width=True,
-)
+st.dataframe(df_display.style.apply(highlight_row, axis=1), use_container_width=True)
 
 # ------------------------------------------------------------------------------
-# 5. CHIUSURA MAIEUTICA
+# 9. CHIUSURA DIDATTICA E TRANSIZIONE ALLA FASE 2
 # ------------------------------------------------------------------------------
 st.markdown(
     """
-<div style="background-color: #fef2f2; border: 1px solid #fecaca; border-left: 6px solid #ef4444; padding: 14px 18px; border-radius: 8px; margin-top: 14px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08);">
-    <h4 style="color: #991b1b; margin-top:0; font-weight: 800; font-size: 1.08rem !important;">⚡ Il Cortocircuito Epistemologico di Elea:</h4>
-    <p style="color: #7f1d1d; font-size: 1.02rem !important; font-weight: 600; margin-bottom: 0; line-height: 1.48;">
-        Se la scomposizione logica di Zenone dimostra che Achille deve compiere una successione di infiniti spostamenti di misura positiva (dₙ > 0), ogni passo finito lascia inevitabilmente un distacco positivo Δsₙ > 0. Come fa la costruzione geometrica a svilupparsi senza che la misura del distacco residuo diventi mai esattamente zero in un numero finito di passi?
+<div style="background-color: #fef2f2; border: 1px solid #fecaca; border-left: 6px solid #ef4444; padding: 14px 18px; border-radius: 8px; margin-top: 16px;">
+    <h4 style="color: #991b1b; margin-top:0; font-weight: 800;">⚡ Il Nodo Concettuale della Fase 1:</h4>
+    <p style="color: #7f1d1d; font-weight: 600; margin-bottom: 0; line-height: 1.5;">
+        La scomposizione discreta di Zenone dimostra che per qualsiasi $n \in \mathbb{N}$ finito si ha sempre $\Delta s_n > 0$. 
+        L'illusione nasce dal confondere il <i>numero infinito di suddivisioni spaziali discrete</i> con la <i>durata del processo continuo</i>. 
+        Per risolvere il paradosso occorre abbandonare la scansione passo-passo e passare alla <b>Fase 2 (Simulazione Cinematica Continua)</b> introducendo le equazioni orarie $s(t)$.
     </p>
 </div>
 """,
