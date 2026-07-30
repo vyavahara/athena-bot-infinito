@@ -223,12 +223,11 @@ with col_graph:
     
     fig_track = go.Figure()
     
-    # Calcolo dell'auto-zoom dinamico per evitare accavallamenti
     current_A = current_row["A_float"]
     current_T = current_row["T_float"]
     delta_val = current_row["delta_s_float"]
     
-    # Se il distacco residuo è molto piccolo, attiviamo la focale d'ingrandimento
+    # Auto-zoom adattivo
     if curr_step >= 3 and delta_val < (delta_s0_input * 0.05):
         zoom_margin = max(delta_val * 4.0, 0.05)
         x_range_min = current_A - (zoom_margin * 0.5)
@@ -237,27 +236,25 @@ with col_graph:
         x_range_min = - (delta_s0_input * 0.08)
         x_range_max = current_T + (delta_s0_input * 0.25)
 
-    # Costruzione delle linee a cascata dal passo 0 fino al passo corrente curr_step
+    # Costruzione delle linee a cascata dal passo 0 fino a curr_step
     for step_idx in range(curr_step + 1):
-        # Coordinata Y decrescente per rispecchiare l'ordine dall'alto verso il basso (0 in cima, curr_step in basso)
         y_level = curr_step - step_idx
         
         row_step = df.iloc[step_idx]
         a_pos = row_step["A_float"]
         t_pos = row_step["T_float"]
         
-        # 1. Linea di riferimento per il passo step_idx
+        # 1. Linea di riferimento orizzontale
         fig_track.add_shape(
             type="line",
             x0=x_range_min, y0=y_level, x1=x_range_max, y1=y_level,
             line=dict(color="#cbd5e1", width=2)
         )
 
-        # 2. Marcatori storici sotto la linea (Tacche e Nomi punti geometrici A₀, T₀, T₁, T₂...)
-        # Posizione fissa originaria A₀
+        # 2. Marcatori storici SOTTO la linea (corretto con line=dict(width=2))
         fig_track.add_trace(go.Scatter(
             x=[0], y=[y_level], mode="markers+text",
-            marker=dict(symbol="line-ns", size=10, color="#64748b", stroke_width=2),
+            marker=dict(symbol="line-ns", size=10, color="#64748b", line=dict(width=2, color="#64748b")),
             text=["A₀"], textposition="bottom center",
             textfont=dict(size=12, color="#475569"), hoverinfo="none", showlegend=False
         ))
@@ -269,13 +266,12 @@ with col_graph:
             
             fig_track.add_trace(go.Scatter(
                 x=[tk_pos], y=[y_level], mode="markers+text",
-                marker=dict(symbol="line-ns", size=10, color="#64748b", stroke_width=2),
+                marker=dict(symbol="line-ns", size=10, color="#64748b", line=dict(width=2, color="#64748b")),
                 text=[label_tk], textposition="bottom center",
                 textfont=dict(size=12, color="#475569"), hoverinfo="none", showlegend=False
             ))
             
-        # 3. Attori sopra la linea (Solo per la configurazione attiva del passo)
-        # Achille sopra la linea
+        # 3. Attori SOPRA la linea
         fig_track.add_trace(go.Scatter(
             x=[a_pos], y=[y_level + 0.18], mode="text+markers",
             marker=dict(symbol="circle", size=10, color="#1e3c72"),
@@ -283,7 +279,6 @@ with col_graph:
             textfont=dict(size=13, color="#1e3c72"), hoverinfo="none", showlegend=False
         ))
         
-        # Tartaruga sopra la linea
         fig_track.add_trace(go.Scatter(
             x=[t_pos], y=[y_level + 0.18], mode="text+markers",
             marker=dict(symbol="circle", size=8, color="#15803d"),
@@ -291,7 +286,6 @@ with col_graph:
             textfont=dict(size=13, color="#15803d"), hoverinfo="none", showlegend=False
         ))
 
-    # Definizione etichette asse Y (Passo 0, Passo 1, ...)
     y_tick_vals = list(range(curr_step + 1))
     y_tick_texts = [f"Passo {curr_step - y}" for y in y_tick_vals]
 
