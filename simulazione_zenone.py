@@ -223,7 +223,7 @@ with col_b3:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Banner metriche uniformate (senza "m" e con etichette aggiornate)
+# Banner metriche uniformate
 m1, m2, m3, m4 = st.columns(4)
 m1.metric("Passo Logico (n)", f"{curr_step}")
 m2.metric("Posizione Achille", f"{format_frac(current_row['A'])}")
@@ -231,7 +231,7 @@ m3.metric("Posizione Tartaruga", f"{format_frac(current_row['T'])}")
 m4.metric("Distacco Residuo", f"{format_frac(current_row['delta_s'])}")
 
 # ------------------------------------------------------------------------------
-# 6. VISUALIZZAZIONE GRAFICA PLOTLY (ASSETTO STORICO COMPLETO + INTERATTIVITÀ ZOOM)
+# 6. VISUALIZZAZIONE GRAFICA PLOTLY (ASSETTO STORICO COMPLETO + NO MODEBAR)
 # ------------------------------------------------------------------------------
 col_graph, col_athena = st.columns([1.35, 1.0])
 
@@ -345,18 +345,18 @@ with col_graph:
         template="plotly_white"
     )
     
-    # Abilitazione dello Zoom tramite mousewheel e mantenimento della barra strumenti
+    # Abilitazione scrollZoom e rimozione totale della modebar (displayModeBar: False)
     st.plotly_chart(
         fig_track, 
         use_container_width=True,
         config={
             'scrollZoom': True,
-            'displayModeBar': True,
+            'displayModeBar': False,
         }
     )
 
 # ------------------------------------------------------------------------------
-# 7. MAIEUTICA SOCRATICA (ATHENA)
+# 7. MAIEUTICA SOCRATICA (SENZA "ATHENA:" E CON ETICHETTA "QUESITO:")
 # ------------------------------------------------------------------------------
 with col_athena:
     c_sub = to_subscript(str(curr_step))
@@ -370,11 +370,11 @@ with col_athena:
     if curr_step == 0:
         socratic_html = f"""
         <div class="socratic-card">
-            <h3>🏛️ Athena: Stato Iniziale (n = 0)</h3>
+            <h3>🏛️ Stato Iniziale (n = 0)</h3>
             <p><b>Configurazione:</b> Achille occupa la posizione A₀ coincidente con l'origine del sistema di riferimento e la tartaruga occupa la posizione T₀ a distanza di {delta_s0_input} m dall'origine.</p>
             <p><b>Distacco Iniziale:</b> Δs₀ = {delta_s0_input}.</p>
             <div class="cognitive-conflict-box">
-                <h4>🧠 Domanda Socratica:</h4>
+                <h4>🧠 Quesito:</h4>
                 <div class="conflict-text">
                     Per poter raggiungere o superare la Tartaruga, concordi che Achille debba <i>necessariamente</i> occupare prima il punto geometrico T₀ dove la Tartaruga si trova adesso?
                 </div>
@@ -384,12 +384,12 @@ with col_athena:
     else:
         socratic_html = f"""
         <div class="socratic-card">
-            <h3>🏛️ Athena: Analisi al Passo n = {curr_step}</h3>
+            <h3>🏛️ Analisi al Passo n = {curr_step}</h3>
             <p>1. <b>Spostamento di Achille:</b> d{c_sub} = {d_str}, raggiungendo A{c_sub} = T{p_sub}.</p>
             <p>2. <b>Spostamento Tartaruga:</b> t{c_sub} = {t_str}, raggiungendo T{c_sub}.</p>
             <p>3. <b>Distacco Residuo:</b> Δs{c_sub} = m(A{c_sub}T{c_sub}) = <b>{delta_str}</b>.</p>
             <div class="cognitive-conflict-box">
-                <h4>🧠 Cortocircuito Cognitivo:</h4>
+                <h4>🧠 Quesito:</h4>
                 <div class="conflict-text">
                     La distanza residua Δs{c_sub} = {delta_str} è strettamente positiva (Δs{c_sub} &gt; 0).<br>
                     Per colmare questo nuovo divario, Achille non dovrà compiere un ulteriore spostamento d{n_sub} = {delta_str} per raggiungere T{c_sub}? Se questo processo continua all'infinito, come potrà mai Achille azzerare il distacco?
@@ -400,7 +400,7 @@ with col_athena:
     st.markdown(socratic_html, unsafe_allow_html=True)
 
 # ------------------------------------------------------------------------------
-# 8. TABELLA ANALITICA CON FRAZIONI ESATTE (SENZA "m" E CON COLONNE INVERTITE)
+# 8. TABELLA ANALITICA CON FRAZIONI ESATTE
 # ------------------------------------------------------------------------------
 st.markdown("##### 📊 Tabella Analitica delle Frazioni Esatte")
 
