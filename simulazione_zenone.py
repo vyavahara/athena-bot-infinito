@@ -3,9 +3,10 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-# ------------------------------------------------------------------------------
-# 1. CONFIGURAZIONE PAGINA ED ELEMENTI VISIVI (CSS)
-# ------------------------------------------------------------------------------
+# ==============================================================================
+# 🎨 1. CONFIGURAZIONE PAGINA E STILI CSS (ASPETTO VISIVO GLOBALE)
+# ==============================================================================
+# Questo blocco imposta il titolo della scheda del browser, l'icona e il layout.
 st.set_page_config(
     page_title="Fase 1: Simulazione Discreta - Paradosso di Zenone",
     page_icon="📐",
@@ -13,12 +14,16 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# Inserimento di regole CSS personalizzate per definire i colori, i bordi e la 
+# tipografia delle varie "schede" (box) presenti nell'interfaccia.
 st.markdown(
     """
 <style>
+    /* Sfondo principale dell'applicazione */
     .main { background-color: #f8fafc; }
     .stApp { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
     
+    /* STYLE: Banner Blu Iniziale in alto (Titolo principale) */
     .hero-banner {
         background: linear-gradient(135deg, #0f172a 0%, #1e3c72 50%, #2a5298 100%);
         color: #ffffff; 
@@ -35,6 +40,7 @@ st.markdown(
         margin: 0 !important; 
     }
     
+    /* STYLE: Scheda "Inquadramento Assiomatico" (Bordo Azzurro) */
     .epistemic-card {
         background-color: #ffffff; 
         border: 1px solid #cbd5e1;
@@ -51,6 +57,7 @@ st.markdown(
         font-weight: 700; 
     }
     
+    /* STYLE: Scheda "Analisi/Stato Iniziale" (Colonna Destra - Box Blu Scuro) */
     .socratic-card {
         background-color: #ffffff; 
         border: 1px solid #cbd5e1;
@@ -67,6 +74,7 @@ st.markdown(
         font-weight: 700;
     }
     
+    /* STYLE: Box Interno "Quesito" (Sfondo Giallo/Ambra per Conflitto Cognitivo) */
     .cognitive-conflict-box {
         background-color: #fffbeb; 
         border: 1px solid #fde68a;
@@ -93,26 +101,31 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ------------------------------------------------------------------------------
-# 2. HELPER UTILITIES
-# ------------------------------------------------------------------------------
+
+# ==============================================================================
+# 🧮 2. FUNZIONI DI SUPPORTO MATEMATICO E FORMATTAZIONE
+# ==============================================================================
 def to_subscript(text: str) -> str:
-    """Converte stringhe numeriche in pedici Unicode ufficiali (es. A₀, T₁, T₂)."""
+    """Trasforma numeri in pedici Unicode (es. A0 -> A₀, T1 -> T₁) per i grafici."""
     sub_map = str.maketrans("0123456789n", "₀₁₂₃₄₅₆₇₈₉ₙ")
     return str(text).translate(sub_map)
 
 def format_frac(f: Fraction) -> str:
-    """Restituisce la rappresentazione in frazione esatta per la tabella e le metriche."""
+    """Formatta i numeri in Q come frazioni 'num/den' o semplicemente 'num' se den==1."""
     if f.denominator == 1:
         return f"{f.numerator}"
     return f"{f.numerator}/{f.denominator}"
 
-# ------------------------------------------------------------------------------
-# 3. MODELLO MATEMATICO DEDUTTIVO (DOMINIO IN Q)
-# ------------------------------------------------------------------------------
+
+# ==============================================================================
+# ⚙️ 3. MOTORE DI CALCOLO MATEMATICO (DOMINIO IN Q)
+# ==============================================================================
 def compute_zeno_sequence(delta_s0: int, contraction_ratio: int, max_steps: int) -> pd.DataFrame:
+    """
+    Genera la tabella dei dati esatti usando la classe Fraction.
+    Non impatta direttamente l'interfaccia visiva, ma ne calcola tutti i valori.
+    """
     delta_s0_frac = Fraction(delta_s0, 1)
-    k_frac = Fraction(contraction_ratio, 1)
     r_frac = Fraction(1, contraction_ratio)
     
     records = []
@@ -129,6 +142,7 @@ def compute_zeno_sequence(delta_s0: int, contraction_ratio: int, max_steps: int)
             d_frac = prev_delta_s
             t_frac = prev_delta_s * r_frac
             
+            # Calcolo posizioni in forma chiusa razionale
             A_frac = delta_s0_frac * (Fraction(1, 1) - (r_frac ** n)) / (Fraction(1, 1) - r_frac)
             delta_s_frac = delta_s0_frac * (r_frac ** n)
             T_frac = A_frac + delta_s_frac
@@ -149,9 +163,12 @@ def compute_zeno_sequence(delta_s0: int, contraction_ratio: int, max_steps: int)
         
     return pd.DataFrame(records)
 
-# ------------------------------------------------------------------------------
-# 4. CONTROLLO DI STATO E SIDEBAR
-# ------------------------------------------------------------------------------
+
+# ==============================================================================
+# 🎛️ 4. INTERFACCIA: BANNER SUPERIORE E BARRA LATERALE (SIDEBAR)
+# ==============================================================================
+
+# --- UI ELEMENT: Banner con Titolo Principale in alto ---
 st.markdown(
     """
 <div class="hero-banner">
@@ -161,27 +178,37 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# --- UI ELEMENT: Menu Laterale Sinistro (Sidebar - Parametri di Controllo) ---
 st.sidebar.header("⚙️ Parametri del Modello Geometrico")
+
+# 1. Input numerico per il Vantaggio Iniziale
 delta_s0_input = st.sidebar.number_input(
     "Distacco Iniziale Δs₀ = m(A₀T₀) [metri]:",
     value=100, min_value=1, step=10
 )
+
+# 2. Input numerico per il Fattore di Contrazione k
 k_input = st.sidebar.number_input(
     "Fattore di contrazione spaziale (k):",
     value=10, min_value=2, max_value=100, step=1
 )
+
+# 3. Slider per il numero massimo di passaggi (n)
 max_steps_input = st.sidebar.slider(
     "Numero di suddivisioni logiche da calcolare (n):",
     min_value=1, max_value=12, value=6
 )
 
 st.sidebar.markdown("---")
+
+# 4. Checkbox per attivare lo Zoom d'Ispezione locale
 zoom_mode = st.sidebar.checkbox(
     "🔍 Lente di Ingrandimento (Zoom Locale)", 
     value=False,
     help="Attiva per ingrandire micro-spazialmente il distacco residuo al passo corrente."
 )
 
+# --- GESTIONE DELLO STATO DI NAVIGAZIONE (Step Corrente) ---
 if "step" not in st.session_state:
     st.session_state.step = 0
 
@@ -193,12 +220,16 @@ def set_step(new_step: int):
 
 curr_step = st.session_state.step
 
+# Esecuzione del calcolo con i dati attuali
 df = compute_zeno_sequence(delta_s0_input, k_input, max_steps_input)
 current_row = df.iloc[curr_step]
 
-# ------------------------------------------------------------------------------
-# 5. PREMESSA EPISTEMOLOGICA, PULSANTI E METRICHE
-# ------------------------------------------------------------------------------
+
+# ==============================================================================
+# 📌 5. INTERFACCIA: INQUADRAMENTO ASSIOMATICO, PULSANTI E METRICHE
+# ==============================================================================
+
+# --- UI ELEMENT: Scheda Bordo Azzurro ("Inquadramento Assiomatico") ---
 st.markdown(
     """
 <div class="epistemic-card">
@@ -212,7 +243,7 @@ Nessun riferimento al tempo <i>t</i>: analizziamo la paradossalità del conteggi
     unsafe_allow_html=True
 )
 
-# Pulsanti di navigazione collocati sotto l'Inquadramento Assiomatico
+# --- UI ELEMENT: Pulsanti di Navigazione (Reset, Precedente, Successivo) ---
 col_b1, col_b2, col_b3, _ = st.columns([1, 1, 1, 2])
 with col_b1:
     st.button("⏮️ Reset (n = 0)", on_click=set_step, args=(0,), use_container_width=True)
@@ -223,18 +254,23 @@ with col_b3:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Banner metriche uniformate
+# --- UI ELEMENT: Banner delle 4 Metriche Numeriche (Griglia a 4 colonne) ---
 m1, m2, m3, m4 = st.columns(4)
 m1.metric("Passo Logico (n)", f"{curr_step}")
 m2.metric("Posizione Achille", f"{format_frac(current_row['A'])}")
 m3.metric("Posizione Tartaruga", f"{format_frac(current_row['T'])}")
 m4.metric("Distacco Residuo", f"{format_frac(current_row['delta_s'])}")
 
-# ------------------------------------------------------------------------------
-# 6. VISUALIZZAZIONE GRAFICA PLOTLY (ASSETTO STORICO COMPLETO + NO MODEBAR)
-# ------------------------------------------------------------------------------
+
+# ==============================================================================
+# 📈 6. INTERFACCIA: GRAFICO PLOTLY & SCHEDA QUESITO (LAYOUT A 2 COLONNE)
+# ==============================================================================
+# Creiamo due colonne affiancate: Sinistra (Grafico 58%), Destra (Quesito 42%)
 col_graph, col_athena = st.columns([1.35, 1.0])
 
+# ------------------------------------------------------------------------------
+# 📍 SEZIONE GRAFICA (COLONNA SINISTRA)
+# ------------------------------------------------------------------------------
 with col_graph:
     st.markdown(f"##### 📍 Diagramma a Cascata delle Posizioni (fino al passo n = {curr_step})")
     
@@ -244,7 +280,7 @@ with col_graph:
     current_T = current_row["T_float"]
     delta_val = current_row["delta_s_float"]
     
-    # LOGICA ASSE X: Default (da 0 a T_n) vs Zoom Lente (Ispezione micro-spaziale)
+    # Calcolo visivo del campo di vista (Asse X)
     if zoom_mode and curr_step > 0:
         span = max(delta_val * 6.0, 0.00005)
         center = (current_A + current_T) / 2.0
@@ -256,22 +292,21 @@ with col_graph:
 
     visible_width = x_range_max - x_range_min
 
-    # Disegno a cascata storicamente coerente (Passo 0 -> curr_step)
+    # Costruzione grafica riga per riga del diagramma a cascata
     for step_idx in range(curr_step + 1):
         y_level = curr_step - step_idx
-        
         row_step = df.iloc[step_idx]
         a_pos = row_step["A_float"]
         t_pos = row_step["T_float"]
         
-        # Linea orizzontale di riferimento
+        # Linea grigia di supporto per la pista
         fig_track.add_shape(
             type="line",
             x0=x_range_min, y0=y_level, x1=x_range_max, y1=y_level,
             line=dict(color="#cbd5e1", width=2)
         )
 
-        # Tacca origine A0 su tutti i livelli visibili
+        # Tacca origine A0
         if x_range_min <= 0 <= x_range_max:
             fig_track.add_trace(go.Scatter(
                 x=[0], y=[y_level], mode="markers+text",
@@ -280,7 +315,7 @@ with col_graph:
                 textfont=dict(size=11, color="#475569"), hoverinfo="none", showlegend=False
             ))
         
-        # Tacche storiche delle posizioni T_k per la specifica riga
+        # Rendering delle tacche storiche T_k
         last_rendered_x = -1e9
         for k in range(step_idx + 1):
             tk_pos = df.iloc[k]["T_float"]
@@ -299,7 +334,7 @@ with col_graph:
                 if show_text:
                     last_rendered_x = tk_pos
             
-        # Posizione e etichetta di Achille al livello step_idx
+        # Icona e scritta ACHILLE (Pallino Blu Scuro)
         if x_range_min <= a_pos <= x_range_max:
             fig_track.add_trace(go.Scatter(
                 x=[a_pos], y=[y_level], mode="markers",
@@ -312,7 +347,7 @@ with col_graph:
                 textfont=dict(size=12, color="#1e3c72"), hoverinfo="none", showlegend=False
             ))
         
-        # Posizione e etichetta della Tartaruga al livello step_idx
+        # Icona e scritta TARTARUGA (Pallino Verde)
         if x_range_min <= t_pos <= x_range_max:
             fig_track.add_trace(go.Scatter(
                 x=[t_pos], y=[y_level], mode="markers",
@@ -328,6 +363,7 @@ with col_graph:
     y_tick_vals = list(range(curr_step + 1))
     y_tick_texts = [f"Passo {curr_step - y}" for y in y_tick_vals]
 
+    # Stile globale del grafico Plotly
     fig_track.update_layout(
         xaxis=dict(
             title="Coordinata sulla Retta Orientata",
@@ -345,18 +381,18 @@ with col_graph:
         template="plotly_white"
     )
     
-    # Abilitazione scrollZoom e rimozione totale della modebar (displayModeBar: False)
+    # Rendering finale del grafico Plotly (con zoom mousewheel e senza modebar)
     st.plotly_chart(
         fig_track, 
         use_container_width=True,
         config={
-            'scrollZoom': True,
-            'displayModeBar': False,
+            'scrollZoom': True,       # Abilita lo zoom con la rotellina del mouse
+            'displayModeBar': False,   # Nasconde la barra degli strumenti sopra il grafico
         }
     )
 
 # ------------------------------------------------------------------------------
-# 7. MAIEUTICA SOCRATICA (SENZA "ATHENA:" E CON ETICHETTA "QUESITO:")
+# 🏛️ SEZIONE SCHEDA QUESITO / TESTO DINAMICO (COLONNA DESTRAMENTE AFFIANCATA)
 # ------------------------------------------------------------------------------
 with col_athena:
     c_sub = to_subscript(str(curr_step))
@@ -367,6 +403,7 @@ with col_athena:
     t_str = format_frac(current_row["t"])
     delta_str = format_frac(current_row["delta_s"])
     
+    # --- TESTO STATO INIZIALE (n = 0) ---
     if curr_step == 0:
         socratic_html = f"""
         <div class="socratic-card">
@@ -381,6 +418,7 @@ with col_athena:
             </div>
         </div>
         """
+    # --- TESTO PER PASSI AVANZATI (n > 0) ---
     else:
         socratic_html = f"""
         <div class="socratic-card">
@@ -399,11 +437,13 @@ with col_athena:
         """
     st.markdown(socratic_html, unsafe_allow_html=True)
 
-# ------------------------------------------------------------------------------
-# 8. TABELLA ANALITICA CON FRAZIONI ESATTE
-# ------------------------------------------------------------------------------
+
+# ==============================================================================
+# 📊 7. INTERFACCIA: TABELLA ANALITICA DELLE FRAZIONI ESATTE
+# ==============================================================================
 st.markdown("##### 📊 Tabella Analitica delle Frazioni Esatte")
 
+# Costruzione del dataset visibile in frazioni
 display_rows = []
 for idx, row in df.iterrows():
     display_rows.append({
@@ -417,16 +457,20 @@ for idx, row in df.iterrows():
 
 df_display = pd.DataFrame(display_rows)
 
+# Evidenziazione in azzurro della riga corrispondente al passo corrente
 def highlight_row(row):
     if row["Passo (n)"] == curr_step:
         return ["background-color: #dbeafe; font-weight: bold; color: #1e40af"] * len(row)
     return [""] * len(row)
 
+# Renderizza la tabella stilizzata a schermo intero
 st.dataframe(df_display.style.apply(highlight_row, axis=1), use_container_width=True)
 
-# ------------------------------------------------------------------------------
-# 9. CHIUSURA DIDATTICA
-# ------------------------------------------------------------------------------
+
+# ==============================================================================
+# ⚡ 8. INTERFACCIA: PIE' DI PAGINA CON CONCLUSIONE DIDATTICA
+# ==============================================================================
+# --- UI ELEMENT: Box Rosso di Chiusura Didattica in fondo alla pagina ---
 st.markdown(
     """
 <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-left: 6px solid #ef4444; padding: 14px 18px; border-radius: 8px; margin-top: 16px;">
