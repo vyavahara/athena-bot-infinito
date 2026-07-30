@@ -185,57 +185,60 @@ st.markdown(
 # DEFINIZIONE FORMALE DEL MODELLO MATEMATICO (Riquadro Introduttivo)
 # ------------------------------------------------------------------------------
 st.markdown(
-    """
+"""
 <div class="math-model-card">
-    <h4>📐 Modello geometrico della simulazione</h4>
 
-    <p style="margin-bottom: 6px; color: #334155;">
-    La pista è rappresentata come una <b>semiretta orientata</b> con origine O.
-    Ogni posizione occupata dai protagonisti è rappresentata da un punto della
-    semiretta e identificata dalla sua coordinata.
-    </p>
+<h4>📐 Premessa al modello geometrico</h4>
 
-    <p style="margin-bottom: 6px; color: #334155;">
-    La simulazione non descrive un moto nel tempo, ma una successione di
-    <b>configurazioni geometriche successive</b> generate passo dopo passo
-    secondo il ragionamento attribuito a Zenone.
-    </p>
+<p>
+La pista è rappresentata da una <b>semiretta orientata</b> con origine O.
+Ogni posizione dei protagonisti è rappresentata da un punto della semiretta
+e identificata dalla sua coordinata.
+</p>
 
-    <p style="margin-bottom: 6px; color: #334155;">
-    Indichiamo con <b>n</b> il numero del passo della costruzione:
-    </p>
+<p>
+La simulazione non descrive un moto nel tempo, ma una successione di
+<b>configurazioni geometriche</b> costruite passo dopo passo secondo il
+ragionamento di Zenone.
+</p>
 
-    <ul style="color:#334155;">
-        <li><b>n = 0</b>: configurazione iniziale;</li>
-        <li><b>n = 1,2,3,...</b>: configurazioni successive ottenute applicando
-        la regola del paradosso.</li>
-    </ul>
+<p>
+Indichiamo con <b>n</b> il numero del passo della costruzione:
+</p>
 
-    <p style="margin-bottom: 6px; color: #334155;">
-    Le posizioni occupate dai due protagonisti al passo n sono indicate con:
-    </p>
+<ul>
+<li><b>n = 0</b>: configurazione iniziale;</li>
+<li><b>n = 1,2,3,...</b>: configurazioni successive.</li>
+</ul>
 
-    <p style="text-align:center; font-size:1.1rem;">
-    <b>Aₙ</b> = posizione di Achille &nbsp;&nbsp;&nbsp;
-    <b>Tₙ</b> = posizione della tartaruga
-    </p>
+<p>
+Al passo n le posizioni sono indicate con:
+</p>
 
-    <p style="margin-bottom: 6px; color:#334155;">
-    La distanza residua tra le due posizioni è indicata con:
-    </p>
+<p style="text-align:center;">
+<b>Aₙ</b> = posizione di Achille
+&nbsp;&nbsp;&nbsp;
+<b>Tₙ</b> = posizione della tartaruga
+</p>
 
-    <p style="text-align:center; font-size:1.1rem;">
-    <b>Δsₙ</b> = distanza tra Aₙ e Tₙ
-    </p>
+<p>
+La distanza residua tra le due posizioni è indicata con:
+</p>
 
-    <p style="margin-bottom: 0; color:#334155;">
-    Nella configurazione iniziale Achille parte dall'origine mentre la tartaruga
-    possiede un vantaggio iniziale assegnato.
-    </p>
+<p style="text-align:center;">
+<b>Δsₙ</b> = misura del segmento AₙTₙ
+</p>
+
+<p>
+All'inizio Achille si trova nell'origine:
+<b>A₀ = 0</b>,
+mentre la tartaruga possiede un vantaggio iniziale:
+<b>T₀ = Δs₀</b>.
+</p>
 
 </div>
 """,
-    unsafe_allow_html=True,
+unsafe_allow_html=True
 )
 
 # ------------------------------------------------------------------------------
